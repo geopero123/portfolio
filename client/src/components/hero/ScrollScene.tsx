@@ -168,10 +168,13 @@ const auroraFragment = /* glsl */ `
 
     // fade toward the top so text at the top of the page stays clean; brightest
     // low on the horizon
-    float vertical = smoothstep(1.0, 0.15, uv.y);
+    float vertical = smoothstep(1.0, 0.15, uv.y) * smoothstep(0.0, 0.2, uv.y);
+    // feather the left/right edges too, so the plane's finite extent never
+    // reads as a hard rectangle against the flat page background
+    float horizontal = smoothstep(0.0, 0.22, uv.x) * smoothstep(1.0, 0.78, uv.x);
 
     vec3 col = mix(uColor, uEmber, clouds);
-    float glow = (clouds * 0.8 + curtain * 0.35) * vertical;
+    float glow = (clouds * 0.8 + curtain * 0.35) * vertical * horizontal;
     gl_FragColor = vec4(col, glow * uOpacity);
   }
 `
@@ -429,7 +432,7 @@ function SceneContents({
     <group ref={group}>
       {/* far nebula backdrop */}
       <mesh position={[0, 4, -30]} scale={[1, 1, 1]}>
-        <planeGeometry args={[90, 46]} />
+        <planeGeometry args={[160, 90]} />
         <shaderMaterial
           uniforms={auroraUniforms}
           vertexShader={auroraVertex}
