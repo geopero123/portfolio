@@ -1,0 +1,10 @@
+node_modules/
+client/dist/
+client/public/projects/
+client/src/data/projects.generated.json
+server/data/*.json
+*.local
+.DS_Store
+
+.vercel
+.env*

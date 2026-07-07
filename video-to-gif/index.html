@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Splice — Video to GIF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="eyebrow">Cutting room · Loop lab</div>
+      <h1>Splice <em>→</em> GIF</h1>
+      <p class="sub">Drop in a video, mark your in and out points, and cut the moment into a loop. Everything stays on this device.</p>
+    </div>
+    <div class="counter" id="counter"><b id="clipLen">0.0s</b>clip length</div>
+  </header>
+
+  <div class="drop" id="drop" tabindex="0" role="button" aria-label="Add a video">
+    <div class="icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+    </div>
+    <h2>Drop a video — or images — here</h2>
+    <p>or <b>click to browse</b> — one clip, or a stack of images for a slideshow GIF</p>
+    <div class="hint">MP4 · WEBM · MOV — or JPG · PNG · WEBP for image mode</div>
+  </div>
+  <input type="file" id="file" accept="video/*,image/*" multiple hidden>
+
+  <div class="studio" id="studio" hidden>
+    <div class="monitor">
+      <div class="screen" id="screen">
+        <video id="video" playsinline muted></video>
+        <canvas id="slideCanvas" hidden></canvas>
+        <div class="overlay" id="overlay">
+          <div class="cropbox" id="cropbox" hidden>
+            <div class="ch tl" data-c="tl"></div><div class="ch tr" data-c="tr"></div>
+            <div class="ch bl" data-c="bl"></div><div class="ch br" data-c="br"></div>
+          </div>
+        </div>
+      </div>
+      <div class="monitor-bar">
+        <button class="iconbtn" id="playBtn" title="Preview selection (space)">
+          <svg id="playIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+        </button>
+        <span class="timecode"><span id="tcNow">0:00.0</span> / <span id="tcTotal">0:00.0</span></span>
+        <button class="tool" id="addCaption" title="Add a caption to the video">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7V5h16v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg>
+          Caption
+        </button>
+        <button class="tool" id="cropToggle" title="Crop the frame">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"/><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"/></svg>
+          Crop
+        </button>
+        <span class="filename" id="videoName"></span>
+        <button class="iconbtn del" id="ejectBtn" title="Eject video">✕</button>
+      </div>
+    </div>
+
+    <div class="timeline" id="timeline">
+      <div class="film" id="film"></div>
+      <div class="shade left" id="shadeL"></div>
+      <div class="shade right" id="shadeR"></div>
+      <div class="range" id="range"></div>
+      <div class="handle" id="handleIn" tabindex="0" role="slider" aria-label="In point"><span class="flag" id="flagIn">0:00.0</span></div>
+      <div class="handle" id="handleOut" tabindex="0" role="slider" aria-label="Out point"><span class="flag" id="flagOut">0:00.0</span></div>
+      <div class="playhead" id="playhead"></div>
+    </div>
+    <div class="timeline-note" id="timelineNote">drag the handles to trim · drag the middle to slide the window · arrow keys nudge</div>
+
+    <div class="slides" id="slides" hidden></div>
+
+    <div class="controls">
+      <div class="field">
+        <label for="width">Width</label>
+        <select id="width">
+          <option value="320">320 px — chat sized</option>
+          <option value="480" selected>480 px — classic</option>
+          <option value="640">640 px — big</option>
+          <option value="800">800 px — huge file</option>
+        </select>
+        <div class="desc">Height follows automatically.</div>
+      </div>
+      <div class="field video-only">
+        <label for="fps">Frame rate</label>
+        <select id="fps">
+          <option value="8">8 fps — choppy & tiny</option>
+          <option value="12" selected>12 fps — smooth enough</option>
+          <option value="18">18 fps — silky</option>
+          <option value="24">24 fps — film</option>
+        </select>
+        <div class="desc" id="frameDesc">~0 frames to capture.</div>
+      </div>
+      <div class="field video-only">
+        <label for="speed">Speed</label>
+        <select id="speed">
+          <option value="0.5">0.5× — slow motion</option>
+          <option value="1" selected>1× — real time</option>
+          <option value="1.5">1.5× — brisk</option>
+          <option value="2">2× — timelapse</option>
+          <option value="3">3× — hyper</option>
+        </select>
+        <div class="desc">Preview plays at this speed too.</div>
+      </div>
+      <div class="field">
+        <label for="quality">Dither quality</label>
+        <select id="quality">
+          <option value="1">Fine — slow encode</option>
+          <option value="10" selected>Balanced</option>
+          <option value="20">Rough — fast encode</option>
+        </select>
+        <div class="desc">Lower means better colors.</div>
+      </div>
+      <div class="field image-only" hidden>
+        <label for="secPer">Seconds per image</label>
+        <select id="secPer">
+          <option value="0.3">0.3 s — rapid fire</option>
+          <option value="0.7" selected>0.7 s — snappy</option>
+          <option value="1.5">1.5 s — easy</option>
+          <option value="3">3 s — slideshow</option>
+        </select>
+        <div class="desc">How long each image holds on screen.</div>
+      </div>
+      <div class="field">
+        <label for="loopStyle">Loop style</label>
+        <select id="loopStyle">
+          <option value="normal" selected>Normal loop</option>
+          <option value="boomerang">Boomerang — there & back</option>
+          <option value="reverse">Reverse</option>
+        </select>
+        <div class="desc">Boomerang never jumps at the loop point.</div>
+      </div>
+      <div class="field">
+        <label for="preset">Export preset</label>
+        <select id="preset">
+          <option value="custom" selected>Custom — my settings</option>
+          <option value="post">Discord post — fits 10 MB</option>
+          <option value="emote">Discord emote — 128², ≤256 KB</option>
+          <option value="sticker">Discord sticker — 320², ≤512 KB</option>
+        </select>
+        <div class="desc" id="presetDesc">Renders exactly what you set above.</div>
+      </div>
+      <div class="field">
+        <label for="fname">File name</label>
+        <input type="text" id="fname" value="clip" spellcheck="false">
+        <div class="desc">Saved as <span id="fnamePreview">clip.gif</span></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="render">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
+        Render GIF
+      </button>
+      <button class="btn ghost" id="cancel" hidden>Cancel</button>
+      <span class="spacer"></span>
+      <span class="estimate" id="estimate"></span>
+    </div>
+
+    <div class="progress" id="progress">
+      <div class="track"><div class="bar" id="bar"></div></div>
+      <div class="lbl"><span id="progText">Capturing frames…</span><span id="progPct">0%</span></div>
+    </div>
+
+    <div class="result" id="result" hidden>
+      <div class="result-head">
+        <h3>Your loop</h3>
+        <span class="note" id="resultMeta"></span>
+      </div>
+      <div class="result-body">
+        <img id="resultImg" alt="Rendered GIF preview">
+        <div class="result-actions">
+          <a class="btn primary" id="download" download>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download GIF
+          </a>
+          <button class="btn ghost" id="exportVideo" title="Same clip as a video file — far smaller than the GIF">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            Export as video too
+          </button>
+          <button class="btn ghost" id="again">Tweak & re-render</button>
+          <div class="mini-preview" id="miniPreview" hidden>
+            <img id="miniImg" alt="Emote-size preview">
+            <span>actual emote size</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<footer>Frames are captured and encoded locally — your video never leaves this device. <span>●</span></footer>
+
+<script src="script.js"></script>
+</body>
+</html>

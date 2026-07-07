@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Press — Image Compressor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="eyebrow">The press · Weight room</div>
+      <h1>Heavy images <em>→</em> light</h1>
+      <p class="sub">Drop in images and squeeze the excess weight out of them — resized, re-encoded, and ready to ship. Nothing is uploaded anywhere.</p>
+    </div>
+    <div class="counter" id="counter"><b id="savedTotal">0 KB</b>total saved</div>
+  </header>
+
+  <div class="drop" id="drop" tabindex="0" role="button" aria-label="Add images">
+    <div class="icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+    </div>
+    <h2>Drop images here</h2>
+    <p>or <b>click to browse</b> — as many as you like</p>
+    <div class="hint">JPG · PNG · WEBP · GIF · BMP</div>
+  </div>
+  <input type="file" id="file" accept="image/*" multiple hidden>
+
+  <div class="controls">
+    <div class="field">
+      <label for="format">Output format</label>
+      <select id="format">
+        <option value="webp" selected>WebP — smallest</option>
+        <option value="jpeg">JPEG — most compatible</option>
+        <option value="png">PNG — lossless, big</option>
+      </select>
+      <div class="desc" id="formatDesc">Modern format, ~30% smaller than JPEG.</div>
+    </div>
+    <div class="field">
+      <label for="qualityRange">Quality — <span id="qualityVal">80</span></label>
+      <input type="range" id="qualityRange" min="30" max="100" value="80" step="1">
+      <div class="desc">80 is visually lossless for most photos.</div>
+    </div>
+    <div class="field">
+      <label for="maxDim">Max dimension</label>
+      <select id="maxDim">
+        <option value="0">Keep original size</option>
+        <option value="2560">2560 px — retina web</option>
+        <option value="1920" selected>1920 px — full HD</option>
+        <option value="1280">1280 px — content</option>
+        <option value="800">800 px — thumbnail-ish</option>
+      </select>
+      <div class="desc">Long edge is capped; nothing is upscaled.</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" id="downloadAll" disabled>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download all
+    </button>
+    <button class="btn ghost" id="clear" disabled>Clear all</button>
+    <span class="spacer"></span>
+    <span class="estimate" id="summary"></span>
+  </div>
+
+  <div id="gridWrap" hidden>
+    <div class="grid-head">
+      <h3>Pressed images</h3>
+      <div class="note">settings apply live to every image</div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<footer>All compression happens locally in your browser — your images never leave this device. <span>●</span></footer>
+
+<script src="script.js"></script>
+</body>
+</html>

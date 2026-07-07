@@ -1,0 +1,273 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition:
+    background-color 0.25s var(--ease),
+    color 0.25s var(--ease);
+}
+
+/* Ambient accent glow — same trick the standalone tools use */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(900px 540px at 80% -10%, var(--accent-glow), transparent 62%);
+  pointer-events: none;
+  z-index: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  body::before {
+    animation: ambient-breathe 9s ease-in-out infinite;
+  }
+  @keyframes ambient-breathe {
+    0%,
+    100% {
+      opacity: 0.7;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* page content paints above the fixed scene backdrop (z-index 0) */
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  line-height: 1.15;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+p {
+  margin: 0;
+}
+a {
+  color: inherit;
+}
+button {
+  font: inherit;
+  color: inherit;
+}
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 16px;
+  z-index: 100;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: 0 0 10px 10px;
+  text-decoration: none;
+  transition: top 0.2s var(--ease);
+}
+.skip-link:focus-visible {
+  top: 0;
+}
+
+.wrap {
+  max-width: var(--wrap-max);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.eyebrow::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  flex: none;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.16s var(--ease),
+    border-color 0.16s var(--ease),
+    background-color 0.16s var(--ease),
+    filter 0.16s var(--ease);
+}
+.btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+.btn.primary {
+  background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+  border-color: transparent;
+  color: var(--accent-ink);
+  font-weight: 700;
+  box-shadow: 0 8px 26px -12px var(--accent);
+}
+.btn.primary:hover {
+  filter: brightness(1.06);
+}
+.btn.ghost:hover {
+  background: var(--panel-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.section {
+  padding: 96px 0;
+  position: relative;
+}
+.section-head {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 42px;
+  max-width: 640px;
+}
+.section-head h2 {
+  font-size: clamp(28px, 4.2vw, 40px);
+}
+.section-head .sub {
+  color: var(--muted);
+  font-size: 16.5px;
+}
+
+@media (max-width: 720px) {
+  .section {
+    padding: 64px 0;
+  }
+}
+
+/* ----- Scroll-linked 3D entrance ----- */
+/* .section gets the perspective so children rotate in real 3D space,
+   not just a 2D fake via box-shadow. */
+.section {
+  perspective: 1400px;
+}
+.reveal-3d {
+  opacity: 0;
+  transform: translate3d(0, 46px, -180px) rotateX(-10deg);
+  transform-origin: 50% 100%;
+  transition:
+    opacity 0.9s var(--ease),
+    transform 0.9s var(--ease);
+  will-change: transform, opacity;
+}
+.reveal-3d.is-in {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) rotateX(0deg);
+}
+/* staggered children (project cards, skill groups, facts…) */
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translate3d(0, 34px, -120px) rotateX(-8deg) scale(0.96);
+  transition:
+    opacity 0.7s var(--ease),
+    transform 0.7s var(--ease);
+  transition-delay: calc(var(--reveal-i, 0) * 70ms);
+  will-change: transform, opacity;
+}
+.reveal-stagger.is-in > * {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) rotateX(0deg) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-3d,
+  .reveal-stagger > * {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

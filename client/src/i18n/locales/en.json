@@ -1,0 +1,100 @@
+{
+  "nav": {
+    "work": "Work",
+    "about": "About",
+    "contact": "Contact",
+    "menu": "Menu",
+    "skip": "Skip to content"
+  },
+  "hero": {
+    "eyebrow": "Creative developer · Portfolio",
+    "title": "I build small, sharp <em>tools</em> that live in the browser.",
+    "sub": "Client-side apps with a game-dev streak — canvas pipelines, keyboard-first UX, and pixel-level polish. Everything below runs live on your machine: no uploads, no servers.",
+    "ctaWork": "See the work",
+    "ctaContact": "Get in touch",
+    "statTools": "live tools",
+    "statClient": "client-side",
+    "statLang": "languages"
+  },
+  "work": {
+    "eyebrow": "Selected work",
+    "title": "Live tools, not screenshots",
+    "sub": "Every project below is the real thing — embedded and running in your browser. Open one and use it.",
+    "open": "Open tool",
+    "standalone": "Standalone",
+    "live": "live"
+  },
+  "projects": {
+    "video-to-gif": {
+      "desc": "A tiny cutting room: trim, crop and caption a clip, then encode it into a looping GIF — or MP4/WebM — entirely client-side, with Discord-ready size presets."
+    },
+    "image-compressor": {
+      "desc": "Drop in images and squeeze the excess weight out. Live re-encoding through the canvas API with quality, format and size controls — nothing leaves your device."
+    },
+    "typing-speed-test": {
+      "desc": "A telegraph-flavored typing test. The clock starts on your first keystroke, accuracy counts as much as speed, and personal bests persist per duration."
+    },
+    "contact-sheet": {
+      "desc": "Lay photos out into a print-ready PDF contact sheet — grid, paper size and margins, rendered in the browser with jsPDF. A whole darkroom in a single HTML file."
+    }
+  },
+  "about": {
+    "eyebrow": "About",
+    "title": "Hands in code, eyes on the browser",
+    "p1": "I'm Giorgi — a developer who likes building small, finished things: tools you can open, use and understand in a minute. My favorite playground is the browser, where canvas, WebGL and a good keyboard shortcut can replace a whole desktop app.",
+    "p2": "Lately that means client-side media tools and game-flavored interfaces — encoding GIFs in a web worker, squeezing images through canvas, measuring words per minute down to the keystroke. This portfolio is part of the collection too: React, Three.js, Express, and two languages.",
+    "factLocation": "Based in",
+    "factLocationValue": "Georgia",
+    "factFocus": "Focus",
+    "factFocusValue": "Creative web · browser tools",
+    "factStack": "Daily stack",
+    "factStackValue": "TypeScript · React · Node"
+  },
+  "skills": {
+    "eyebrow": "Toolbelt",
+    "title": "What I reach for",
+    "core": "Core",
+    "graphics": "Graphics & media",
+    "backend": "Backend & tooling"
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "Say hello",
+    "sub": "Have a project, a question, or a broken GIF? Drop me a line — the form lands straight in my inbox.",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send message",
+    "sending": "Sending…",
+    "success": "Message sent — thanks! I'll get back to you soon.",
+    "error": "Something went wrong. Try again, or email me directly.",
+    "invalid": "Please fill in every field with valid values.",
+    "direct": "or email me directly at"
+  },
+  "footer": {
+    "note": "Every tool on this page runs locally in your browser — no uploads, no tracking.",
+    "built": "Built with React, Three.js & Express",
+    "rights": "© {{year}} Giorgi"
+  },
+  "theme": {
+    "toLight": "Switch to light theme",
+    "toDark": "Switch to dark theme"
+  },
+  "lang": {
+    "label": "Language",
+    "en": "English",
+    "ka": "ქართული"
+  },
+  "viewer": {
+    "back": "Back",
+    "standalone": "Open standalone",
+    "loading": "Loading tool…",
+    "notFound": "This project doesn't exist.",
+    "notFoundHint": "It may have been renamed — head back to the portfolio.",
+    "backHome": "Back to portfolio"
+  },
+  "notFound": {
+    "title": "404 — nothing here",
+    "back": "Back to portfolio"
+  }
+}

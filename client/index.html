@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Giorgi — Creative Developer</title>
+    <meta
+      name="description"
+      content="Portfolio of Giorgi — small, sharp browser tools and playful web experiments. React, Three.js, and plenty of canvas."
+    />
+    <meta property="og:title" content="Giorgi — Creative Developer" />
+    <meta
+      property="og:description"
+      content="Small, sharp browser tools and playful web experiments — everything runs live in your browser."
+    />
+    <meta property="og:type" content="website" />
+    <script>
+      // Applied before first paint so neither theme nor language flashes.
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('portfolio-theme')
+          var theme =
+            stored === 'dark' || stored === 'light'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark'
+          document.documentElement.dataset.theme = theme
+          var lang = localStorage.getItem('portfolio-lang')
+          if (lang === 'ka' || lang === 'en') document.documentElement.lang = lang
+        } catch (e) {
+          /* defaults from the html tag stay */
+        }
+      })()
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&family=Noto+Sans+Georgian:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

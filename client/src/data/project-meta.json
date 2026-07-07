@@ -1,0 +1,38 @@
+{
+  "video-to-gif": {
+    "slug": "video-to-gif",
+    "name": "Splice",
+    "tagline": "Video → GIF cutting room",
+    "accent": "#e14fd2",
+    "glyph": "▶",
+    "order": 1,
+    "tags": ["JavaScript", "gif.js", "MediaRecorder", "Canvas"]
+  },
+  "image-compressor": {
+    "slug": "image-compressor",
+    "name": "The Press",
+    "tagline": "Heavy images → light",
+    "accent": "#4ade80",
+    "glyph": "◆",
+    "order": 2,
+    "tags": ["JavaScript", "Canvas", "WebP", "Performance"]
+  },
+  "typing-speed-test": {
+    "slug": "typing-speed-test",
+    "name": "Wire",
+    "tagline": "Operator typing test",
+    "accent": "#38c8f0",
+    "glyph": "⌗",
+    "order": 3,
+    "tags": ["JavaScript", "Keyboard UX", "localStorage", "SVG"]
+  },
+  "imagetopdfconvert": {
+    "slug": "contact-sheet",
+    "name": "Contact Sheet",
+    "tagline": "Photos → print-ready PDF",
+    "accent": "#ff7a3d",
+    "glyph": "▦",
+    "order": 4,
+    "tags": ["JavaScript", "jsPDF", "Print layout", "Single file"]
+  }
+}

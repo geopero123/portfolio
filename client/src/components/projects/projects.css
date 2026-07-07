@@ -1,0 +1,174 @@
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 22px;
+}
+
+.project-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition:
+    transform 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    box-shadow 0.2s var(--ease);
+}
+.project-card:hover,
+.project-card:focus-within {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--card-accent) 55%, var(--line));
+  box-shadow: var(--shadow);
+}
+
+.card-cover {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 8.4;
+  padding: 18px 20px;
+  text-decoration: none;
+  background:
+    radial-gradient(120% 130% at 85% -20%, color-mix(in srgb, var(--card-accent) 16%, transparent), transparent 58%),
+    var(--panel-2);
+  border-bottom: 1px solid var(--line-soft);
+  overflow: hidden;
+}
+/* three cover flavors so the grid doesn't read as clones */
+.project-card[data-flavor='0'] .card-cover {
+  background-image:
+    radial-gradient(120% 130% at 85% -20%, color-mix(in srgb, var(--card-accent) 16%, transparent), transparent 58%),
+    linear-gradient(color-mix(in srgb, var(--card-accent) 7%, transparent) 1px, transparent 1px);
+  background-size:
+    auto,
+    100% 28px;
+}
+.project-card[data-flavor='1'] .card-cover {
+  background-image:
+    radial-gradient(120% 130% at 85% -20%, color-mix(in srgb, var(--card-accent) 16%, transparent), transparent 58%),
+    radial-gradient(color-mix(in srgb, var(--card-accent) 12%, transparent) 1.5px, transparent 1.5px);
+  background-size:
+    auto,
+    26px 26px;
+}
+.project-card[data-flavor='2'] .card-cover {
+  background-image:
+    radial-gradient(120% 130% at 85% -20%, color-mix(in srgb, var(--card-accent) 16%, transparent), transparent 58%),
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--card-accent) 7%, transparent) 0 1px,
+      transparent 1px 14px
+    );
+}
+
+.cover-tagline {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--card-accent) 78%, var(--text));
+}
+.cover-glyph {
+  position: absolute;
+  right: 16px;
+  bottom: -6px;
+  font-size: 88px;
+  line-height: 1;
+  color: color-mix(in srgb, var(--card-accent) 34%, transparent);
+  transition: transform 0.25s var(--ease);
+}
+.project-card:hover .cover-glyph {
+  transform: translateY(-6px) scale(1.04);
+}
+.cover-name {
+  position: absolute;
+  left: 20px;
+  bottom: 16px;
+  font-family: var(--font-display);
+  font-size: 27px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px 20px;
+  flex: 1;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.card-title-row h3 {
+  font-size: 17px;
+}
+.card-title-row h3 a {
+  text-decoration: none;
+}
+.card-title-row h3 a:hover {
+  color: color-mix(in srgb, var(--card-accent) 70%, var(--text));
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--card-accent);
+}
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--card-accent);
+  box-shadow: 0 0 10px var(--card-accent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .live-dot {
+    animation: live-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes live-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+}
+
+.card-desc {
+  color: var(--muted);
+  font-size: 14.5px;
+  flex: 1;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+}
+.btn.sm {
+  padding: 8px 15px;
+  font-size: 12px;
+}

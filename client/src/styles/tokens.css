@@ -1,0 +1,57 @@
+/* Design tokens. Both themes are designed on their own terms — not inversions.
+   Dark: the "ink" family the standalone tools use. Light: warm paper & graphite.
+   The portfolio accent is coin-gold, distinct from every showcased tool's accent. */
+
+:root {
+  --font-display: 'Space Grotesk', 'Noto Sans Georgian', system-ui, sans-serif;
+  --font-body: 'Inter', 'Noto Sans Georgian', system-ui, sans-serif;
+  --font-mono: 'Space Mono', 'Noto Sans Georgian', ui-monospace, monospace;
+
+  --radius: 14px;
+  --radius-lg: 20px;
+  --header-h: 64px;
+  --wrap-max: 1140px;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0a0b0f;
+  --bg-raise: #0e1016;
+  --panel: #13151c;
+  --panel-2: #191c24;
+  --line: #262a35;
+  --line-soft: #1e222b;
+  --text: #e9ebf0;
+  --muted: #8a8f9e;
+  --faint: #5b6070;
+  --accent: #f5b942;
+  --accent-deep: #d99a1d;
+  --accent-ink: #241902;
+  --accent-glow: rgba(245, 185, 66, 0.14);
+  --danger: #ff5d6c;
+  --ok: #5fd29a;
+  --shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
+  --header-bg: rgba(10, 11, 15, 0.82);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f4f2ea;
+  --bg-raise: #eceade;
+  --panel: #fffdf6;
+  --panel-2: #f6f4ec;
+  --line: #d8d5c6;
+  --line-soft: #e5e2d6;
+  --text: #1b1c21;
+  --muted: #5c5f6a;
+  --faint: #92959f;
+  --accent: #8a6200;
+  --accent-deep: #6d4d00;
+  --accent-ink: #fff8e4;
+  --accent-glow: rgba(170, 128, 20, 0.13);
+  --danger: #c72e40;
+  --ok: #1d8f5f;
+  --shadow: 0 14px 34px rgba(27, 28, 33, 0.12);
+  --header-bg: rgba(244, 242, 234, 0.85);
+}
