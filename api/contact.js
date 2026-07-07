@@ -1,7 +1,19 @@
+import { Resend } from 'resend'
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const RATE_WINDOW_MS = 10 * 60 * 1000
 const RATE_MAX = 5
 const recentByIp = new Map()
+
+// Site owner's inbox — kept here rather than as an env var since it's a
+// fixed fact about this site, not something that varies per environment.
+const TO_EMAIL = 'giorgiminecraftexpert@gmail.com'
+
+// Resend's shared test sender — works without verifying a custom domain.
+// Swap for e.g. "contact@yourdomain.com" once a domain is verified in Resend.
+const FROM_EMAIL = 'Portfolio Contact <onboarding@resend.dev>'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 function rateLimited(ip) {
   const now = Date.now()
@@ -12,11 +24,14 @@ function rateLimited(ip) {
   return false
 }
 
+function escapeHtml(value) {
+  return value.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+}
+
 // Vercel serverless port of server/src/index.js's /api/contact handler.
-// Serverless functions have no persistent disk, so this logs to Vercel's
-// function logs instead of writing data/messages.json like the dev server.
-// TODO: wire real delivery (email/webhook) or a hosted datastore for production.
-export default function handler(req, res) {
+// Serverless functions have no persistent disk, so this sends the message via
+// Resend instead of writing data/messages.json like the dev server does.
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ ok: false, error: 'method_not_allowed' })
     return
@@ -51,8 +66,25 @@ export default function handler(req, res) {
     return
   }
 
-  console.log(
-    `[contact] ${new Date().toISOString()} — ${name.trim()} <${email.trim()}>: ${message.trim().slice(0, 80)}`,
-  )
+  const trimmedName = name.trim()
+  const trimmedEmail = email.trim()
+  const trimmedMessage = message.trim()
+
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: TO_EMAIL,
+      replyTo: trimmedEmail,
+      subject: `Portfolio contact — ${trimmedName}`,
+      text: `From: ${trimmedName} <${trimmedEmail}>\n\n${trimmedMessage}`,
+      html: `<p><strong>From:</strong> ${escapeHtml(trimmedName)} &lt;${escapeHtml(trimmedEmail)}&gt;</p><p>${escapeHtml(trimmedMessage).replace(/\n/g, '<br>')}</p>`,
+    })
+    if (error) throw error
+  } catch (error) {
+    console.error('[contact] Resend send failed:', error)
+    res.status(502).json({ ok: false, error: 'delivery_failed' })
+    return
+  }
+
   res.status(200).json({ ok: true })
 }

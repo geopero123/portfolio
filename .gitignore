@@ -8,3 +8,4 @@ server/data/*.json
 
 .vercel
 .env*
+.claude/scheduled_tasks.lock
