@@ -11,7 +11,12 @@ function systemTheme(): Theme {
 }
 
 function storedTheme(): Theme | null {
-  const value = localStorage.getItem(STORAGE_KEY)
+  let value: string | null = null
+  try {
+    value = localStorage.getItem(STORAGE_KEY)
+  } catch {
+    /* storage blocked — follow the OS */
+  }
   return value === 'dark' || value === 'light' ? value : null
 }
 
@@ -36,7 +41,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setTheme = useCallback((next: Theme) => {
     setPreference(next)
-    localStorage.setItem(STORAGE_KEY, next)
+    try {
+      localStorage.setItem(STORAGE_KEY, next)
+    } catch {
+      /* storage blocked — the choice just won't persist */
+    }
   }, [])
 
   const toggle = useCallback(() => {

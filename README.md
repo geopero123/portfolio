@@ -36,10 +36,11 @@ The originals in the repo root stay untouched and remain the source of truth.
 - The showcased tools load fonts/libs (Google Fonts, jsPDF, gif.js) from CDNs — they need
   network access, same as before.
 - `src/data/site.ts` holds personal facts — **the GitHub link is a placeholder (TODO)**.
-- Contact messages persist to `server/data/messages.json` and the server log; real email
-  delivery (nodemailer + SMTP) is a marked TODO in `server/src/index.js`.
+- Contact form: in production (Vercel) `api/contact.js` emails messages via Resend and
+  needs the `RESEND_API_KEY` env var. The local Express server instead saves them to
+  `server/data/messages.json` and logs them.
 - Georgian copy was machine-authored — worth a native read-through.
 - Theme: system preference by default, manual toggle persisted in `localStorage`.
-- Hero: WebGL terrain (React Three Fiber) with device-tier quality, off-screen pause,
+- Hero: WebGL terrain (React Three Fiber) with device-tier quality, scroll-based dimming,
   reduced-motion static frame, and a pure-CSS fallback on small screens / no WebGL —
   the three.js chunk is only downloaded when the scene actually renders.

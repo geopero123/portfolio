@@ -11,7 +11,10 @@ export interface HeroCapability {
 function webglAvailable(): boolean {
   try {
     const canvas = document.createElement('canvas')
-    return Boolean(canvas.getContext('webgl2') ?? canvas.getContext('webgl'))
+    const gl = canvas.getContext('webgl2') ?? canvas.getContext('webgl')
+    // release the probe context right away — browsers cap live WebGL contexts
+    gl?.getExtension('WEBGL_lose_context')?.loseContext()
+    return Boolean(gl)
   } catch {
     return false
   }

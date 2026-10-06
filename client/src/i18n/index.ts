@@ -9,7 +9,12 @@ export type Language = (typeof LANGUAGES)[number]
 const STORAGE_KEY = 'portfolio-lang'
 
 function initialLanguage(): Language {
-  const stored = localStorage.getItem(STORAGE_KEY)
+  let stored: string | null = null
+  try {
+    stored = localStorage.getItem(STORAGE_KEY)
+  } catch {
+    /* storage blocked — fall back to the browser language */
+  }
   if (stored === 'en' || stored === 'ka') return stored
   return navigator.language?.toLowerCase().startsWith('ka') ? 'ka' : 'en'
 }
@@ -26,7 +31,11 @@ i18n.use(initReactI18next).init({
 
 i18n.on('languageChanged', (lng) => {
   document.documentElement.lang = lng
-  localStorage.setItem(STORAGE_KEY, lng)
+  try {
+    localStorage.setItem(STORAGE_KEY, lng)
+  } catch {
+    /* storage blocked — the choice just won't persist */
+  }
 })
 document.documentElement.lang = i18n.language
 

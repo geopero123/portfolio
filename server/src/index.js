@@ -27,6 +27,9 @@ const manifestFile = path.resolve(
 
 const app = express()
 app.disable('x-powered-by')
+// Behind a reverse proxy req.ip would otherwise be the proxy's address, so every
+// visitor would share one rate-limit bucket. Trust only the first hop.
+app.set('trust proxy', 1)
 app.use(express.json({ limit: '32kb' }))
 
 app.get('/api/health', (_req, res) => {
@@ -53,6 +56,10 @@ const recentByIp = new Map()
 
 function rateLimited(ip) {
   const now = Date.now()
+  // drop IPs whose window has fully expired so the map doesn't grow forever
+  for (const [key, hits] of recentByIp) {
+    if (hits.every((at) => now - at >= RATE_WINDOW_MS)) recentByIp.delete(key)
+  }
   const hits = (recentByIp.get(ip) ?? []).filter((at) => now - at < RATE_WINDOW_MS)
   if (hits.length >= RATE_MAX) return true
   hits.push(now)

@@ -13,10 +13,12 @@ const TO_EMAIL = 'giorgiminecraftexpert@gmail.com'
 // Swap for e.g. "contact@yourdomain.com" once a domain is verified in Resend.
 const FROM_EMAIL = 'Portfolio Contact <onboarding@resend.dev>'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 function rateLimited(ip) {
   const now = Date.now()
+  // drop IPs whose window has fully expired so the map doesn't grow forever
+  for (const [key, hits] of recentByIp) {
+    if (hits.every((at) => now - at >= RATE_WINDOW_MS)) recentByIp.delete(key)
+  }
   const hits = (recentByIp.get(ip) ?? []).filter((at) => now - at < RATE_WINDOW_MS)
   if (hits.length >= RATE_MAX) return true
   hits.push(now)
@@ -70,7 +72,17 @@ export default async function handler(req, res) {
   const trimmedEmail = email.trim()
   const trimmedMessage = message.trim()
 
+  // Created per request: the Resend constructor throws without a key, which at
+  // module scope would crash every request with an unhandled 500.
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    console.error('[contact] RESEND_API_KEY is not set')
+    res.status(502).json({ ok: false, error: 'delivery_failed' })
+    return
+  }
+
   try {
+    const resend = new Resend(apiKey)
     const { error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: TO_EMAIL,
