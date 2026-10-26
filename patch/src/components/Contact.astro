@@ -1,0 +1,20 @@
+---
+import { SITE } from '../site.config';
+import Icon from './Icon.astro';
+import SectionIndex from './SectionIndex.astro';
+const contactHref = SITE.socials.email || SITE.socials.github;
+---
+<section id="contact" class="contact-section" aria-labelledby="contact-title">
+  <div class="shell contact-inner">
+    <p class="eyebrow" data-m="slide"><SectionIndex n="06" /> Next starts here</p>
+    <div class="contact-heading">
+      <h2 id="contact-title" data-m="mask" data-velocity><span class="line-mask"><span style="--i:0">Have something</span></span><span class="line-mask"><span class="serif" style="--i:1">in mind?</span></span></h2>
+      <a class="contact-arrow" href={contactHref} aria-label={SITE.socials.email ? 'Email Gio' : 'Find Gio on GitHub'} data-magnetic data-m="scale" style="--delay:300ms"><Icon /></a>
+    </div>
+    <div class="contact-bottom">
+      <span class="contact-rule" data-m="draw" aria-hidden="true"></span>
+      <p data-m="clip" style="--delay:200ms">A website, a booking system, a role or a good idea.<br />I'd love to hear about it.</p>
+      <a class="text-link" href={contactHref} data-m="slide" data-from="right" style="--delay:300ms">{SITE.socials.email ? SITE.socials.email.replace('mailto:', '') : 'Find me on GitHub'}<Icon /></a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,179 @@
+---
+import { SITE } from '../site.config';
+import Icon from './Icon.astro';
+import SectionIndex from './SectionIndex.astro';
+
+const quoteHref = SITE.socials.email
+  ? `${SITE.socials.email}?subject=${encodeURIComponent('Project enquiry')}`
+  : SITE.socials.github;
+
+const services = [
+  {
+    n: '01',
+    name: 'Business websites',
+    note: 'A fast, mobile-first site that makes your business look as good as it is. English and Georgian on request.',
+    items: ['Custom design', 'Mobile-first', 'SEO basics'],
+  },
+  {
+    n: '02',
+    name: 'Online booking',
+    note: 'Let customers pick a time and book themselves, with no calls or DMs. You manage everything from one admin panel.',
+    items: ['Availability calendar', 'Booking admin', 'Confirmations'],
+  },
+  {
+    n: '03',
+    name: 'Web apps & tools',
+    note: 'Dashboards, internal tools, or the custom thing a template cannot do. Built with React and Laravel.',
+    items: ['React / Laravel', 'Integrations', 'Ongoing support'],
+  },
+];
+---
+<section id="services" class="services-section shell section-pad" aria-labelledby="services-title">
+  <div class="section-topline"><p class="eyebrow" data-m="slide"><SectionIndex n="05" /> Work with me</p><span class="mono subtle" data-m="slide" data-from="right">Small businesses. Real results.</span></div>
+  <div class="section-heading">
+    <h2 id="services-title" data-m="mask" data-velocity><span class="line-mask"><span style="--i:0">Websites that</span></span><span class="line-mask"><span class="serif" style="--i:1">bring in work.</span></span></h2>
+    <p class="services-lead" data-m="clip" style="--delay:200ms">I design and build websites for small businesses, from a clean one-page site to a full online booking system, so customers can find you and book without picking up the phone.</p>
+  </div>
+
+  <ol class="services-grid">
+    {services.map((s, i) => (
+      <li class="service-card" data-m="slide" style={`--delay:${150 + i * 100}ms`}>
+        <span class="mono service-n">{s.n}</span>
+        <h3>{s.name}</h3>
+        <p>{s.note}</p>
+        <ul>{s.items.map(item => <li class="mono">{item}</li>)}</ul>
+      </li>
+    ))}
+  </ol>
+
+  <div class="services-cta" data-m="slide" style="--delay:300ms">
+    <p>Every project is different, so is the price.<br /><span>Tell me what you need and I'll send a quote, usually within a day.</span></p>
+    <a class="quote-button" href={quoteHref} data-magnetic>Get a quote <Icon /></a>
+  </div>
+</section>
+
+<style>
+  .services-lead {
+    max-width: 46ch;
+    margin: 1.5rem 0 0;
+    color: var(--color-body);
+    font-size: clamp(1rem, 1.2vw, 1.125rem);
+    line-height: 1.6;
+  }
+
+  .services-grid {
+    list-style: none;
+    margin: clamp(2.5rem, 5vw, 4.5rem) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid var(--color-line);
+  }
+
+  .service-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: clamp(1.5rem, 2.5vw, 2.25rem) clamp(1.25rem, 2vw, 2rem) clamp(1.75rem, 3vw, 2.5rem) 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .service-card + .service-card {
+    padding-left: clamp(1.25rem, 2vw, 2rem);
+    border-left: 1px solid var(--color-line);
+  }
+
+  .service-n {
+    color: var(--color-accent);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+
+  .service-card h3 {
+    margin: 0;
+    color: var(--color-bright);
+    font-family: var(--font-sans);
+    font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  .service-card p {
+    margin: 0;
+    color: var(--color-body);
+    line-height: 1.6;
+  }
+
+  .service-card ul {
+    list-style: none;
+    margin: auto 0 0;
+    padding: 0.5rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .service-card ul li {
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+    color: var(--color-mute);
+    font-size: 0.72rem;
+  }
+
+  .services-cta {
+    margin-top: clamp(2rem, 4vw, 3.5rem);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem 3rem;
+    flex-wrap: wrap;
+  }
+
+  .services-cta p {
+    margin: 0;
+    color: var(--color-bright);
+    font-size: clamp(1.05rem, 1.4vw, 1.25rem);
+    line-height: 1.5;
+  }
+
+  .services-cta p span {
+    color: var(--color-mute);
+    font-size: 0.9em;
+  }
+
+  .quote-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.95rem 1.5rem;
+    border-radius: 999px;
+    background: var(--color-accent);
+    color: var(--color-ink);
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.4s var(--ease), background-color 0.3s ease;
+  }
+
+  .quote-button:hover {
+    background: var(--color-bright);
+  }
+
+  .quote-button:focus-visible {
+    outline: 2px solid var(--color-bright);
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 860px) {
+    .services-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .service-card,
+    .service-card + .service-card {
+      padding-left: 0;
+      padding-right: 0;
+      border-left: 0;
+    }
+  }
+</style>
