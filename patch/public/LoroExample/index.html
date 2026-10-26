@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ka">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>LORO — სილამაზის სალონი (დემო)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Georgian:wght@300;500;700&family=Noto+Sans+Georgian:wght@400;500;600&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --plum: #3b1f2b;
+    --plum-soft: #5a3443;
+    --blush: #f4dcd8;
+    --rose: #e7b9b1;
+    --champagne: #c9a97e;
+    --paper: #fffaf8;
+    --ink: #24141b;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 400 16px/1.65 "Noto Sans Georgian", system-ui, sans-serif;
+  }
+  a { color: inherit; }
+  .demo-bar {
+    background: var(--ink);
+    color: #f6e9e6;
+    font-size: 13px;
+    text-align: center;
+    padding: 8px 16px;
+  }
+  .demo-bar a { color: var(--rose); }
+  .wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+
+  header.top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 0;
+  }
+  .mark-small { font: 400 22px "Bodoni Moda", serif; letter-spacing: .2em; color: var(--plum); text-decoration: none; }
+  .lang { display: flex; gap: 4px; }
+  .lang button {
+    border: 1px solid var(--plum); background: transparent; color: var(--plum);
+    padding: 6px 12px; border-radius: 999px; font: 500 13px inherit; cursor: pointer;
+  }
+  .lang button[aria-pressed="true"] { background: var(--plum); color: var(--paper); }
+
+  .hero { padding: 24px 0 0; }
+  .wordmark {
+    font: 400 clamp(110px, 28vw, 340px)/.8 "Bodoni Moda", serif;
+    color: var(--plum);
+    letter-spacing: -.02em;
+    margin: 0;
+  }
+  .hero-row {
+    display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px;
+    align-items: end; margin-top: 28px;
+  }
+  .hero h1 {
+    font: 500 clamp(26px, 3.4vw, 40px)/1.25 "Noto Serif Georgian", serif;
+    margin: 0 0 16px; color: var(--plum); max-width: 22ch;
+  }
+  .hero p { margin: 0; max-width: 46ch; color: var(--plum-soft); }
+  .meta { display: grid; gap: 6px; font-size: 15px; color: var(--plum-soft); }
+  .meta strong { color: var(--plum); font-weight: 600; }
+  .stars { color: var(--champagne); letter-spacing: 2px; }
+
+  .tones {
+    display: grid; grid-template-columns: repeat(8, 1fr);
+    height: 120px; margin: 56px 0 0;
+  }
+  .tones span { display: block; }
+  .tones-caption { font-size: 13px; color: var(--plum-soft); margin: 10px 0 0; }
+
+  .btn {
+    display: inline-block; background: var(--plum); color: var(--paper);
+    padding: 14px 26px; border-radius: 999px; text-decoration: none;
+    font-weight: 600; border: 0; cursor: pointer; font-family: inherit; font-size: 16px;
+  }
+  .btn:hover { background: var(--plum-soft); }
+  .btn:focus-visible, .lang button:focus-visible, .slot:focus-visible, select:focus-visible, input:focus-visible {
+    outline: 3px solid var(--champagne); outline-offset: 3px;
+  }
+
+  section { padding: 88px 0 0; }
+  h2 { font: 500 clamp(28px, 3.6vw, 44px)/1.2 "Noto Serif Georgian", serif; color: var(--plum); margin: 0 0 32px; }
+
+  .services { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 56px; }
+  .service {
+    display: flex; justify-content: space-between; gap: 24px;
+    padding: 22px 0; border-bottom: 1px solid var(--rose);
+  }
+  .service h3 { font: 500 20px/1.3 "Noto Serif Georgian", serif; margin: 0 0 4px; color: var(--plum); }
+  .service p { margin: 0; font-size: 14px; color: var(--plum-soft); }
+  .service .dur { white-space: nowrap; font-size: 14px; color: var(--plum-soft); }
+
+  .book {
+    background: var(--blush); border-radius: 28px;
+    padding: clamp(24px, 5vw, 56px);
+    display: grid; grid-template-columns: .8fr 1.2fr; gap: 48px;
+  }
+  .book h2 { margin-bottom: 12px; }
+  .book .lead { color: var(--plum-soft); margin: 0; }
+  form { display: grid; gap: 18px; }
+  label { display: grid; gap: 6px; font-weight: 500; color: var(--plum); font-size: 15px; }
+  select, input {
+    font: inherit; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid var(--rose); background: var(--paper); color: var(--ink);
+  }
+  .slots { display: flex; flex-wrap: wrap; gap: 8px; }
+  .slot {
+    border: 1px solid var(--plum); background: transparent; color: var(--plum);
+    padding: 8px 14px; border-radius: 999px; font: 500 14px inherit; cursor: pointer;
+  }
+  .slot[aria-pressed="true"] { background: var(--plum); color: var(--paper); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .notice {
+    display: none; background: var(--paper); border-radius: 16px; padding: 18px 20px;
+    border-left: 4px solid var(--champagne);
+  }
+  .notice.show { display: block; }
+
+  .visit { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .visit h3 { font: 500 18px "Noto Serif Georgian", serif; color: var(--plum); margin: 0 0 8px; }
+  .visit p { margin: 0; color: var(--plum-soft); }
+
+  footer { padding: 88px 0 40px; }
+  footer .wordmark { font-size: clamp(64px, 16vw, 180px); opacity: .9; }
+  footer p { color: var(--plum-soft); font-size: 14px; margin: 12px 0 0; }
+
+  @media (max-width: 820px) {
+    .hero-row, .book, .services, .visit { grid-template-columns: 1fr; }
+    .tones { height: 72px; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<div class="demo-bar" data-ka="ეს არის კონცეპტი, რომელიც <a href='https://madebygio.dev'>madebygio.dev</a>-მ შექმნა. ეს არ არის LORO-ს ოფიციალური საიტი." data-en="This is a concept made by <a href='https://madebygio.dev'>madebygio.dev</a>. It is not LORO's official website."></div>
+
+<div class="wrap">
+  <header class="top">
+    <a class="mark-small" href="#">LORO</a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="ka" aria-pressed="true">ქარ</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <p class="wordmark" aria-hidden="true">LORO</p>
+    <div class="hero-row">
+      <div>
+        <h1 data-ka="ფერი, ფორმა და თმა, რომელიც თქვენ გგავთ." data-en="Colour, cut and hair that looks like you."></h1>
+        <p data-ka="სილამაზის სალონი ვაკეში. შეჭრა, შეღებვა და მელირება ოსტატებისგან, რომლებიც ჯერ გისმენენ და მერე იწყებენ." data-en="A beauty salon in Vake. Cuts, colour and highlights from stylists who listen first and cut second."></p>
+        <p style="margin-top:28px"><a class="btn" href="#book" data-ka="ჩაეწერეთ ონლაინ" data-en="Book online"></a></p>
+      </div>
+      <div class="meta">
+        <div><span class="stars" aria-hidden="true">★★★★★</span> <strong>4.8</strong> <span data-ka="Google-ზე, 214 შეფასება" data-en="on Google, 214 reviews"></span></div>
+        <div>ზაქარია ფალიაშვილის ქ. 60, <span data-ka="ვაკე" data-en="Vake"></span></div>
+        <div><span data-ka="ყოველდღე" data-en="Daily"></span> 08:00 – 23:30</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tones" aria-hidden="true">
+    <span style="background:#1c1210"></span>
+    <span style="background:#3d2418"></span>
+    <span style="background:#6b3f26"></span>
+    <span style="background:#9a6136"></span>
+    <span style="background:#c08a55"></span>
+    <span style="background:#d9b27f"></span>
+    <span style="background:#ead2a8"></span>
+    <span style="background:#f4e6cf"></span>
+  </div>
+  <p class="tones-caption" data-ka="ყოველი ფერი თქვენს თმაზე ცალ-ცალკე ირჩევა." data-en="Every shade is matched to your hair, one client at a time."></p>
+
+  <section id="services" aria-labelledby="services-title">
+    <h2 id="services-title" data-ka="სერვისები" data-en="Services"></h2>
+    <div class="services">
+      <div class="service"><div><h3 data-ka="შეჭრა" data-en="Haircut"></h3><p data-ka="კონსულტაცია, დაბანა და დავარცხნა შედის." data-en="Consultation, wash and blow-dry included."></p></div><span class="dur" data-ka="~ 1 სთ" data-en="~ 1 hr"></span></div>
+      <div class="service"><div><h3 data-ka="შეღებვა" data-en="Colour"></h3><p data-ka="ერთი ფერი ან ფერის გასწორება." data-en="Single colour or colour correction."></p></div><span class="dur" data-ka="~ 2 სთ" data-en="~ 2 hrs"></span></div>
+      <div class="service"><div><h3 data-ka="მელირება" data-en="Highlights"></h3><p data-ka="ბუნებრივი, რბილი გადასვლებით." data-en="Soft, natural-looking blends."></p></div><span class="dur" data-ka="~ 2.5 სთ" data-en="~ 2.5 hrs"></span></div>
+      <div class="service"><div><h3 data-ka="ვარცხნილობა" data-en="Styling"></h3><p data-ka="საღამოსთვის, ქორწილისთვის, ფოტოსესიისთვის." data-en="For evenings, weddings and photo shoots."></p></div><span class="dur" data-ka="~ 1 სთ" data-en="~ 1 hr"></span></div>
+    </div>
+  </section>
+
+  <section id="book" aria-labelledby="book-title">
+    <div class="book">
+      <div>
+        <h2 id="book-title" data-ka="ჩაწერა" data-en="Book a visit"></h2>
+        <p class="lead" data-ka="აირჩიეთ სერვისი, დღე და საათი. სალონი დაგიდასტურებთ ჯავშანს." data-en="Pick a service, a day and a time. The salon confirms your booking."></p>
+      </div>
+      <form id="booking" novalidate>
+        <label><span data-ka="სერვისი" data-en="Service"></span>
+          <select id="service">
+            <option data-ka="შეჭრა" data-en="Haircut"></option>
+            <option data-ka="შეღებვა" data-en="Colour"></option>
+            <option data-ka="მელირება" data-en="Highlights"></option>
+            <option data-ka="ვარცხნილობა" data-en="Styling"></option>
+          </select>
+        </label>
+        <label><span data-ka="დღე" data-en="Day"></span>
+          <input type="date" id="date">
+        </label>
+        <div>
+          <div style="font-weight:500;color:var(--plum);font-size:15px;margin-bottom:8px" data-ka="საათი" data-en="Time"></div>
+          <div class="slots" id="slots"></div>
+        </div>
+        <div class="two">
+          <label><span data-ka="სახელი" data-en="Name"></span><input type="text" autocomplete="off"></label>
+          <label><span data-ka="ტელეფონი" data-en="Phone"></span><input type="tel" autocomplete="off"></label>
+        </div>
+        <button class="btn" type="submit" data-ka="ჩაწერის მოთხოვნა" data-en="Request booking"></button>
+        <div class="notice" id="notice" role="status"></div>
+      </form>
+    </div>
+  </section>
+
+  <section id="visit" aria-labelledby="visit-title">
+    <h2 id="visit-title" data-ka="როგორ მოგვაგნოთ" data-en="Visit"></h2>
+    <div class="visit">
+      <div><h3 data-ka="მისამართი" data-en="Address"></h3><p>ზაქარია ფალიაშვილის ქ. 60<br>თბილისი 0179</p></div>
+      <div><h3 data-ka="საათები" data-en="Hours"></h3><p data-ka="ყოველდღე 08:00 – 23:30" data-en="Daily 08:00 – 23:30"></p></div>
+      <div><h3 data-ka="კონტაქტი" data-en="Contact"></h3><p><a href="tel:+995597054146">+995 597 05 41 46</a><br><a href="https://www.instagram.com/lorosalon" rel="noopener">@lorosalon</a></p></div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p class="wordmark" aria-hidden="true">LORO</p>
+    <p data-ka="დემო-ვერსია. დიზაინი და დამზადება: madebygio.dev" data-en="Demo version. Designed and built by madebygio.dev"></p>
+  </div>
+</footer>
+
+<script>
+  const notices = {
+    ka: (s, d, t) => `ეს დემოა, ამიტომ ჯავშანი არ გაიგზავნა. რეალურ საიტზე LORO მიიღებდა მოთხოვნას: ${s}, ${d}, ${t}.`,
+    en: (s, d, t) => `This is a demo, so nothing was sent. On the real site, LORO would get your request: ${s}, ${d}, ${t}.`,
+    pick: { ka: 'აირჩიეთ დღე და საათი.', en: 'Choose a day and a time.' }
+  };
+  let lang = 'ka';
+  let slot = null;
+
+  function applyLang(next) {
+    lang = next;
+    document.documentElement.lang = next;
+    document.querySelectorAll('[data-ka]').forEach(el => { el.innerHTML = el.dataset[next]; });
+    document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === next)));
+    document.title = next === 'ka' ? 'LORO — სილამაზის სალონი (დემო)' : 'LORO — Beauty salon (demo)';
+  }
+  document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
+
+  const dateInput = document.getElementById('date');
+  const today = new Date();
+  dateInput.min = today.toISOString().slice(0, 10);
+  dateInput.value = dateInput.min;
+
+  function renderSlots() {
+    const box = document.getElementById('slots');
+    box.innerHTML = '';
+    slot = null;
+    const day = new Date(dateInput.value || dateInput.min);
+    const seed = day.getDate();
+    for (let h = 10; h <= 21; h++) {
+      if ((h + seed) % 4 === 0) continue; // a few slots look taken
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'slot'; b.textContent = `${String(h).padStart(2, '0')}:00`;
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => {
+        box.querySelectorAll('.slot').forEach(x => x.setAttribute('aria-pressed', 'false'));
+        b.setAttribute('aria-pressed', 'true'); slot = b.textContent;
+      });
+      box.appendChild(b);
+    }
+  }
+  dateInput.addEventListener('change', renderSlots);
+  renderSlots();
+
+  document.getElementById('booking').addEventListener('submit', e => {
+    e.preventDefault();
+    const n = document.getElementById('notice');
+    const s = document.getElementById('service');
+    n.textContent = (dateInput.value && slot)
+      ? notices[lang](s.options[s.selectedIndex].textContent, dateInput.value, slot)
+      : notices.pick[lang];
+    n.classList.add('show');
+  });
+
+  applyLang('ka');
+</script>
+</body>
+</html>

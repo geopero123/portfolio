@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Black Box Barber Shop (demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #000;
+    --coal: #161616;
+    --line: #2e2e2e;
+    --chalk: #f2f0eb;
+    --grey: #a3a19b;
+    --brass: #c49a5a;
+    --open: #6fcf8e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--black); color: var(--chalk);
+    font: 400 16px/1.6 Manrope, system-ui, sans-serif;
+  }
+  a { color: inherit; }
+  .demo-bar { background: var(--brass); color: #000; font-size: 13px; text-align: center; padding: 8px 16px; }
+  .wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+
+  header.top { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
+  .logo {
+    font: 900 20px/1 "Big Shoulders Display", sans-serif; letter-spacing: .04em;
+    border: 3px solid var(--chalk); padding: 8px 12px; text-decoration: none;
+  }
+  .top a.call { font-weight: 700; text-decoration: none; }
+
+  /* The box: the one bold element on the page */
+  .box {
+    border: 3px solid var(--chalk);
+    margin-top: 12px;
+    display: grid; grid-template-columns: 1.3fr 1fr;
+  }
+  .box-main { padding: clamp(24px, 5vw, 56px); border-right: 3px solid var(--chalk); }
+  .box h1 {
+    font: 900 clamp(64px, 11vw, 150px)/.86 "Big Shoulders Display", sans-serif;
+    margin: 0; text-transform: uppercase;
+  }
+  .box-main p { color: var(--grey); max-width: 40ch; margin: 24px 0 0; font-size: 17px; }
+  .box-side { display: grid; grid-template-rows: 1fr auto; }
+  .status { padding: clamp(24px, 4vw, 40px); display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+  .status .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--open); margin-right: 10px; vertical-align: middle; }
+  .status.closed .dot { background: #e06a5f; }
+  .status-big { font: 800 clamp(40px, 6vw, 72px)/.95 "Big Shoulders Display", sans-serif; text-transform: uppercase; }
+  .status-small { color: var(--grey); }
+  .box-cta {
+    display: block; text-align: center; background: var(--chalk); color: #000;
+    font: 800 26px/1 "Big Shoulders Display", sans-serif; text-transform: uppercase;
+    padding: 22px; text-decoration: none; letter-spacing: .02em;
+  }
+  .box-cta:hover { background: var(--brass); }
+
+  .facts { display: flex; flex-wrap: wrap; gap: 12px 32px; padding: 22px 0; color: var(--grey); font-size: 15px; }
+  .facts strong { color: var(--chalk); }
+
+  section { padding: 80px 0 0; }
+  h2 { font: 800 clamp(40px, 6vw, 72px)/.95 "Big Shoulders Display", sans-serif; text-transform: uppercase; margin: 0 0 28px; }
+
+  .menu { border-top: 3px solid var(--chalk); }
+  .item {
+    display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: baseline;
+    padding: 20px 0; border-bottom: 1px solid var(--line);
+  }
+  .item h3 { font: 700 20px/1.2 Manrope, sans-serif; margin: 0; }
+  .item p { margin: 4px 0 0; color: var(--grey); font-size: 15px; }
+  .item .time { font: 800 22px "Big Shoulders Display", sans-serif; color: var(--brass); }
+
+  .book { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+  .book .lead { color: var(--grey); max-width: 38ch; }
+  form { display: grid; gap: 18px; }
+  label { display: grid; gap: 6px; font-weight: 700; font-size: 14px; }
+  select, input {
+    font: inherit; font-weight: 400; padding: 13px 14px; background: var(--coal); color: var(--chalk);
+    border: 1px solid var(--line); border-radius: 0;
+  }
+  .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
+  .slot {
+    background: transparent; color: var(--chalk); border: 1px solid var(--line);
+    padding: 10px 0; font: 700 15px Manrope, sans-serif; cursor: pointer;
+  }
+  .slot[aria-pressed="true"] { background: var(--chalk); color: #000; border-color: var(--chalk); }
+  .btn {
+    background: var(--chalk); color: #000; border: 0; padding: 16px;
+    font: 800 22px "Big Shoulders Display", sans-serif; text-transform: uppercase; cursor: pointer;
+  }
+  .btn:hover { background: var(--brass); }
+  :focus-visible { outline: 3px solid var(--brass); outline-offset: 3px; }
+  .notice { display: none; border: 1px solid var(--brass); padding: 16px; color: var(--chalk); }
+  .notice.show { display: block; }
+
+  .find { display: grid; grid-template-columns: repeat(3, 1fr); border: 3px solid var(--chalk); }
+  .find > div { padding: 28px; }
+  .find > div + div { border-left: 3px solid var(--chalk); }
+  .find h3 { font: 800 24px "Big Shoulders Display", sans-serif; text-transform: uppercase; margin: 0 0 8px; }
+  .find p { margin: 0; color: var(--grey); }
+
+  footer { padding: 72px 0 40px; color: var(--grey); font-size: 14px; }
+
+  @media (max-width: 820px) {
+    .box, .book, .find { grid-template-columns: 1fr; }
+    .box-main { border-right: 0; border-bottom: 3px solid var(--chalk); }
+    .find > div + div { border-left: 0; border-top: 3px solid var(--chalk); }
+  }
+</style>
+</head>
+<body>
+<div class="demo-bar">This is a concept made by <a href="https://madebygio.dev">madebygio.dev</a>. It is not Black Box Barber Shop's official website.</div>
+
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="#">BLACK BOX</a>
+    <a class="call" href="tel:+995557313066">+995 557 31 30 66</a>
+  </header>
+
+  <div class="box">
+    <div class="box-main">
+      <h1>Sharp cuts.<br>Late nights.</h1>
+      <p>Fades, beard work and classic cuts in Marjanishvili. Pick your barber and your time, then just show up.</p>
+    </div>
+    <div class="box-side">
+      <div class="status" id="status">
+        <div class="status-small"><span class="dot" aria-hidden="true"></span><span id="status-label">Checking hours…</span></div>
+        <div class="status-big" id="status-big">&nbsp;</div>
+        <div class="status-small">Every day, 09:30 – 02:00</div>
+      </div>
+      <a class="box-cta" href="#book">Book a chair</a>
+    </div>
+  </div>
+
+  <div class="facts">
+    <span><strong>4.8 ★</strong> from 653 Google reviews</span>
+    <span>84 Davit Aghmashenebeli Ave, Marjanishvili</span>
+  </div>
+
+  <section aria-labelledby="menu-title">
+    <h2 id="menu-title">The menu</h2>
+    <div class="menu">
+      <div class="item"><div><h3>Haircut</h3><p>Consultation, cut, wash and style.</p></div><span class="time">40 min</span></div>
+      <div class="item"><div><h3>Skin fade</h3><p>Clean fade down to the skin, finished with a razor line.</p></div><span class="time">45 min</span></div>
+      <div class="item"><div><h3>Beard trim &amp; shape</h3><p>Shape, line-up and hot towel.</p></div><span class="time">25 min</span></div>
+      <div class="item"><div><h3>Haircut + beard</h3><p>The full reset.</p></div><span class="time">60 min</span></div>
+    </div>
+  </section>
+
+  <section id="book" aria-labelledby="book-title">
+    <div class="book">
+      <div>
+        <h2 id="book-title">Book a chair</h2>
+        <p class="lead">Choose what you want, when you want it. You get a confirmation, and nobody has to answer a message at 1am.</p>
+      </div>
+      <form id="booking" novalidate>
+        <label>Service
+          <select id="service">
+            <option>Haircut</option><option>Skin fade</option><option>Beard trim &amp; shape</option><option>Haircut + beard</option>
+          </select>
+        </label>
+        <label>Day <input type="date" id="date"></label>
+        <div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:8px">Time</div>
+          <div class="slots" id="slots"></div>
+        </div>
+        <label>Name <input type="text" autocomplete="off"></label>
+        <button class="btn" type="submit">Book it</button>
+        <div class="notice" id="notice" role="status"></div>
+      </form>
+    </div>
+  </section>
+
+  <section aria-labelledby="find-title">
+    <h2 id="find-title">Find us</h2>
+    <div class="find">
+      <div><h3>Where</h3><p>84 Davit Aghmashenebeli Ave<br>Marjanishvili, Tbilisi</p></div>
+      <div><h3>When</h3><p>Every day<br>09:30 – 02:00</p></div>
+      <div><h3>Call</h3><p><a href="tel:+995557313066">+995 557 31 30 66</a></p></div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">Demo version, designed and built by <a href="https://madebygio.dev">madebygio.dev</a>.</div>
+</footer>
+
+<script>
+  // Shop hours in Tbilisi time (UTC+4): 09:30 to 02:00 next day.
+  function tbilisiNow() {
+    const now = new Date();
+    return new Date(now.getTime() + (now.getTimezoneOffset() + 240) * 60000);
+  }
+  function updateStatus() {
+    const t = tbilisiNow();
+    const mins = t.getHours() * 60 + t.getMinutes();
+    const open = mins >= 570 || mins < 120;
+    const el = document.getElementById('status');
+    el.classList.toggle('closed', !open);
+    document.getElementById('status-label').textContent = open ? 'Open now' : 'Closed right now';
+    document.getElementById('status-big').textContent = open ? 'Closes at 2:00' : 'Opens 9:30';
+  }
+  updateStatus();
+  setInterval(updateStatus, 60000);
+
+  const dateInput = document.getElementById('date');
+  dateInput.min = new Date().toISOString().slice(0, 10);
+  dateInput.value = dateInput.min;
+  let slot = null;
+  function renderSlots() {
+    const box = document.getElementById('slots');
+    box.innerHTML = ''; slot = null;
+    const seed = new Date(dateInput.value || dateInput.min).getDate();
+    const times = [];
+    for (let m = 600; m <= 1560; m += 60) times.push(m); // 10:00 to 02:00
+    times.forEach((m, i) => {
+      if ((i + seed) % 5 === 0) return;
+      const h = Math.floor(m / 60) % 24;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'slot'; b.textContent = `${String(h).padStart(2, '0')}:00`;
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => {
+        box.querySelectorAll('.slot').forEach(x => x.setAttribute('aria-pressed', 'false'));
+        b.setAttribute('aria-pressed', 'true'); slot = b.textContent;
+      });
+      box.appendChild(b);
+    });
+  }
+  dateInput.addEventListener('change', renderSlots);
+  renderSlots();
+
+  document.getElementById('booking').addEventListener('submit', e => {
+    e.preventDefault();
+    const n = document.getElementById('notice');
+    const s = document.getElementById('service').value;
+    n.textContent = slot
+      ? `This is a demo, so nothing was sent. On the real site, Black Box would get your booking: ${s}, ${dateInput.value}, ${slot}.`
+      : 'Choose a day and a time.';
+    n.classList.add('show');
+  });
+</script>
+</body>
+</html>

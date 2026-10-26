@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Volkan Turk Barbershop (demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cobalt: #1d3f8f;
+    --cobalt-deep: #142c66;
+    --turq: #2a9d94;
+    --coral: #c8473a;
+    --tile: #f7f9fc;
+    --ink: #121a2e;
+    --mist: #dfe6f2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--tile); color: var(--ink); font: 400 16px/1.65 "Work Sans", system-ui, sans-serif; }
+  a { color: inherit; }
+  .demo-bar { background: var(--ink); color: #e9eef8; font-size: 13px; text-align: center; padding: 8px 16px; }
+  .demo-bar a { color: #9fd8d3; }
+  .wrap { width: min(1080px, 100% - 32px); margin-inline: auto; }
+
+  /* İznik-style tile band: the signature element */
+  .tiles {
+    height: 132px;
+    background-color: var(--cobalt);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' viewBox='0 0 88 88'%3E%3Crect width='88' height='88' fill='%231d3f8f'/%3E%3Cpath d='M44 6 C54 26 62 34 82 44 C62 54 54 62 44 82 C34 62 26 54 6 44 C26 34 34 26 44 6Z' fill='%23f7f9fc'/%3E%3Cpath d='M44 22 C49 34 54 39 66 44 C54 49 49 54 44 66 C39 54 34 49 22 44 C34 39 39 34 44 22Z' fill='%232a9d94'/%3E%3Ccircle cx='44' cy='44' r='6' fill='%23c8473a'/%3E%3Ccircle cx='0' cy='0' r='10' fill='%232a9d94'/%3E%3Ccircle cx='88' cy='0' r='10' fill='%232a9d94'/%3E%3Ccircle cx='0' cy='88' r='10' fill='%232a9d94'/%3E%3Ccircle cx='88' cy='88' r='10' fill='%232a9d94'/%3E%3C/svg%3E");
+    background-size: 66px 66px;
+  }
+  .tiles.thin { height: 44px; }
+
+  header.top { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
+  .name { font: 400 26px/1 "DM Serif Display", serif; color: var(--cobalt); text-decoration: none; }
+  .top .call { font-weight: 600; text-decoration: none; color: var(--cobalt); }
+
+  .hero { display: grid; grid-template-columns: 1.2fr .8fr; gap: 48px; align-items: end; padding: 56px 0 64px; }
+  .hero h1 { font: 400 clamp(52px, 8vw, 104px)/.95 "DM Serif Display", serif; margin: 0; color: var(--cobalt-deep); }
+  .hero p { margin: 22px 0 0; max-width: 42ch; font-size: 18px; }
+  .card-rating {
+    background: #fff; border: 2px solid var(--cobalt); border-radius: 18px; padding: 24px;
+  }
+  .card-rating .big { font: 400 56px/1 "DM Serif Display", serif; color: var(--cobalt); }
+  .card-rating p { margin: 6px 0 18px; }
+  .btn {
+    display: inline-block; background: var(--coral); color: #fff; text-decoration: none;
+    padding: 14px 24px; border-radius: 999px; font-weight: 600; border: 0; cursor: pointer; font: 600 16px "Work Sans", sans-serif;
+  }
+  .btn:hover { background: #a93a2f; }
+  :focus-visible { outline: 3px solid var(--turq); outline-offset: 3px; }
+
+  section { padding: 80px 0 0; }
+  h2 { font: 400 clamp(34px, 4.6vw, 52px)/1.1 "DM Serif Display", serif; color: var(--cobalt-deep); margin: 0 0 28px; }
+
+  .services { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .svc { background: #fff; border-radius: 18px; padding: 24px; border: 1px solid var(--mist); }
+  .svc h3 { font: 400 26px/1.2 "DM Serif Display", serif; margin: 0 0 6px; color: var(--cobalt); }
+  .svc p { margin: 0; color: #46506a; }
+  .svc .len { display: inline-block; margin-top: 14px; font-weight: 600; color: var(--turq); }
+
+  .book { background: var(--cobalt); color: #fff; border-radius: 28px; padding: clamp(24px, 5vw, 56px); display: grid; grid-template-columns: .9fr 1.1fr; gap: 40px; }
+  .book h2 { color: #fff; }
+  .book .lead { color: var(--mist); margin: 0; }
+  form { display: grid; gap: 16px; }
+  label { display: grid; gap: 6px; font-weight: 500; font-size: 15px; }
+  select, input { font: inherit; padding: 12px 14px; border-radius: 12px; border: 0; background: #fff; color: var(--ink); }
+  .slots { display: flex; flex-wrap: wrap; gap: 8px; }
+  .slot { background: transparent; color: #fff; border: 1px solid #8fa6d8; border-radius: 999px; padding: 8px 14px; font: 500 14px "Work Sans", sans-serif; cursor: pointer; }
+  .slot[aria-pressed="true"] { background: #fff; color: var(--cobalt); border-color: #fff; }
+  .notice { display: none; background: var(--cobalt-deep); border-radius: 14px; padding: 16px; }
+  .notice.show { display: block; }
+
+  .visit { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .visit h3 { font: 400 22px "DM Serif Display", serif; margin: 0 0 6px; color: var(--cobalt); }
+  .visit p { margin: 0; }
+
+  footer { padding: 72px 0 0; }
+  footer p { text-align: center; color: #46506a; font-size: 14px; margin: 0 0 24px; }
+
+  @media (max-width: 820px) {
+    .hero, .services, .book, .visit { grid-template-columns: 1fr; }
+    .tiles { height: 88px; }
+  }
+</style>
+</head>
+<body>
+<div class="demo-bar">This is a concept made by <a href="https://madebygio.dev">madebygio.dev</a>. It is not Volkan Turk Barbershop's official website.</div>
+<div class="tiles" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header class="top">
+    <a class="name" href="#">Volkan Turk Barbershop</a>
+    <a class="call" href="tel:+995558178268">+995 558 17 82 68</a>
+  </header>
+
+  <div class="hero">
+    <div>
+      <h1>A proper Turkish barber, on Kostava.</h1>
+      <p>Classic cuts, beard work and a hot towel shave, done with care. Volkan is usually busy, so book your slot before you come.</p>
+    </div>
+    <div class="card-rating">
+      <div class="big">4.9 ★</div>
+      <p>from 97 Google reviews</p>
+      <a class="btn" href="#book">Book a slot</a>
+    </div>
+  </div>
+</div>
+
+<div class="tiles thin" aria-hidden="true"></div>
+
+<div class="wrap">
+  <section aria-labelledby="svc-title">
+    <h2 id="svc-title">What Volkan does</h2>
+    <div class="services">
+      <div class="svc"><h3>Haircut</h3><p>Cut, wash and style the way you asked for it.</p><span class="len">about 40 min</span></div>
+      <div class="svc"><h3>Beard</h3><p>Trim, shape and a clean line-up.</p><span class="len">about 25 min</span></div>
+      <div class="svc"><h3>Haircut and beard</h3><p>Both together, one visit.</p><span class="len">about 60 min</span></div>
+      <div class="svc"><h3>Hot towel shave</h3><p>The traditional Turkish shave with a straight razor.</p><span class="len">about 30 min</span></div>
+    </div>
+  </section>
+
+  <section id="book" aria-labelledby="book-title">
+    <div class="book">
+      <div>
+        <h2 id="book-title">Book a slot</h2>
+        <p class="lead">Pick a free time and it's yours. No calling around, no waiting for a reply.</p>
+      </div>
+      <form id="booking" novalidate>
+        <label>Service
+          <select id="service"><option>Haircut</option><option>Beard</option><option>Haircut and beard</option><option>Hot towel shave</option></select>
+        </label>
+        <label>Day <input type="date" id="date"></label>
+        <div>
+          <div style="font-weight:500;font-size:15px;margin-bottom:8px">Time</div>
+          <div class="slots" id="slots"></div>
+        </div>
+        <label>Name <input type="text" autocomplete="off"></label>
+        <button class="btn" type="submit">Book slot</button>
+        <div class="notice" id="notice" role="status"></div>
+      </form>
+    </div>
+  </section>
+
+  <section aria-labelledby="visit-title">
+    <h2 id="visit-title">Visit</h2>
+    <div class="visit">
+      <div><h3>Address</h3><p>75 Merab Kostava St<br>Tbilisi</p></div>
+      <div><h3>Hours</h3><p>Open every day<br>Booking recommended</p></div>
+      <div><h3>Call or WhatsApp</h3><p><a href="tel:+995558178268">+995 558 17 82 68</a></p></div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <p>Demo version, designed and built by <a href="https://madebygio.dev">madebygio.dev</a>.</p>
+  <div class="tiles thin" aria-hidden="true"></div>
+</footer>
+
+<script>
+  const dateInput = document.getElementById('date');
+  dateInput.min = new Date().toISOString().slice(0, 10);
+  dateInput.value = dateInput.min;
+  let slot = null;
+  function renderSlots() {
+    const box = document.getElementById('slots');
+    box.innerHTML = ''; slot = null;
+    const seed = new Date(dateInput.value || dateInput.min).getDate();
+    for (let h = 10; h <= 21; h++) {
+      if ((h * 3 + seed) % 4 === 0) continue;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'slot'; b.textContent = `${String(h).padStart(2, '0')}:00`;
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => {
+        box.querySelectorAll('.slot').forEach(x => x.setAttribute('aria-pressed', 'false'));
+        b.setAttribute('aria-pressed', 'true'); slot = b.textContent;
+      });
+      box.appendChild(b);
+    }
+  }
+  dateInput.addEventListener('change', renderSlots);
+  renderSlots();
+  document.getElementById('booking').addEventListener('submit', e => {
+    e.preventDefault();
+    const n = document.getElementById('notice');
+    const s = document.getElementById('service').value;
+    n.textContent = slot
+      ? `This is a demo, so nothing was sent. On the real site, Volkan would get your booking: ${s}, ${dateInput.value}, ${slot}.`
+      : 'Choose a day and a time.';
+    n.classList.add('show');
+  });
+</script>
+</body>
+</html>
