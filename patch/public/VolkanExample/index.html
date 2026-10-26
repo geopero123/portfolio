@@ -242,7 +242,12 @@
   ];
   const wall = document.getElementById('tiles');
   function build() {
-    const size = wall.querySelector('.t')?.offsetWidth || parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tile')) || 80;
+    // Measure the real tile size (the CSS uses clamp(), which parseFloat can't read).
+    const probe = document.createElement('div');
+    probe.className = 't'; probe.style.position = 'absolute'; probe.style.visibility = 'hidden';
+    wall.appendChild(probe);
+    const size = probe.offsetWidth || 80;
+    probe.remove();
     const cols = Math.ceil(wall.clientWidth / size) + 1;
     const rows = Math.ceil(wall.clientHeight / size) + 1;
     wall.innerHTML = '';
