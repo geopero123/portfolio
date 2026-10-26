@@ -7,74 +7,128 @@
 <title>Guesthouse Old Street, Sololaki (demo)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=Karla:wght@400;500;700&family=Noto+Sans+Georgian:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Karla:wght@400;500;700&family=Noto+Sans+Georgian:wght@400;600&family=Noto+Serif+Georgian:wght@500&display=swap" rel="stylesheet">
 <style>
   :root {
+    --sky-top: #f6d6c1;
+    --sky-bottom: #d3e6ea;
+    --night: 0;
     --balcony: #2f5d50;
     --balcony-deep: #1f4037;
     --brick: #a2492f;
     --plaster: #ecdcd0;
-    --sky: #d3e6ea;
     --ink: #1f2a28;
-    --white: #fffdfb;
+    --soft: #55645f;
+    --paper: #fffdf9;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--white); color: var(--ink); font: 400 16px/1.65 Karla, "Noto Sans Georgian", system-ui, sans-serif; }
-  :lang(ka) body, html:lang(ka) body { font-family: "Noto Sans Georgian", Karla, sans-serif; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.65 Karla, "Noto Sans Georgian", system-ui, sans-serif; }
+  html:lang(ka) body { font-family: "Noto Sans Georgian", Karla, sans-serif; }
   a { color: inherit; }
-  .demo-bar { background: var(--balcony-deep); color: #eaf2ef; font-size: 13px; text-align: center; padding: 8px 16px; }
+  :focus-visible { outline: 3px solid var(--brick); outline-offset: 3px; }
+  .demo-bar { background: var(--balcony-deep); color: #eaf2ef; font-size: 12.5px; text-align: center; padding: 7px 16px; position: relative; z-index: 4; }
   .demo-bar a { color: #f3c9b9; }
-  .wrap { width: min(1100px, 100% - 32px); margin-inline: auto; }
+  .wrap { width: min(1220px, 100% - 40px); margin-inline: auto; }
+  .serif { font-family: "Young Serif", serif; font-weight: 400; }
+  html:lang(ka) .serif { font-family: "Noto Serif Georgian", serif; font-weight: 500; }
 
-  header.top { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
-  .name { font: 600 20px Spectral, serif; color: var(--balcony-deep); text-decoration: none; }
-  .lang { display: flex; gap: 4px; }
-  .lang button { border: 1px solid var(--balcony); background: transparent; color: var(--balcony); padding: 6px 12px; border-radius: 999px; font: 500 13px Karla, sans-serif; cursor: pointer; }
-  .lang button[aria-pressed="true"] { background: var(--balcony); color: var(--white); }
+  header.top { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; }
+  .name { font: 400 20px "Young Serif", serif; color: var(--balcony-deep); text-decoration: none; }
+  .lang { display: flex; border: 1px solid var(--balcony); border-radius: 999px; padding: 3px; }
+  .lang button { border: 0; background: transparent; color: var(--balcony); padding: 6px 12px; border-radius: 999px; font: 500 13px Karla, sans-serif; cursor: pointer; }
+  .lang button[aria-pressed="true"] { background: var(--balcony); color: #fff; }
 
-  .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; padding: 24px 0 40px; }
-  .hero h1 { font: 400 clamp(40px, 5.6vw, 70px)/1.05 Spectral, serif; margin: 0; color: var(--balcony-deep); }
-  html:lang(ka) .hero h1 { font-family: "Noto Sans Georgian", sans-serif; font-weight: 600; font-size: clamp(32px, 4.4vw, 54px); line-height: 1.2; }
-  .hero p { font-size: 18px; max-width: 42ch; margin: 20px 0 28px; }
-  .balcony { width: 100%; height: auto; display: block; }
-  .rating { margin-top: 20px; color: #4b5a56; font-size: 15px; }
+  /* ---------- the day: sticky scene on the left, hours scroll on the right ---------- */
+  .day { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; }
+  .scene-col { position: relative; }
+  .scene { position: sticky; top: 16px; height: calc(100vh - 32px); max-height: 820px; border-radius: 22px; overflow: hidden; }
+  .scene svg { width: 100%; height: 100%; display: block; }
+  .clock-tag {
+    position: absolute; left: 18px; top: 18px; background: rgba(255,253,249,.92); color: var(--ink);
+    padding: 8px 14px; border-radius: 999px; font: 700 14px Karla, sans-serif; font-variant-numeric: tabular-nums;
+  }
+  .hours { padding: 6vh 0 10vh; }
+  .hour { min-height: 92vh; display: flex; flex-direction: column; justify-content: center; }
+  .hour .time { font: 400 clamp(56px, 7vw, 92px)/1 "Young Serif", serif; color: var(--brick); letter-spacing: -.01em; }
+  .hour h2 { font-size: clamp(28px, 3.2vw, 40px); line-height: 1.15; margin: 10px 0 12px; color: var(--balcony-deep); }
+  .hour p { color: var(--soft); max-width: 40ch; margin: 0 0 30px; font-size: 17px; }
+  .intro h1 { font-size: clamp(44px, 5.6vw, 76px); line-height: 1.02; margin: 0 0 18px; color: var(--balcony-deep); }
+  .intro p { font-size: 18px; color: var(--soft); max-width: 40ch; margin: 0 0 26px; }
+  .intro .rating { margin-top: 18px; color: var(--soft); font-size: 15px; }
+  .scroll-cue { display: inline-flex; gap: 10px; align-items: center; margin-top: 34px; color: var(--soft); font-size: 14px; }
+  .scroll-cue span { width: 22px; height: 34px; border: 2px solid var(--soft); border-radius: 12px; position: relative; }
+  .scroll-cue span::after { content: ""; position: absolute; left: 50%; top: 6px; width: 4px; height: 7px; margin-left: -2px; border-radius: 2px; background: var(--soft); animation: cue 1.6s ease-in-out infinite; }
+  @keyframes cue { 60% { transform: translateY(10px); opacity: 0; } }
 
-  .btn { display: inline-block; background: var(--brick); color: #fff; text-decoration: none; border: 0; cursor: pointer; padding: 14px 26px; border-radius: 6px; font: 700 16px Karla, "Noto Sans Georgian", sans-serif; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; background: var(--brick); color: #fff; border: 0; cursor: pointer; text-decoration: none; padding: 15px 26px; border-radius: 8px; font: 700 16px Karla, "Noto Sans Georgian", sans-serif; }
   .btn:hover { background: #853a25; }
-  :focus-visible { outline: 3px solid var(--balcony); outline-offset: 3px; }
 
-  section { padding: 80px 0 0; }
-  h2 { font: 400 clamp(32px, 4.2vw, 48px)/1.15 Spectral, serif; color: var(--balcony-deep); margin: 0 0 24px; }
-  html:lang(ka) h2 { font-family: "Noto Sans Georgian", sans-serif; font-weight: 600; font-size: clamp(26px, 3.4vw, 38px); }
+  /* ---------- postcard placeholders ---------- */
+  .postcard {
+    position: relative; display: block; cursor: pointer; width: min(440px, 100%);
+    background: var(--paper); padding: 12px 12px 44px; border-radius: 4px;
+    box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 18px 40px -18px rgba(31,42,40,.45);
+    transform: translateY(60px) rotate(var(--from, -9deg)); opacity: 0;
+    transition: transform 1s cubic-bezier(.2,1.1,.3,1), opacity .6s ease;
+  }
+  .postcard.in { transform: translateY(0) rotate(var(--to, -2deg)); opacity: 1; }
+  .postcard:hover { transform: translateY(-4px) rotate(0deg); }
+  .postcard .img { display: block; aspect-ratio: 4/3; background: repeating-linear-gradient(45deg, #efe4da 0 10px, #f6eee7 10px 20px); background-size: cover; background-position: center; position: relative; }
+  .postcard.filled .img { background-image: var(--photo); }
+  .postcard .ph-text { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 2px; color: var(--soft); font-size: 13px; }
+  .postcard .ph-text b { color: var(--balcony-deep); font: 400 18px "Young Serif", serif; }
+  .postcard.filled .ph-text { opacity: 0; }
+  .postcard .caption { position: absolute; left: 14px; bottom: 12px; font: 400 15px "Young Serif", serif; color: var(--ink); }
+  .postcard .stamp { position: absolute; right: 12px; bottom: 8px; width: 34px; height: 40px; border: 2px dashed var(--brick); display: grid; place-items: center; color: var(--brick); font: 700 9px Karla, sans-serif; transform: rotate(6deg); }
+  .postcard.over { outline: 3px solid var(--brick); outline-offset: 4px; }
 
-  .why { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
-  .why h3 { font: 600 20px Spectral, serif; margin: 0 0 6px; color: var(--brick); }
-  html:lang(ka) .why h3 { font-family: "Noto Sans Georgian", sans-serif; }
-  .why p { margin: 0; }
-
-  .book { background: var(--plaster); border-radius: 8px; padding: clamp(24px, 5vw, 52px); display: grid; grid-template-columns: .9fr 1.1fr; gap: 40px; }
-  .book .lead { margin: 0; color: #4b5a56; }
-  .save { margin-top: 20px; padding: 16px 18px; background: var(--white); border-left: 4px solid var(--brick); }
-  form { display: grid; gap: 16px; }
-  label { display: grid; gap: 6px; font-weight: 700; font-size: 15px; }
-  select, input { font: inherit; font-weight: 400; padding: 12px 14px; border-radius: 6px; border: 1px solid #c9b6a8; background: var(--white); color: var(--ink); }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .notice { display: none; background: var(--white); border-radius: 6px; padding: 16px; border-left: 4px solid var(--balcony); }
+  /* ---------- booking with a range calendar ---------- */
+  section { padding: 110px 0 0; }
+  .book { display: grid; grid-template-columns: .85fr 1.15fr; gap: 48px; background: var(--plaster); border-radius: 22px; padding: clamp(24px, 5vw, 56px); }
+  .book h2 { font-size: clamp(34px, 4vw, 52px); line-height: 1.05; margin: 0 0 14px; color: var(--balcony-deep); }
+  .book .lead { color: var(--soft); margin: 0 0 20px; }
+  .save { padding: 16px 18px; background: var(--paper); border-left: 4px solid var(--brick); border-radius: 0 8px 8px 0; }
+  .cal { background: var(--paper); border-radius: 16px; padding: 18px; }
+  .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .cal-head b { font: 400 20px "Young Serif", serif; }
+  .cal-head button { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #d9c9bb; background: transparent; cursor: pointer; font-size: 18px; color: var(--ink); }
+  .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+  .grid .dow { font-size: 12px; color: var(--soft); padding: 4px 0; }
+  .grid button { aspect-ratio: 1; border: 0; background: transparent; border-radius: 10px; font: 500 15px Karla, sans-serif; cursor: pointer; color: var(--ink); }
+  .grid button:hover:not(:disabled) { background: #f1e6dc; }
+  .grid button:disabled { color: #c5b8ad; cursor: not-allowed; }
+  .grid button.inrange { background: #e6efe9; border-radius: 0; }
+  .grid button.start, .grid button.end { background: var(--balcony); color: #fff; }
+  .grid button.start { border-radius: 10px 0 0 10px; }
+  .grid button.end { border-radius: 0 10px 10px 0; }
+  .grid button.start.end { border-radius: 10px; }
+  .summary { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center; margin-top: 16px; }
+  .guests { display: flex; align-items: center; gap: 10px; }
+  .guests button { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #d9c9bb; background: var(--paper); cursor: pointer; font-size: 18px; }
+  .notice { display: none; margin-top: 14px; background: var(--paper); border-left: 4px solid var(--balcony); border-radius: 0 8px 8px 0; padding: 14px 16px; }
   .notice.show { display: block; }
 
   .where { display: grid; grid-template-columns: 1.2fr .8fr; gap: 40px; }
-  .where ul { margin: 0; padding-left: 20px; }
-  .where li { margin-bottom: 6px; }
+  .where h2 { font-size: clamp(30px, 3.6vw, 44px); margin: 0 0 14px; color: var(--balcony-deep); }
+  .where ul { padding-left: 20px; margin: 12px 0 0; color: var(--soft); }
+  footer { padding: 90px 0 40px; color: var(--soft); font-size: 13.5px; }
 
-  footer { padding: 72px 0 40px; color: #4b5a56; font-size: 14px; }
-
-  @media (max-width: 820px) {
-    .hero, .why, .book, .where, .two { grid-template-columns: 1fr; }
+  @media (max-width: 900px) {
+    .day { grid-template-columns: 1fr; gap: 0; }
+    .scene-col { position: sticky; top: 0; z-index: 1; height: 46vh; }
+    .scene { height: 46vh; border-radius: 0 0 22px 22px; top: 0; }
+    .hours { position: relative; z-index: 2; background: linear-gradient(transparent, var(--paper) 40px); }
+    .hour { min-height: 78vh; }
+    .book, .where { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .postcard { transform: rotate(-2deg); opacity: 1; transition: none; }
+    .scroll-cue span::after { animation: none; }
   }
 </style>
 </head>
 <body>
-<div class="demo-bar" data-en="This is a concept made by <a href='https://madebygio.dev'>madebygio.dev</a>. It is not Guesthouse Old Street's official website." data-ka="ეს არის კონცეპტი, რომელიც <a href='https://madebygio.dev'>madebygio.dev</a>-მ შექმნა. ეს არ არის სასტუმრო სახლის ოფიციალური საიტი."></div>
+<div class="demo-bar" data-en="A concept made by <a href='https://madebygio.dev'>madebygio.dev</a>. This is not Guesthouse Old Street's official website." data-ka="კონცეპტი, რომელიც <a href='https://madebygio.dev'>madebygio.dev</a>-მ შექმნა. ეს არ არის სასტუმრო სახლის ოფიციალური საიტი."></div>
 
 <div class="wrap">
   <header class="top">
@@ -85,140 +139,266 @@
     </div>
   </header>
 
-  <div class="hero">
-    <div>
-      <h1 data-en="A quiet room on an old Sololaki street." data-ka="მყუდრო ოთახი ძველი სოლოლაკის ქუჩაზე."></h1>
-      <p data-en="Clean rooms with air conditioning, kind hosts and Old Tbilisi right outside the door. Book directly with us." data-ka="სუფთა ოთახები კონდიციონერით, თბილი მასპინძლები და ძველი თბილისი კარის გარეთ. დაჯავშნეთ პირდაპირ ჩვენთან."></p>
-      <a class="btn" href="#book" data-en="Check availability" data-ka="თავისუფალი დღეები"></a>
-      <div class="rating">★ 4.8 <span data-en="on Google" data-ka="Google-ზე"></span></div>
+  <div class="day" id="day">
+    <div class="scene-col">
+      <div class="scene">
+        <svg viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" role="img" aria-label="An Old Tbilisi house with a carved wooden balcony, changing from morning to night">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop id="skyTop" offset="0" stop-color="#f6d6c1"/>
+              <stop id="skyBottom" offset="1" stop-color="#d3e6ea"/>
+            </linearGradient>
+            <radialGradient id="glow"><stop offset="0" stop-color="#ffd98a"/><stop offset="1" stop-color="#ffb24d" stop-opacity="0"/></radialGradient>
+          </defs>
+          <rect width="600" height="800" fill="url(#sky)"/>
+          <g id="stars" opacity="0" fill="#fff">
+            <circle cx="60" cy="70" r="1.6"/><circle cx="140" cy="140" r="1.2"/><circle cx="220" cy="60" r="1.8"/><circle cx="300" cy="120" r="1.1"/><circle cx="380" cy="50" r="1.5"/><circle cx="460" cy="110" r="1.3"/><circle cx="540" cy="70" r="1.7"/><circle cx="90" cy="210" r="1.1"/><circle cx="510" cy="200" r="1.2"/><circle cx="330" cy="200" r="1.4"/>
+          </g>
+          <circle id="sun" cx="80" cy="420" r="34" fill="#ffd27a"/>
+          <g id="moon" opacity="0"><circle cx="470" cy="120" r="26" fill="#f4f1e6"/><circle cx="482" cy="112" r="24" fill="url(#sky)"/></g>
+          <!-- distant rooftops -->
+          <path d="M0 470 L40 440 L80 470 L120 430 L170 470 L210 450 L260 470 L300 420 L350 470 L400 445 L450 470 L500 430 L560 470 L600 450 V800 H0Z" fill="#b9a596" opacity=".55"/>
+          <!-- facade -->
+          <rect x="40" y="330" width="520" height="470" fill="#ecdcd0"/>
+          <g fill="#c9775a" opacity=".45">
+            <rect x="40" y="350" width="70" height="16"/><rect x="490" y="350" width="70" height="16"/><rect x="40" y="680" width="70" height="16"/><rect x="490" y="700" width="70" height="16"/><rect x="75" y="372" width="70" height="16"/><rect x="455" y="722" width="70" height="16"/>
+          </g>
+          <!-- balcony -->
+          <rect x="70" y="300" width="460" height="18" fill="#1f4037"/>
+          <rect x="70" y="318" width="460" height="22" fill="#2f5d50"/>
+          <g id="panes">
+            <rect x="96" y="352" width="126" height="170" fill="#fffdf9" opacity=".6"/>
+            <rect x="238" y="352" width="126" height="170" fill="#fffdf9" opacity=".6"/>
+            <rect x="380" y="352" width="126" height="170" fill="#fffdf9" opacity=".6"/>
+          </g>
+          <g id="lights" opacity="0">
+            <rect x="96" y="352" width="126" height="170" fill="#ffcf73"/>
+            <rect x="238" y="352" width="126" height="170" fill="#ffcf73"/>
+            <rect x="380" y="352" width="126" height="170" fill="#ffcf73"/>
+            <circle cx="300" cy="440" r="210" fill="url(#glow)" opacity=".5"/>
+          </g>
+          <g fill="none" stroke="#2f5d50" stroke-width="12">
+            <rect x="90" y="346" width="420" height="182"/>
+            <line x1="230" y1="346" x2="230" y2="528"/><line x1="370" y1="346" x2="370" y2="528"/>
+          </g>
+          <g fill="none" stroke="#a2492f" stroke-width="5">
+            <path d="M104 420 q55 -60 110 0"/><path d="M246 420 q55 -60 110 0"/><path d="M388 420 q55 -60 110 0"/>
+          </g>
+          <rect x="70" y="528" width="460" height="16" fill="#1f4037"/>
+          <g fill="none" stroke="#2f5d50" stroke-width="6">
+            <path d="M84 548 l26 28 -26 28 M136 548 l26 28 -26 28 M188 548 l26 28 -26 28 M240 548 l26 28 -26 28 M292 548 l26 28 -26 28 M344 548 l26 28 -26 28 M396 548 l26 28 -26 28 M448 548 l26 28 -26 28 M500 548 l26 28 -26 28"/>
+            <path d="M110 548 l-26 28 26 28 M162 548 l-26 28 26 28 M214 548 l-26 28 26 28 M266 548 l-26 28 26 28 M318 548 l-26 28 26 28 M370 548 l-26 28 26 28 M422 548 l-26 28 26 28 M474 548 l-26 28 26 28 M526 548 l-26 28 26 28"/>
+          </g>
+          <rect x="70" y="604" width="460" height="12" fill="#2f5d50"/>
+          <g fill="#1f4037"><path d="M90 616 l-26 64 h18 l26 -64z"/><path d="M510 616 l26 64 h-18 l-26 -64z"/></g>
+          <!-- coffee cup in the morning, a lamp at night -->
+          <g id="cup"><rect x="150" y="588" width="22" height="16" rx="3" fill="#fffdf9"/><path d="M172 592 q8 2 0 8" fill="none" stroke="#fffdf9" stroke-width="3"/></g>
+          <!-- door -->
+          <rect x="250" y="680" width="100" height="120" rx="50" ry="50" fill="#2f5d50"/>
+          <rect x="250" y="730" width="100" height="70" fill="#2f5d50"/>
+          <circle cx="335" cy="750" r="4" fill="#d9b27f"/>
+          <!-- night tint over the facade -->
+          <rect id="shade" x="0" y="0" width="600" height="800" fill="#0c1730" opacity="0" style="mix-blend-mode:multiply"/>
+        </svg>
+        <span class="clock-tag" id="clock">07:00</span>
+      </div>
     </div>
 
-    <!-- Carved wooden balcony, in the style of Old Tbilisi houses -->
-    <svg class="balcony" viewBox="0 0 520 420" role="img" aria-label="Illustration of a carved wooden balcony in Old Tbilisi">
-      <rect x="0" y="0" width="520" height="420" fill="#d3e6ea"/>
-      <rect x="0" y="250" width="520" height="170" fill="#ecdcd0"/>
-      <g fill="#c9775a" opacity=".55">
-        <rect x="0" y="270" width="60" height="18"/><rect x="70" y="270" width="60" height="18"/><rect x="390" y="270" width="60" height="18"/><rect x="460" y="270" width="60" height="18"/>
-        <rect x="35" y="296" width="60" height="18"/><rect x="425" y="296" width="60" height="18"/>
-        <rect x="0" y="322" width="60" height="18"/><rect x="460" y="322" width="60" height="18"/>
-      </g>
-      <rect x="60" y="40" width="400" height="16" fill="#1f4037"/>
-      <path d="M60 56 h400 v20 h-400z" fill="#2f5d50"/>
-      <g fill="none" stroke="#2f5d50" stroke-width="10">
-        <rect x="80" y="76" width="360" height="150"/>
-        <line x1="200" y1="76" x2="200" y2="226"/>
-        <line x1="320" y1="76" x2="320" y2="226"/>
-      </g>
-      <g fill="#fffdfb" opacity=".55">
-        <rect x="90" y="86" width="105" height="130"/><rect x="205" y="86" width="110" height="130"/><rect x="325" y="86" width="105" height="130"/>
-      </g>
-      <g fill="none" stroke="#a2492f" stroke-width="4">
-        <path d="M95 140 q47 -50 95 0"/><path d="M210 140 q50 -50 100 0"/><path d="M330 140 q47 -50 95 0"/>
-      </g>
-      <rect x="60" y="226" width="400" height="14" fill="#1f4037"/>
-      <g fill="#2f5d50">
-        <rect x="60" y="240" width="400" height="10"/>
-        <rect x="60" y="300" width="400" height="10"/>
-      </g>
-      <g fill="none" stroke="#2f5d50" stroke-width="5">
-        <path d="M70 250 l25 25 l-25 25 M120 250 l25 25 l-25 25 M170 250 l25 25 l-25 25 M220 250 l25 25 l-25 25 M270 250 l25 25 l-25 25 M320 250 l25 25 l-25 25 M370 250 l25 25 l-25 25 M420 250 l25 25 l-25 25"/>
-        <path d="M95 250 l-25 25 l25 25 M145 250 l-25 25 l25 25 M195 250 l-25 25 l25 25 M245 250 l-25 25 l25 25 M295 250 l-25 25 l25 25 M345 250 l-25 25 l25 25 M395 250 l-25 25 l25 25 M445 250 l-25 25 l25 25"/>
-      </g>
-      <g fill="#1f4037">
-        <path d="M80 310 l-20 50 h14 l20 -50z"/><path d="M440 310 l20 50 h-14 l-20 -50z"/>
-        <path d="M250 310 h20 v40 h-20z"/>
-      </g>
-      <g fill="#a2492f"><circle cx="150" cy="235" r="6"/><circle cx="260" cy="235" r="6"/><circle cx="370" cy="235" r="6"/></g>
-    </svg>
+    <div class="hours">
+      <div class="hour intro" data-t="0">
+        <h1 class="serif" data-en="A day on an old Sololaki street." data-ka="ერთი დღე ძველ სოლოლაკის ქუჩაზე."></h1>
+        <p data-en="Clean rooms with air conditioning, kind hosts and Old Tbilisi outside the door. Scroll to spend the day here." data-ka="სუფთა ოთახები კონდიციონერით, თბილი მასპინძლები და ძველი თბილისი კარის გარეთ. ჩამოსქროლეთ და გაატარეთ აქ ერთი დღე."></p>
+        <a class="btn" href="#book" data-en="Check your dates" data-ka="შეამოწმეთ თარიღები"></a>
+        <div class="rating">★ 4.8 <span data-en="on Google · 7 Shalva Dadiani St" data-ka="Google-ზე · შალვა დადიანის ქ. 7"></span></div>
+        <div class="scroll-cue"><span aria-hidden="true"></span><em data-en="Scroll through the day" data-ka="ჩამოსქროლეთ"></em></div>
+      </div>
+
+      <div class="hour" data-t="0.25">
+        <div class="time">08:30</div>
+        <h2 class="serif" data-en="Coffee on the balcony" data-ka="ყავა აივანზე"></h2>
+        <p data-en="Wake up to a quiet street and the light coming through the carved wooden balcony." data-ka="გაიღვიძეთ წყნარ ქუჩაზე, ხის ჩუქურთმიან აივანზე შემოსული სინათლით."></p>
+        <label class="postcard" style="--from:-10deg;--to:-3deg"><input type="file" accept="image/*" hidden><span class="img"><span class="ph-text"><b data-en="Your room photo" data-ka="ოთახის ფოტო"></b><span data-en="Click or drop an image" data-ka="დააჭირეთ ან ჩააგდეთ სურათი"></span></span></span><span class="caption" data-en="The room" data-ka="ოთახი"></span><span class="stamp">TBS</span></label>
+      </div>
+
+      <div class="hour" data-t="0.5">
+        <div class="time">13:00</div>
+        <h2 class="serif" data-en="Walk to the old town" data-ka="გასეირნება ძველ ქალაქში"></h2>
+        <p data-en="Freedom Square is a few minutes on foot. City and sightseeing buses pass right by the street." data-ka="თავისუფლების მოედანი რამდენიმე წუთის სავალზეა. ქალაქის და ტურისტული ავტობუსები ქუჩაზე გადის."></p>
+        <label class="postcard" style="--from:8deg;--to:2deg"><input type="file" accept="image/*" hidden><span class="img"><span class="ph-text"><b data-en="The street outside" data-ka="ქუჩა"></b><span data-en="Click or drop an image" data-ka="დააჭირეთ ან ჩააგდეთ სურათი"></span></span></span><span class="caption" data-en="Shalva Dadiani St" data-ka="შალვა დადიანის ქუჩა"></span><span class="stamp">GE</span></label>
+      </div>
+
+      <div class="hour" data-t="0.75">
+        <div class="time">19:30</div>
+        <h2 class="serif" data-en="Sunset over Sololaki" data-ka="მზის ჩასვლა სოლოლაკზე"></h2>
+        <p data-en="Come back to a cool room after dinner in the old town. The hosts are around if you need anything." data-ka="ვახშმის შემდეგ დაბრუნდით გრილ ოთახში. მასპინძლები ყოველთვის ახლოს არიან."></p>
+        <label class="postcard" style="--from:-7deg;--to:-1deg"><input type="file" accept="image/*" hidden><span class="img"><span class="ph-text"><b data-en="The courtyard or view" data-ka="ეზო ან ხედი"></b><span data-en="Click or drop an image" data-ka="დააჭირეთ ან ჩააგდეთ სურათი"></span></span></span><span class="caption" data-en="Evening" data-ka="საღამო"></span><span class="stamp">TBS</span></label>
+      </div>
+
+      <div class="hour" data-t="1">
+        <div class="time">23:00</div>
+        <h2 class="serif" data-en="Lights on, street asleep" data-ka="შუქი ანთია, ქუჩას სძინავს"></h2>
+        <p data-en="A quiet night in the middle of the city. Ready to stay? Pick your dates below." data-ka="წყნარი ღამე ქალაქის შუაგულში. მზად ხართ? აირჩიეთ თარიღები ქვემოთ."></p>
+        <div><a class="btn" href="#book" data-en="Book your stay" data-ka="დაჯავშნეთ"></a></div>
+      </div>
+    </div>
   </div>
-
-  <section aria-labelledby="why-title">
-    <h2 id="why-title" data-en="Why guests stay here" data-ka="რატომ ირჩევენ ჩვენთან დარჩენას"></h2>
-    <div class="why">
-      <div><h3 data-en="In the middle of it all" data-ka="ყველაფრის შუაგულში"></h3><p data-en="Sololaki, a short walk from Freedom Square and the old town." data-ka="სოლოლაკი, თავისუფლების მოედნიდან და ძველი უბნიდან რამდენიმე წუთის სავალზე."></p></div>
-      <div><h3 data-en="Clean and cool" data-ka="სუფთა და გრილი"></h3><p data-en="Tidy rooms with air conditioning for hot Tbilisi summers." data-ka="მოწესრიგებული ოთახები კონდიციონერით თბილისის ცხელი ზაფხულისთვის."></p></div>
-      <div><h3 data-en="Hosts who care" data-ka="მზრუნველი მასპინძლები"></h3><p data-en="A family-run guesthouse with real local character." data-ka="ოჯახური სასტუმრო სახლი ნამდვილი ადგილობრივი იერით."></p></div>
-    </div>
-  </section>
 
   <section id="book" aria-labelledby="book-title">
     <div class="book">
       <div>
-        <h2 id="book-title" data-en="Book your stay" data-ka="დაჯავშნეთ"></h2>
-        <p class="lead" data-en="Pick your dates and send a request. We reply to confirm." data-ka="აირჩიეთ თარიღები და გამოგზავნეთ მოთხოვნა. ჩვენ დაგიდასტურებთ."></p>
+        <h2 id="book-title" class="serif" data-en="Book directly with us" data-ka="დაჯავშნეთ პირდაპირ ჩვენთან"></h2>
+        <p class="lead" data-en="Tap your check-in day, then your check-out day. We reply to confirm." data-ka="აირჩიეთ შესვლის, შემდეგ გასვლის დღე. ჩვენ დაგიდასტურებთ."></p>
         <div class="save" data-en="<strong>Booking direct</strong> means no booking-site fees, and you talk to the hosts from the start." data-ka="<strong>პირდაპირი ჯავშნით</strong> არ იხდით ჯავშნის საიტების საკომისიოს და თავიდანვე მასპინძლებს ესაუბრებით."></div>
       </div>
-      <form id="booking" novalidate>
-        <div class="two">
-          <label><span data-en="Check-in" data-ka="შესვლა"></span><input type="date" id="in"></label>
-          <label><span data-en="Check-out" data-ka="გასვლა"></span><input type="date" id="out"></label>
+      <div>
+        <div class="cal">
+          <div class="cal-head"><button type="button" id="prev" aria-label="Previous month">‹</button><b id="month"></b><button type="button" id="next" aria-label="Next month">›</button></div>
+          <div class="grid" id="grid"></div>
+          <div class="summary">
+            <span id="range"></span>
+            <div class="guests"><button type="button" id="minus" aria-label="Fewer guests">−</button><span id="gcount">2</span> <span data-en="guests" data-ka="სტუმარი"></span><button type="button" id="plus" aria-label="More guests">+</button></div>
+          </div>
         </div>
-        <label><span data-en="Guests" data-ka="სტუმრები"></span>
-          <select id="guests"><option>1</option><option selected>2</option><option>3</option><option>4</option></select>
-        </label>
-        <div class="two">
-          <label><span data-en="Name" data-ka="სახელი"></span><input type="text" autocomplete="off"></label>
-          <label><span data-en="Email" data-ka="ელფოსტა"></span><input type="email" autocomplete="off"></label>
-        </div>
-        <button class="btn" type="submit" data-en="Request to book" data-ka="ჯავშნის მოთხოვნა"></button>
+        <div style="margin-top:16px"><button class="btn" type="button" id="request" data-en="Request to book" data-ka="ჯავშნის მოთხოვნა"></button></div>
         <div class="notice" id="notice" role="status"></div>
-      </form>
+      </div>
     </div>
   </section>
 
   <section aria-labelledby="where-title">
-    <h2 id="where-title" data-en="Where we are" data-ka="სად ვართ"></h2>
     <div class="where">
       <div>
-        <p><strong data-en="7 Shalva Dadiani St, Sololaki" data-ka="შალვა დადიანის ქ. 7, სოლოლაკი"></strong><br>Tbilisi 0105</p>
+        <h2 id="where-title" class="serif" data-en="Where we are" data-ka="სად ვართ"></h2>
+        <p><strong data-en="7 Shalva Dadiani St, Sololaki" data-ka="შალვა დადიანის ქ. 7, სოლოლაკი"></strong>, Tbilisi 0105</p>
         <ul>
           <li data-en="Walk to Freedom Square" data-ka="ფეხით თავისუფლების მოედნამდე"></li>
           <li data-en="City and sightseeing buses pass the street" data-ka="ქალაქის და ტურისტული ავტობუსები ქუჩაზე გადის"></li>
           <li data-en="Old town, bars and cafés nearby" data-ka="ახლოს ძველი უბანი, ბარები და კაფეები"></li>
         </ul>
       </div>
-      <div>
-        <p><strong data-en="Contact" data-ka="კონტაქტი"></strong><br><a href="tel:+995571027195">+995 571 02 71 95</a></p>
-      </div>
+      <div><h2 class="serif" data-en="Contact" data-ka="კონტაქტი"></h2><p><a href="tel:+995571027195">+995 571 02 71 95</a></p></div>
     </div>
   </section>
+
+  <footer data-en="Demo version, designed and built by <a href='https://madebygio.dev'>madebygio.dev</a>." data-ka="დემო-ვერსია. დიზაინი და დამზადება: <a href='https://madebygio.dev'>madebygio.dev</a>"></footer>
 </div>
 
-<footer>
-  <div class="wrap" data-en="Demo version, designed and built by <a href='https://madebygio.dev'>madebygio.dev</a>." data-ka="დემო-ვერსია. დიზაინი და დამზადება: <a href='https://madebygio.dev'>madebygio.dev</a>"></div>
-</footer>
-
 <script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let lang = 'en';
+
+  /* ---------- language ---------- */
+  const months = { en: ['January','February','March','April','May','June','July','August','September','October','November','December'], ka: ['იანვარი','თებერვალი','მარტი','აპრილი','მაისი','ივნისი','ივლისი','აგვისტო','სექტემბერი','ოქტომბერი','ნოემბერი','დეკემბერი'] };
+  const dows = { en: ['Mo','Tu','We','Th','Fr','Sa','Su'], ka: ['ორ','სმ','ოთ','ხთ','პრ','შბ','კვ'] };
   function applyLang(next) {
-    lang = next;
-    document.documentElement.lang = next;
+    lang = next; document.documentElement.lang = next;
     document.querySelectorAll('[data-en]').forEach(el => { el.innerHTML = el.dataset[next]; });
     document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === next)));
+    renderCal();
   }
   document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
 
-  const inD = document.getElementById('in'), outD = document.getElementById('out');
-  const d0 = new Date(), d1 = new Date(Date.now() + 2 * 86400000);
-  inD.min = outD.min = d0.toISOString().slice(0, 10);
-  inD.value = d0.toISOString().slice(0, 10);
-  outD.value = d1.toISOString().slice(0, 10);
-  inD.addEventListener('change', () => { outD.min = inD.value; if (outD.value <= inD.value) outD.value = ''; });
+  /* ---------- the day: scroll position drives the scene ---------- */
+  const keys = [ // progress, sky top, sky bottom
+    [0, '#f6d6c1', '#d3e6ea'], [0.3, '#8fc3dd', '#dcf0f5'], [0.55, '#9dc7dc', '#e8f1e6'],
+    [0.75, '#e07f55', '#f4c79a'], [0.88, '#3a3d6b', '#c6748a'], [1, '#0d1a31', '#273a5e']
+  ];
+  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',')})`;
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+  const smooth = (a, b, v) => { const t = clamp01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+  const $ = id => document.getElementById(id);
+  const day = $('day');
+  function render() {
+    const r = day.getBoundingClientRect();
+    const span = r.height - innerHeight;
+    const p = span > 0 ? clamp01(-r.top / span) : 0;
+    let i = 0; while (i < keys.length - 2 && p > keys[i + 1][0]) i++;
+    const [p0, t0, b0] = keys[i], [p1, t1, b1] = keys[i + 1];
+    const f = clamp01((p - p0) / (p1 - p0));
+    $('skyTop').setAttribute('stop-color', mix(hex(t0), hex(t1), f));
+    $('skyBottom').setAttribute('stop-color', mix(hex(b0), hex(b1), f));
+    // sun arcs across the sky and sets
+    const sp = clamp01(p / 0.85);
+    $('sun').setAttribute('cx', 70 + sp * 460);
+    $('sun').setAttribute('cy', 440 - Math.sin(sp * Math.PI) * 330);
+    $('sun').setAttribute('fill', mix(hex('#ffd27a'), hex('#ff8a4c'), smooth(0.55, 0.85, p)));
+    $('sun').setAttribute('opacity', 1 - smooth(0.8, 0.9, p));
+    $('moon').setAttribute('opacity', smooth(0.82, 0.95, p));
+    $('stars').setAttribute('opacity', smooth(0.85, 1, p));
+    $('lights').setAttribute('opacity', smooth(0.7, 0.92, p));
+    $('shade').setAttribute('opacity', smooth(0.7, 1, p) * 0.55);
+    $('cup').setAttribute('opacity', 1 - smooth(0.3, 0.5, p));
+    // clock: 07:00 to 23:00
+    const mins = Math.round((7 * 60 + p * 16 * 60) / 5) * 5;
+    $('clock').textContent = `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
+  }
+  let raf = false;
+  addEventListener('scroll', () => { if (!raf) { raf = true; requestAnimationFrame(() => { raf = false; render(); }); } }, { passive: true });
+  addEventListener('resize', render);
+  render();
 
-  document.getElementById('booking').addEventListener('submit', e => {
-    e.preventDefault();
-    const n = document.getElementById('notice');
-    const g = document.getElementById('guests').value;
-    const ok = inD.value && outD.value && outD.value > inD.value;
-    const msg = {
-      en: ok ? `This is a demo, so nothing was sent. On the real site, the hosts would get your request: ${inD.value} to ${outD.value}, ${g} guest(s).` : 'Choose a check-in and a later check-out date.',
-      ka: ok ? `ეს დემოა, ამიტომ არაფერი გაიგზავნა. რეალურ საიტზე მასპინძლები მიიღებდნენ მოთხოვნას: ${inD.value} – ${outD.value}, ${g} სტუმარი.` : 'აირჩიეთ შესვლის და უფრო გვიანი გასვლის თარიღი.'
-    };
-    n.textContent = msg[lang];
+  /* ---------- postcards: placeholders that drop in ---------- */
+  document.querySelectorAll('.postcard').forEach(pc => {
+    const input = pc.querySelector('input');
+    const show = f => { if (!f || !f.type.startsWith('image/')) return; pc.style.setProperty('--photo', `url(${URL.createObjectURL(f)})`); pc.classList.add('filled'); };
+    input.addEventListener('change', () => show(input.files[0]));
+    pc.addEventListener('dragover', e => { e.preventDefault(); pc.classList.add('over'); });
+    pc.addEventListener('dragleave', () => pc.classList.remove('over'));
+    pc.addEventListener('drop', e => { e.preventDefault(); pc.classList.remove('over'); show(e.dataTransfer.files[0]); });
+    if (pc.dataset.src) { pc.style.setProperty('--photo', `url(${pc.dataset.src})`); pc.classList.add('filled'); }
+  });
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.3 });
+  document.querySelectorAll('.postcard').forEach(el => io.observe(el));
+
+  /* ---------- range calendar ---------- */
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  let view = new Date(today.getFullYear(), today.getMonth(), 1);
+  let start = null, end = null, guests = 2;
+  const fmt = d => `${d.getDate()} ${months[lang][d.getMonth()].slice(0, 3)}`;
+  function renderCal() {
+    $('month').textContent = `${months[lang][view.getMonth()]} ${view.getFullYear()}`;
+    const g = $('grid'); g.innerHTML = '';
+    dows[lang].forEach(d => { const s = document.createElement('span'); s.className = 'dow'; s.textContent = d; g.appendChild(s); });
+    const offset = (view.getDay() + 6) % 7;
+    for (let i = 0; i < offset; i++) g.appendChild(document.createElement('span'));
+    const days = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+    for (let n = 1; n <= days; n++) {
+      const d = new Date(view.getFullYear(), view.getMonth(), n);
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = n;
+      b.disabled = d < today;
+      const t = d.getTime();
+      if (start && t === start.getTime()) b.classList.add('start');
+      if (end && t === end.getTime()) b.classList.add('end');
+      if (start && end && t > start.getTime() && t < end.getTime()) b.classList.add('inrange');
+      if (start && !end && t === start.getTime()) b.classList.add('end');
+      b.addEventListener('click', () => {
+        if (!start || end || d <= start) { start = d; end = null; } else { end = d; }
+        renderCal();
+      });
+      g.appendChild(b);
+    }
+    const nights = start && end ? Math.round((end - start) / 86400000) : 0;
+    $('range').textContent = start && end
+      ? (lang === 'en' ? `${fmt(start)} → ${fmt(end)}, ${nights} night${nights > 1 ? 's' : ''}` : `${fmt(start)} → ${fmt(end)}, ${nights} ღამე`)
+      : start ? (lang === 'en' ? 'Now pick your check-out day' : 'ახლა აირჩიეთ გასვლის დღე') : (lang === 'en' ? 'Pick your check-in day' : 'აირჩიეთ შესვლის დღე');
+    $('prev').disabled = view <= new Date(today.getFullYear(), today.getMonth(), 1);
+  }
+  $('prev').addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); renderCal(); });
+  $('next').addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); renderCal(); });
+  $('minus').addEventListener('click', () => { guests = Math.max(1, guests - 1); $('gcount').textContent = guests; });
+  $('plus').addEventListener('click', () => { guests = Math.min(6, guests + 1); $('gcount').textContent = guests; });
+  $('request').addEventListener('click', () => {
+    const n = $('notice');
+    n.textContent = start && end
+      ? (lang === 'en' ? `This is a demo, so nothing was sent. On the real site the hosts would get: ${fmt(start)} to ${fmt(end)}, ${guests} guest(s).` : `ეს დემოა, ამიტომ არაფერი გაიგზავნა. რეალურ საიტზე მასპინძლები მიიღებდნენ: ${fmt(start)} – ${fmt(end)}, ${guests} სტუმარი.`)
+      : (lang === 'en' ? 'Pick a check-in and a check-out day first.' : 'ჯერ აირჩიეთ შესვლის და გასვლის დღე.');
     n.classList.add('show');
   });
 
   applyLang('en');
+})();
 </script>
 </body>
 </html>
