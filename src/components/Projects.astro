@@ -1,0 +1,64 @@
+---
+import { Image } from 'astro:assets';
+import { projects, tools } from '../data/projects';
+import { SITE } from '../site.config';
+import BrowserFrame from './BrowserFrame.astro';
+import Icon from './Icon.astro';
+import SectionIndex from './SectionIndex.astro';
+const motions = ['scale', 'clip', 'slide'] as const;
+---
+<section id="projects" class="work-section shell section-pad" aria-labelledby="work-title">
+  <div class="section-topline"><p class="eyebrow"><SectionIndex n="02" /> Selected work</p><span class="mono subtle" data-m="slide" data-from="right">Ideas, made useful.</span></div>
+  <div class="section-heading">
+    <h2 id="work-title" data-m="mask" data-velocity><span class="line-mask"><span style="--i:0">Less talk.</span></span><span class="line-mask"><span class="serif" style="--i:1">More making.</span></span></h2>
+    <p data-m="clip" style="--delay:200ms">One larger platform, and five focused tools.<br />Every one of them is live.</p>
+  </div>
+
+  <!-- Project index: point at a name, the preview changes instantly. -->
+  <div class="pindex" data-index>
+    <ol class="pindex-list" aria-label="Project index">
+      {projects.map((p, i) => (
+        <li>
+          <a class="pindex-item" href={`/projects/${p.slug}`} data-index-item={p.slug} data-m="slide" style={`--delay:${i * 70}ms`}>
+            <span class="mono pindex-n">{String(i + 1).padStart(2, '0')}</span>
+            <span class="pindex-name" transition:name={`project-title-${p.slug}`}>{p.name}</span>
+            <span class="pindex-tag">{p.flagship ? p.type : p.tagline}</span>
+            <span class="pindex-arrow"><Icon /></span>
+          </a>
+        </li>
+      ))}
+    </ol>
+    <div class="pindex-preview" aria-live="polite">
+      <span class="pindex-number serif" data-index-number aria-hidden="true">01</span>
+      {projects.map(p => (
+        <a class="pindex-shot" data-index-preview={p.slug} href={p.live} target="_blank" rel="noopener noreferrer" aria-label={`Open the live ${p.name} site`} style={`--shot-accent:${p.accent}`}>
+          <BrowserFrame image={p.image} alt={p.alt} url={p.live} tone={p.flagship ? 'dark' : 'light'} sizes="(max-width: 760px) 92vw, 46vw" />
+          <span class="pindex-live mono">Live <Icon /></span>
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <!-- Spotlights: the three tools, each entering differently. -->
+  <div class="spotlights">
+    {tools.map((p, i) => (
+      <article class:list={['spot', `spot-${p.slug}`]} style={`--spot-accent:${p.accent}`}>
+        <a href={p.live} target="_blank" rel="noopener noreferrer" class="spot-visual" aria-label={`Open the live ${p.name} project`} data-m={motions[i % 3]} data-from={i % 3 === 1 ? 'left' : undefined}>
+          <div class="spot-screen"><div class="screen-chrome" aria-hidden="true"><span></span><span></span><span></span><span class="screen-label">{p.slug}.madebygio.dev</span></div><Image src={p.image} alt={p.alt} widths={[480, 800, 1200]} sizes="(max-width: 760px) 90vw, 30vw" format="webp" quality={82} loading="lazy" decoding="async" /></div>
+        </a>
+        <div class="spot-info">
+          <div class="spot-head" data-m="slide" data-from={i % 3 === 2 ? 'right' : undefined} style={`--delay:${120 + (i % 3) * 40}ms`}><span class="mono spot-n">/0{i + 2}</span><h3><a href={`/projects/${p.slug}`}>{p.name}</a><span> - {p.tagline}</span></h3></div>
+          <p data-m="clip" style="--delay:220ms">{p.description}</p>
+          <ul class="spot-stack mono" aria-label={`${p.name} technologies`} data-m="stagger" style="--delay:260ms">{p.stack.map(t => <li>{t}</li>)}</ul>
+          <div class="spot-links">
+            <a class="spot-link spot-link-live" href={p.live} target="_blank" rel="noopener noreferrer">Live <Icon /></a>
+            {p.source && <a class="spot-link" href={p.source} target="_blank" rel="noopener noreferrer" aria-label={`${p.name} source code`}><Icon name="github" /> Source</a>}
+            <a class="spot-link" href={`/projects/${p.slug}`}>Details <Icon /></a>
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <div class="work-bottom" data-m="clip"><p>All five tools share one repository and deploy independently to their own subdomains.</p><a class="text-link" href={SITE.projectsRepository} target="_blank" rel="noopener noreferrer">Source for the tools on GitHub <Icon /></a></div>
+</section>

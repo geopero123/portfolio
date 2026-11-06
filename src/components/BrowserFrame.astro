@@ -1,0 +1,29 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+/** A small browser chrome that matches the site, not a downloaded mockup. */
+interface Props {
+  image: ImageMetadata;
+  alt: string;
+  url: string;
+  tone?: 'light' | 'dark';
+  widths?: number[];
+  sizes?: string;
+  class?: string;
+  loading?: 'lazy' | 'eager';
+  aspect?: string;
+  transitionName?: string;
+}
+const { image, alt, url, tone = 'light', widths = [480, 800, 1200, 1600], sizes = '(max-width: 760px) 92vw, 60vw', class: className, loading = 'lazy', aspect, transitionName } = Astro.props;
+const host = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+---
+<figure class:list={['browser', `browser-${tone}`, className]} style={aspect ? `--aspect:${aspect}` : undefined}>
+  <div class="browser-bar" aria-hidden="true">
+    <span class="browser-dots"><i></i><i></i><i></i></span>
+    <span class="browser-url"><span class="browser-lock"></span>{host}</span>
+    <span class="browser-dots browser-dots-end"><i></i></span>
+  </div>
+  <div class="browser-screen" transition:name={transitionName}>
+    <Image src={image} alt={alt} widths={widths} sizes={sizes} format="webp" quality={82} loading={loading} decoding="async" />
+  </div>
+</figure>

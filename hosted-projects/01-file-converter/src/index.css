@@ -1,0 +1,105 @@
+/* Self-hosted so the type renders identically offline and on first paint,
+   with no third-party request on the critical path. */
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource-variable/jetbrains-mono";
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Workbench surfaces — near-black, warm-neutral rather than blue-black */
+  --color-shell-950: #08090a;
+  --color-shell-900: #0d0e10;
+  --color-shell-850: #131417;
+  --color-shell-800: #191b1f;
+  --color-shell-700: #24262b;
+  --color-shell-600: #34373d;
+  --color-shell-400: #6f747d;
+  --color-shell-300: #9aa0a9;
+  --color-shell-100: #e6e8ec;
+
+  /* Single signal accent: acid lime */
+  --color-signal-400: #d6ff6b;
+  --color-signal-500: #c6f24e;
+  --color-signal-600: #a8d92e;
+  --color-signal-900: #2a3410;
+
+  --color-alert-400: #ff8a6b;
+  --color-alert-500: #f2603c;
+  --color-alert-900: #3a1710;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-shell-950);
+    color-scheme: dark;
+  }
+  body {
+    margin: 0;
+    background-color: var(--color-shell-950);
+    color: var(--color-shell-100);
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--color-signal-500);
+    color: #0b0c0e;
+  }
+}
+
+@layer utilities {
+  /* Faint grid so empty space reads as a workbench surface, not a void */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-shell-700) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--color-shell-700);
+    border-radius: 99px;
+    border: 2px solid var(--color-shell-900);
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@keyframes sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(240%); }
+}
+.animate-sweep {
+  animation: sweep 1.15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-pop-in {
+  animation: pop-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-sweep,
+  .animate-pop-in {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}

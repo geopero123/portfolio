@@ -1,0 +1,80 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import "../styles/global.css";
+import { SITE } from "../site.config";
+import Navigation from "../components/Navigation.astro";
+import Footer from "../components/Footer.astro";
+import interFont from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
+import serifFont from "@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2?url";
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  article?: boolean;
+  /** Extra JSON-LD objects for this page. Person + WebSite are added on the home page only. */
+  schema?: Record<string, unknown>[];
+  /** Body class hook for page-specific layout. */
+  page?: string;
+}
+const { title, description = SITE.description, image = SITE.ogImage, article = false, schema = [], page = 'home' } = Astro.props;
+const pageTitle = title ? `${title} - ${SITE.name}` : SITE.titleDefault;
+const site = Astro.site ?? new URL(SITE.url);
+const canonical = new URL(Astro.url.pathname, site);
+const isHome = Astro.url.pathname === '/';
+const graph: Record<string, unknown>[] = isHome
+  ? [
+      { "@type": "Person", "@id": `${SITE.url}/#person`, name: SITE.fullName, alternateName: SITE.author, url: SITE.url, jobTitle: SITE.role, sameAs: Object.values(SITE.socials).filter(href => href.startsWith('https://')) },
+      { "@type": "WebSite", "@id": `${SITE.url}/#website`, url: SITE.url, name: SITE.name, publisher: { "@id": `${SITE.url}/#person` } },
+      ...schema,
+    ]
+  : schema;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="canonical" href={canonical} />
+    <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={serifFont} as="font" type="font/woff2" crossorigin />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={SITE.author} />
+    <meta property="og:type" content={article ? "article" : "website"} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL(image, site)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#131310" />
+    <!-- Before first paint: motion styles only hide content when scripts run. `is-loaded` gates
+         paint-heavy decoration (sculpture glow) until after the first frames are on screen. -->
+    <script is:inline>document.documentElement.classList.add('js');addEventListener('load',function(){requestAnimationFrame(function(){document.documentElement.classList.add('is-loaded')})});</script>
+    {graph.length > 0 && <script is:inline type="application/ld+json" set:html={JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(/</g, "\\u003c")} />}
+    <ClientRouter />
+  </head>
+  <body data-page={page}>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Navigation />
+    <main id="main" tabindex="-1" transition:animate="fade"><slot /></main>
+    <Footer />
+    <div class="dev-grid" aria-hidden="true" data-dev-grid hidden></div>
+    <div class="cursor" aria-hidden="true" data-cursor transition:persist="cursor"><span class="cursor-dot"></span><span class="cursor-ring"></span></div>
+    <script>
+      import 'lenis/dist/lenis.css';
+      import { initMotion } from '../scripts/motion';
+      import { initNavigation } from '../scripts/navigation';
+      import { initSmoothScroll } from '../scripts/scroll';
+      // The header persists across transitions (initNavigation is idempotent); page motion re-runs per page.
+      initNavigation();
+      initSmoothScroll();
+      document.addEventListener('astro:page-load', () => { initNavigation(); initMotion(); initSmoothScroll(); });
+    </script>
+  </body>
+</html>

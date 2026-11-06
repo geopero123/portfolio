@@ -1,0 +1,126 @@
+/* Self-hosted: Fraunces for display, IBM Plex for everything that has to be read
+   quickly or lined up in a column. */
+@import "@fontsource-variable/fraunces";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+
+  /* Warm paper stock rather than pure white — this is a print bureau, not a
+     dashboard. */
+  --color-paper-50: #fffdfa;
+  --color-paper-100: #faf7f1;
+  --color-paper-200: #f4efe6;
+  --color-paper-300: #e8e0d3;
+  --color-rule: #ddd4c5;
+  --color-rule-strong: #c9bda9;
+
+  --color-ink-900: #131c28;
+  --color-ink-800: #1f2c3d;
+  --color-ink-600: #47566b;
+  --color-ink-400: #77859a;
+  --color-ink-300: #9aa6b7;
+
+  /* Vermillion: proof-mark red, used only where something is active or wrong. */
+  --color-vermillion-700: #a5341a;
+  --color-vermillion-600: #c2401f;
+  --color-vermillion-500: #d4552f;
+  --color-vermillion-100: #f7e2da;
+  --color-vermillion-50: #fcf0eb;
+
+  --color-moss-700: #2c5f45;
+  --color-moss-600: #3a7756;
+  --color-moss-100: #dcebe0;
+}
+
+@layer base {
+  html {
+    /* A deliberate single-mode design: warm paper, printed ink. Telling the
+       browser keeps native controls and scrollbars in the same key. */
+    color-scheme: light;
+    background-color: var(--color-paper-100);
+  }
+  body {
+    margin: 0;
+    background-color: var(--color-paper-100);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: var(--color-vermillion-100);
+    color: var(--color-vermillion-700);
+  }
+}
+
+@layer utilities {
+  /* Display face with its wonky alternates switched on. Only for the wordmark
+     and headings — never for anything you have to scan. */
+  .font-wonk {
+    font-family: var(--font-display);
+    font-variation-settings: "SOFT" 12, "WONK" 1, "opsz" 108;
+    letter-spacing: -0.015em;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+  .label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: var(--color-ink-400);
+  }
+  /* Paper sheets get a real edge and a low, wide shadow — like stock on a desk. */
+  .sheet {
+    background: var(--color-paper-50);
+    border: 1px solid var(--color-rule);
+    box-shadow: 0 1px 2px rgb(19 28 40 / 0.05), 0 6px 16px -10px rgb(19 28 40 / 0.22);
+  }
+  .hatched {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 7px,
+      rgb(19 28 40 / 0.035) 7px 8px
+    );
+  }
+  .scrollbar-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-rule-strong) transparent;
+  }
+  .scrollbar-slim::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .scrollbar-slim::-webkit-scrollbar-thumb {
+    background: var(--color-rule-strong);
+    border-radius: 99px;
+    border: 3px solid var(--color-paper-100);
+  }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-rise { animation: rise 0.24s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes bar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.animate-bar { animation: bar 1.1s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise, .animate-bar { animation: none; }
+  * { transition-duration: 0.01ms !important; }
+}

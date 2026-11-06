@@ -1,0 +1,14 @@
+---
+import { SITE } from '../site.config';
+import Icon from './Icon.astro';
+---
+<footer class="site-footer shell">
+  <a href="/" class="wordmark" aria-label="Made by Gio, back to top">madeby<span>gio</span><span class="brand-dot">.</span></a>
+  <p><span class="footer-arrived">You made it to the end. </span>© {new Date().getFullYear()} Gio. Made with intent.</p>
+  <div>
+    <a href="/#projects">Work</a>
+    <a href="/about">About</a>
+    <a href={SITE.socials.github} target="_blank" rel="noopener noreferrer">GitHub <Icon /></a>
+    <a href="#main" aria-label="Back to top">Top <Icon name="down" class="back-arrow" /></a>
+  </div>
+</footer>

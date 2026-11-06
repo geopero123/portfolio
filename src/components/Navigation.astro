@@ -1,0 +1,32 @@
+---
+import Icon from './Icon.astro';
+import { SITE } from '../site.config';
+// Absolute hashes so the same links work from /about and /projects/*.
+const links = [
+  { href: '/', id: 'home', label: 'Home' },
+  { href: '/#projects', id: 'projects', label: 'Work' },
+  { href: '/about', id: 'about', label: 'About' },
+  { href: '/#contact', id: 'contact', label: 'Contact' },
+];
+---
+<header class="site-header" data-header transition:persist="site-header">
+  <span class="scroll-progress" data-scroll-progress aria-hidden="true"></span>
+  <div class="shell header-inner">
+    <a href="/" class="wordmark" aria-label="Made by Gio, home" data-wordmark>madeby<span>gio</span><span class="brand-dot">.</span></a>
+    <nav class="desktop-nav" aria-label="Main navigation" data-desktop-nav>
+      <span class="nav-indicator" data-nav-indicator aria-hidden="true"></span>
+      {links.map(({href, id, label}, i) => <a href={href} data-nav={id} data-nav-page={href.startsWith('/#') || href === '/' ? '/' : href} style={`--i:${i}`}><span class="nav-word" data-label={label}><span>{label}</span></span></a>)}
+    </nav>
+    <a class="github-link" href={SITE.socials.github} target="_blank" rel="noopener noreferrer" aria-label="Gio on GitHub" data-github-link><Icon name="github" /><span>GitHub</span><Icon class="small-arrow" /></a>
+    <button class="menu-toggle" type="button" aria-controls="mobile-menu" aria-expanded="false" aria-label="Open menu" data-menu-toggle data-enhancement hidden><span></span><span></span></button>
+  </div>
+  <nav id="mobile-menu" class="mobile-menu" aria-label="Mobile navigation" hidden>
+    <div class="mobile-menu-inner shell">
+      <p class="eyebrow">Take a look around</p>
+      {links.map(({href, label}, i) => <a href={href} style={`--i:${i}`}><span class="mono">0{i+1}</span>{label}<Icon /></a>)}
+      <a class="mobile-github" href={SITE.socials.github} target="_blank" rel="noopener noreferrer" style={`--i:${links.length}`}><Icon name="github" />GitHub<Icon /></a>
+      <p class="mobile-menu-note">A little code. A lot of care.</p>
+    </div>
+  </nav>
+</header>
+<noscript><style>@media(max-width:760px){.desktop-nav{display:flex;gap:16px;overflow:auto;grid-column:1/-1;order:3}.header-inner{display:flex;flex-wrap:wrap;padding-block:14px;gap:12px}.desktop-nav a{font-size:11px}.hero{padding-top:160px}}</style></noscript>

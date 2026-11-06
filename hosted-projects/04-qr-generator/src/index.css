@@ -1,0 +1,115 @@
+@import "@fontsource-variable/outfit";
+@import "@fontsource-variable/roboto-mono";
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Outfit Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Roboto Mono Variable", ui-monospace, Menlo, monospace;
+
+  /* Deep forest, so the light code being generated is the brightest thing on
+     the page — which is the whole point of the tool. */
+  --color-forest-950: #0b1510;
+  --color-forest-900: #101e17;
+  --color-forest-850: #14261d;
+  --color-forest-800: #1a3025;
+  --color-forest-700: #244034;
+  --color-forest-600: #325445;
+  --color-forest-400: #6f8d7c;
+  --color-forest-300: #9ab3a4;
+  --color-forest-100: #dfeae1;
+  --color-forest-50: #f0f6f0;
+
+  /* Warm apricot against all that green — the one hue that isn't in the family. */
+  --color-apricot-300: #f8c88c;
+  --color-apricot-400: #f4b06a;
+  --color-apricot-500: #ea9748;
+  --color-apricot-900: #3d2a13;
+
+  --color-coral-400: #ee8574;
+  --color-coral-500: #dc6551;
+  --color-coral-900: #3a1a15;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-forest-950);
+  }
+  body {
+    margin: 0;
+    background: var(--color-forest-950);
+    color: var(--color-forest-100);
+    font-family: var(--font-display);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: var(--color-apricot-400);
+    color: var(--color-forest-950);
+  }
+}
+
+@layer utilities {
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--color-forest-400);
+  }
+  .panel {
+    background: var(--color-forest-900);
+    border: 1px solid var(--color-forest-800);
+    border-radius: 14px;
+  }
+  .field {
+    width: 100%;
+    background: var(--color-forest-850);
+    border: 1px solid var(--color-forest-700);
+    border-radius: 9px;
+    padding: 0.55rem 0.7rem;
+    color: var(--color-forest-50);
+    font-size: 13.5px;
+  }
+  .field::placeholder {
+    color: var(--color-forest-600);
+  }
+  .field:focus {
+    outline: 2px solid var(--color-apricot-400);
+    outline-offset: -1px;
+    border-color: transparent;
+  }
+  /* Concentric rings behind the preview — a quiet nod to a scanner target. */
+  .rings {
+    background-image: radial-gradient(circle at 50% 50%, transparent 0 32%, rgb(255 255 255 / 0.035) 32% 32.4%, transparent 32.4%),
+      radial-gradient(circle at 50% 50%, transparent 0 45%, rgb(255 255 255 / 0.03) 45% 45.3%, transparent 45.3%),
+      radial-gradient(circle at 50% 50%, transparent 0 58%, rgb(255 255 255 / 0.025) 58% 58.25%, transparent 58.25%);
+  }
+  .scroll-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-forest-700) transparent;
+  }
+  .scroll-slim::-webkit-scrollbar {
+    width: 9px;
+  }
+  .scroll-slim::-webkit-scrollbar-thumb {
+    background: var(--color-forest-700);
+    border-radius: 99px;
+    border: 2px solid var(--color-forest-900);
+  }
+}
+
+@keyframes lift {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-lift { animation: lift 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-lift { animation: none; }
+  * { transition-duration: 0.01ms !important; }
+}

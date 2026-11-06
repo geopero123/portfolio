@@ -1,0 +1,23 @@
+---
+import Icon from './Icon.astro';
+import SectionIndex from './SectionIndex.astro';
+---
+<section id="about" class="about-section section-pad" aria-labelledby="about-title">
+  <div class="shell about-layout">
+    <div class="about-identity">
+      <p class="eyebrow" data-m="slide"><SectionIndex n="04" /> A little about me</p>
+      <div class="monogram" aria-hidden="true" data-m="scale" data-parallax style="--par:24"><span>g<span class="monogram-dot">.</span></span><span class="monogram-orbit"></span><span class="mono monogram-caption">Always a work in progress.</span></div>
+    </div>
+    <div class="about-copy">
+      <h2 id="about-title" data-m="mask" data-velocity><span class="line-mask"><span style="--i:0">The details make</span></span><span class="line-mask"><span class="serif" style="--i:1">the difference.</span></span></h2>
+      <p class="about-lead" data-m="clip" style="--delay:200ms">I'm Gio - Giorgi, if we're being formal. A React and full-stack developer who likes taking a useful idea and making every part of it feel considered.</p>
+      <p data-m="clip" style="--delay:300ms">The layout. The response to a click. What happens on a slow connection. Tempest Archive taught me how to keep a large, linked body of content honest; the tools taught me how to make one small thing feel finished.</p>
+      <a href="/about" class="text-link" data-m="slide" style="--delay:400ms">More about how I work <Icon /></a>
+    </div>
+  </div>
+  <div class="shell principles" data-m="stagger">
+    <div><span class="mono">01</span><h3>Thoughtful interfaces</h3><p>Clear, accessible, easy to use.</p></div>
+    <div><span class="mono">02</span><h3>Purposeful interaction</h3><p>Motion that helps things make sense.</p></div>
+    <div><span class="mono">03</span><h3>Care under the hood</h3><p>Readable code. Performance in mind.</p></div>
+  </div>
+</section>
