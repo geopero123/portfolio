@@ -1,0 +1,25 @@
+/* The underlying page keeps its real dimensions throughout the build. */
+.swarm-active .desktop-nav { position: relative; }
+.swarm-active .desktop-nav:has([data-swarm-piece]) .nav-indicator { opacity: 0 !important; }
+.swarm-active .hero:has([data-swarm-piece]) .hero-baseline::after { opacity: 0; }
+.swarm-active .hero *, .swarm-active .hero-baseline::after,
+.swarm-active .site-header .wordmark, .swarm-active .site-header .github-link,
+.swarm-active .site-header .menu-toggle, .swarm-active .desktop-nav > a { animation: none !important; }
+.swarm-active [data-m], .swarm-active [data-m] .line-mask > span, .swarm-active [data-m] > * { opacity: 1; clip-path: none; transform: none; transition-delay: 0ms; }
+html.swarm-active [data-swarm-piece] { clip-path: var(--swarm-clip, inset(0 var(--swarm-reveal, 100%) 0 0)) !important; opacity: 1 !important; transition: none !important; }
+.swarm-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 90; }
+.swarm-controls { position: fixed; right: 24px; bottom: 22px; z-index: 91; display: flex; align-items: center; border: 1px solid #ffffff24; border-radius: 999px; background: #1a1a16ed; color: #e8e5dc; box-shadow: 0 4px 24px #0002; font: 10px var(--font-mono); backdrop-filter: blur(12px); overflow: hidden; }
+.swarm-controls[hidden] { display: none; }
+.swarm-controls button { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 42px; background: transparent; padding: 10px 13px; transition: background .18s; }
+.swarm-controls button:hover { background: #ffffff0a; }
+.swarm-controls button:focus-visible { outline-offset: -4px; }
+.swarm-controls svg { width: 13px; height: 13px; opacity: .75; }
+.swarm-controls .swarm-toggle { border-left: 1px solid #ffffff18; width: 42px; }
+.swarm-toggle-dots { display: flex; gap: 3px; }
+.swarm-toggle-dots i { width: 5px; height: 5px; background: #f28b63; border-radius: 50%; }
+.swarm-toggle-dots i:nth-child(2) { background: #b79bff; }
+.swarm-toggle-dots i:nth-child(3) { background: #83dbc0; }
+.swarm-play-icon, .swarm-toggle[aria-pressed="false"] .swarm-pause-icon { display: none; }
+.swarm-toggle[aria-pressed="false"] .swarm-play-icon { display: block; }
+@media (prefers-reduced-motion: reduce) { .cursor-swarm { display: none; } }
+@media (max-width: 600px) { .swarm-controls { right: 16px; bottom: 16px; } }

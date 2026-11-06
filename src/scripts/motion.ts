@@ -1,3 +1,5 @@
+import { initCursorSwarm } from './swarm';
+
 /**
  * Motion system. Elements declare *what they are* with `data-m`, and CSS decides
  * how that kind of thing enters. This file only observes, measures and sets variables:
@@ -212,37 +214,9 @@ function story() {
   });
 }
 
-// ── Cursor (gamo.ge-style): the dot snaps to the pointer, the ring follows on a 0.18 lerp.
-//    The element persists across page swaps, so this initialises once. Fine pointers only. ──
+// Each route gets fresh build jobs; the canvas persists across page swaps.
 function cursor() {
-  if (!fine.matches || reduced.matches) return;
-  const el = document.querySelector<HTMLElement>('[data-cursor]');
-  if (!el || el.dataset.ready) return;
-  el.dataset.ready = '1';
-  const dot = el.querySelector<HTMLElement>('.cursor-dot')!;
-  const ring = el.querySelector<HTMLElement>('.cursor-ring')!;
-  document.documentElement.classList.add('has-cursor');
-  let tx = innerWidth / 2, ty = innerHeight / 2, rx = tx, ry = ty, frame = 0, visible = false;
-  const tick = () => {
-    rx += (tx - rx) * .18; ry += (ty - ry) * .18;
-    ring.style.transform = `translate3d(${rx.toFixed(1)}px, ${ry.toFixed(1)}px, 0)`;
-    frame = Math.abs(tx - rx) > .05 || Math.abs(ty - ry) > .05 ? requestAnimationFrame(tick) : 0;
-  };
-  document.addEventListener('pointermove', e => {
-    if (e.pointerType !== 'mouse') return;
-    tx = e.clientX; ty = e.clientY;
-    dot.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
-    if (!visible) { visible = true; rx = tx; ry = ty; el.classList.add('is-visible'); }
-    if (!frame) frame = requestAnimationFrame(tick);
-    const target = (e.target as Element | null)?.closest<HTMLElement>('a, button, [role="button"], input, textarea, select, summary') ?? null;
-    const text = !!target && target.matches('input, textarea, select');
-    el.classList.toggle('is-hover', !!target && !text);
-    el.classList.toggle('is-text', text);
-  }, { passive: true });
-  document.addEventListener('pointerdown', () => el.classList.add('is-down'));
-  document.addEventListener('pointerup', () => el.classList.remove('is-down'));
-  document.documentElement.addEventListener('pointerleave', () => { visible = false; el.classList.remove('is-visible'); });
-  reduced.addEventListener('change', () => { if (reduced.matches) { document.documentElement.classList.remove('has-cursor'); el.classList.remove('is-visible'); } });
+  cleanups.push(initCursorSwarm());
 }
 
 // ── Hero headline: weight follows the pointer across the line ──

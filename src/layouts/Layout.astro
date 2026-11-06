@@ -4,6 +4,8 @@ import "../styles/global.css";
 import { SITE } from "../site.config";
 import Navigation from "../components/Navigation.astro";
 import Footer from "../components/Footer.astro";
+import CursorSwarm from "../components/CursorSwarm.astro";
+import "../styles/swarm.css";
 import interFont from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
 import serifFont from "@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2?url";
 
@@ -55,7 +57,18 @@ const graph: Record<string, unknown>[] = isHome
     <meta name="theme-color" content="#131310" />
     <!-- Before first paint: motion styles only hide content when scripts run. `is-loaded` gates
          paint-heavy decoration (sculpture glow) until after the first frames are on screen. -->
-    <script is:inline>document.documentElement.classList.add('js');addEventListener('load',function(){requestAnimationFrame(function(){document.documentElement.classList.add('is-loaded')})});</script>
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('swarm-pending');
+        // Keep the document usable if the enhancement bundle fails to load.
+        setTimeout(() => document.documentElement.classList.remove('swarm-pending'), 6000);
+      }
+      addEventListener('load', () => requestAnimationFrame(() => document.documentElement.classList.add('is-loaded')));
+    </script>
+    <style is:inline>
+      .swarm-pending .site-header, .swarm-pending main, .swarm-pending footer { visibility: hidden; }
+    </style>
     {graph.length > 0 && <script is:inline type="application/ld+json" set:html={JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(/</g, "\\u003c")} />}
     <ClientRouter />
   </head>
@@ -65,7 +78,7 @@ const graph: Record<string, unknown>[] = isHome
     <main id="main" tabindex="-1" transition:animate="fade"><slot /></main>
     <Footer />
     <div class="dev-grid" aria-hidden="true" data-dev-grid hidden></div>
-    <div class="cursor" aria-hidden="true" data-cursor transition:persist="cursor"><span class="cursor-dot"></span><span class="cursor-ring"></span></div>
+    <CursorSwarm />
     <script>
       import 'lenis/dist/lenis.css';
       import { initMotion } from '../scripts/motion';
