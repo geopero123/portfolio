@@ -16,30 +16,30 @@ ${body}
 
 const cards = {
   'social-card': frame(`
-<text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">Serious code.</text>
-<text x="70" y="365" fill="#f1b296" font-family="Georgia,serif" font-style="italic" font-size="89" letter-spacing="-4">Playful details.</text>
-<text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">Gio - React &amp; Full-Stack Web Developer</text>
+<text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">Giorgi <tspan fill="#f28b63">·</tspan></text>
+<text x="70" y="365" fill="#f1b296" font-family="Georgia,serif" font-style="italic" font-size="89" letter-spacing="-4">React Developer</text>
+<text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">Tempest Archive, QUIRE and four more live browser tools</text>
 ${rings(950, 315, 35, '#f28b63')}`),
   'og-about': frame(`
 <text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">I build things</text>
 <text x="70" y="365" fill="#f1b296" font-family="Georgia,serif" font-style="italic" font-size="89" letter-spacing="-4">for the web.</text>
-<text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">About Gio / Giorgi - React &amp; Full-Stack Web Developer</text>
+<text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">About Giorgi (Gio) - React Developer</text>
 ${rings(950, 315, 35, '#f28b63')}`, {foot: 'What I build, how I build it, and the stack behind it.'}),
   'og-tempest-archive': frame(`
 <text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">Tempest</text>
 <text x="70" y="365" fill="#bfe3ee" font-family="Georgia,serif" font-style="italic" font-size="89" letter-spacing="-4">Archive.</text>
 <text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">A spoiler-aware Tensura companion - React · Vite · Supabase · Cloudflare</text>
 <g fill="none" stroke="#c8a35f" stroke-width="1.4" stroke-linejoin="round" opacity=".9" transform="translate(830 195) scale(11)"><path d="M12 2.5 21.5 12 12 21.5 2.5 12z"/><path d="M12 7.5 16.5 12 12 16.5 7.5 12z"/><path d="M12 10.6v2.8"/></g>
-<text x="1130" y="470" text-anchor="end" fill="#7cc7dd" font-family="Arial,sans-serif" font-size="19">tempestarchive.com</text>`, {bg: '#0f1217', foot: 'Flagship project - case study on madebygio.dev'}),
+<text x="1130" y="470" text-anchor="end" fill="#7cc7dd" font-family="Arial,sans-serif" font-size="19">tempestarchive.com</text>`, {bg: '#0f1217', foot: 'Featured project - case study on madebygio.dev'}),
   'og-quire': frame(`
 <text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">QUIRE</text>
 <text x="70" y="365" fill="#a8c29a" font-family="Georgia,serif" font-style="italic" font-size="72" letter-spacing="-3">Writing, without the friction.</text>
 <text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">Markdown editor with live preview and a real PDF engine - React · pdf-lib</text>
 ${rings(950, 300, 28, '#a8c29a')}`, {foot: 'quire.madebygio.dev'}),
   'og-kilo': frame(`
-<text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">KILO</text>
-<text x="70" y="365" fill="#c9e28a" font-family="Georgia,serif" font-style="italic" font-size="72" letter-spacing="-3">Less weight. Same picture.</text>
-<text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">Batch image compression and resizing, entirely in the browser - React · Canvas API</text>
+<text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">Smaller</text>
+<text x="70" y="365" fill="#c9e28a" font-family="Georgia,serif" font-style="italic" font-size="72" letter-spacing="-3">Make images lighter.</text>
+<text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">Convert, resize and compress images in the browser - JavaScript · Canvas API</text>
 ${rings(950, 300, 28, '#c9e28a')}`, {foot: 'kilo.madebygio.dev'}),
   'og-folio': frame(`
 <text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">Folio</text>

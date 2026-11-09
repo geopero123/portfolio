@@ -1,14 +1,20 @@
 // Regenerates the Tempest Archive preview screenshots in src/assets/projects.
-// Usage: node scripts/capture-tempest.mjs [outDir]
+// Usage: node scripts/capture-tempest.mjs [outDir] [--spoilers]
+//   --spoilers  only recapture the Characters index at each spoiler level (homepage demo).
+// Set PW_CHANNEL= (empty) to use Playwright's bundled Chromium instead of installed Chrome.
 import { chromium } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 
-const out = process.argv[2] ?? 'src/assets/projects';
+const args = process.argv.slice(2);
+const out = args.find(a => !a.startsWith('--')) ?? 'src/assets/projects';
 await mkdir(out, { recursive: true });
-const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const channel = process.env.PW_CHANNEL ?? 'chrome';
+const browser = await chromium.launch({ ...(channel ? { channel } : {}), headless: true });
 
-async function shot(name, url, viewport, opts = {}) {
+async function shot(name, url, viewport, opts = {}, spoiler) {
   const ctx = await browser.newContext({ viewport, deviceScaleFactor: 2, colorScheme: 'dark', ...opts });
+  // The archive keeps the reader's spoiler level in localStorage; set it before the app boots.
+  if (spoiler) await ctx.addInitScript(level => localStorage.setItem('ta_spoiler', level), spoiler);
   const page = await ctx.newPage();
   await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 });
   await page.evaluate(() => document.fonts.ready);
@@ -49,6 +55,13 @@ async function shot(name, url, viewport, opts = {}) {
 const desktop = { width: 1440, height: 900 };
 const phone = { width: 390, height: 844 };
 const mobile = { isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' };
+
+if (args.includes('--spoilers')) {
+  // Same page, three reader settings: the count line and the list both change.
+  for (const level of ['anime', 'moderate', 'full']) await shot(`tempest-spoiler-${level}`, 'https://tempestarchive.com/characters/', desktop, {}, level);
+  await browser.close();
+  process.exit(0);
+}
 
 await shot('tempest-home', 'https://tempestarchive.com/', desktop);
 await shot('tempest-dossier', 'https://tempestarchive.com/characters/rimuru', desktop);

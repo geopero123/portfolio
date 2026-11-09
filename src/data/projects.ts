@@ -9,8 +9,16 @@ import kilo from '../assets/projects/kilo.png';
 import folio from '../assets/projects/folio.png';
 import convert from '../assets/projects/convert.png';
 import qr from '../assets/projects/qr.png';
+import quirePdfPage from '../assets/projects/quire-pdf-page.png';
 
-const toolsBase = 'https://github.com/geopero123/Portfolio-setup/tree/claude/five-utility-react-apps-ajzt9l';
+const toolsBranch = 'https://github.com/geopero123/Portfolio-setup';
+const toolsRef = 'claude/five-utility-react-apps-ajzt9l';
+const toolsBase = `${toolsBranch}/tree/${toolsRef}`;
+/** Link to a file (and optional line) in the tools repository. */
+const toolsFile = (path: string, line?: number) => `${toolsBranch}/blob/${toolsRef}/${path}${line ? `#L${line}` : ''}`;
+
+/** Checked against the live sites on 9 November 2026. */
+export const VERIFIED_ON = '9 November 2026';
 
 export interface Project {
   slug: string;
@@ -32,6 +40,8 @@ export interface Project {
   /** Extra screens used by the detail page and flagship presentation. */
   screens?: { image: ImageMetadata; alt: string; label: string }[];
   mobile?: { image: ImageMetadata; alt: string };
+  /** A real output file a reviewer can open (QUIRE's exported PDF). */
+  sample?: { href: string; image: ImageMetadata; alt: string; summary: string };
   flagship?: boolean;
   /** Verified facts, phrased for the detail page. Only what actually exists. */
   facts?: { label: string; text: string }[];
@@ -39,6 +49,12 @@ export interface Project {
   story?: { heading: string; body: string[] }[];
   /** Accent used only inside this project's own presentation. */
   accent: string;
+  /** Homepage feature: what it lets people do, one engineering decision, and evidence to inspect. */
+  feature?: {
+    does: string;
+    decision: { title: string; body: string };
+    evidence: { label: string; text: string; href?: string; download?: boolean }[];
+  };
 }
 
 export const projects: Project[] = [
@@ -63,12 +79,24 @@ export const projects: Project[] = [
     mobile: { image: tempestMobile, alt: 'Tempest Archive on a phone, with a bottom tab bar for Archive, Story, Characters and Search' },
     flagship: true,
     accent: '#7cc7dd',
+    feature: {
+      does: 'Readers pick how far they have read or watched (Anime, Moderate or Full) and the whole archive follows: character, skill, location and faction indexes, dossiers and the timeline only show what they have reached.',
+      decision: {
+        title: 'Characters, skills and events are linked records, not standalone pages.',
+        body: 'A skill has owners and evolutions, a character has affiliations and appearances, and a story event ties them together. Modelling them as records that reference each other lets one spoiler setting filter the whole graph at once, so a character you have not met yet drops out of the index, the skill pages and the timeline together, instead of each page being edited by hand.',
+      },
+      evidence: [
+        { label: 'Project scale', text: '304 URLs in the public sitemap: 84 characters, 85 skills, 59 story records, 36 locations and 26 factions.', href: 'https://tempestarchive.com/sitemap.xml' },
+        { label: 'Live site', text: 'Change the spoiler level in the header and watch the counts change.', href: 'https://tempestarchive.com/characters/' },
+        { label: 'Case study', text: 'The idea, the data-model problem and the build, with real screens.', href: '/projects/tempest-archive' },
+      ],
+    },
     facts: [
       { label: 'Spoiler levels', text: 'Anime, Moderate and Full. Every list, dossier and timeline entry respects the level the reader picks.' },
       { label: 'Two continuities', text: 'Light-novel and web-novel material are labelled separately and never merged into one false ending.' },
       { label: 'Original writing', text: 'Every summary is written from scratch. No novel prose or dialogue is reproduced.' },
       { label: 'Linked records', text: 'Story records name who was present, what each side wanted, which abilities decided the outcome and what returns later. Characters, skills, places and events link to each other.' },
-      { label: 'Indexable', text: 'Every route is prerendered with its own title and description. The sitemap covers several hundred character, skill, location, faction and story pages.' },
+      { label: 'Indexable', text: 'Every route is prerendered with its own title and description. The public sitemap lists 304 URLs: 84 character, 85 skill, 59 story, 36 location and 26 faction pages, plus the section indexes.' },
       { label: 'Accounts', text: 'Sign-in with Supabase for a personal account, alongside local bookmarks that work without one.' },
     ],
     story: [
@@ -111,9 +139,28 @@ export const projects: Project[] = [
     image: quire,
     alt: 'QUIRE in split view: a Markdown editor with a formatting toolbar on the left and the typeset "Field Notes on Kettle Design" document on the right, with Write, Split, Read and Export controls',
     accent: '#a8c29a',
+    sample: {
+      href: '/samples/quire-field-notes.pdf',
+      image: quirePdfPage,
+      alt: 'Page one of a PDF exported from QUIRE: "Field Notes on Kettle Design" set in Times with Helvetica headings, a block quote, numbered and nested bulleted lists, a four-row measurements table and the start of a code block',
+      summary: '2 pages · 13.4 KB',
+    },
+    feature: {
+      does: 'Write Markdown with a live, typeset preview, then download a real PDF (selectable, searchable text and clickable links) without the document leaving the browser.',
+      decision: {
+        title: 'It lays the PDF out itself instead of screenshotting the preview.',
+        body: 'The usual shortcut rasterises the page into an image. QUIRE walks the same marked token stream that drives the preview and draws it with pdf-lib in the Standard 14 fonts, so text stays text and every link becomes a real link annotation. pdf-lib is loaded with a dynamic import only when someone exports, and characters the fonts cannot encode are transliterated or reported by name rather than silently dropped.',
+      },
+      evidence: [
+        { label: 'Sample PDF', text: "QUIRE's built-in sample, exported from the live app: 2 pages, 13.4 KB, with a table, extractable text and a working link annotation.", href: '/samples/quire-field-notes.pdf', download: true },
+        { label: 'Link annotations', text: 'addLink() in src/lib/pdf.js', href: toolsFile('05-markdown-to-pdf/src/lib/pdf.js', 346) },
+        { label: 'Lazy PDF engine', text: 'loadPdfLib() dynamic import', href: toolsFile('05-markdown-to-pdf/src/lib/pdf.js', 20) },
+        { label: 'Encoding guard', text: 'toWinAnsi() transliterates or reports', href: toolsFile('05-markdown-to-pdf/src/lib/pdf.js', 102) },
+      ],
+    },
     facts: [
       { label: 'Live preview', text: 'Write on the left, read the typeset result on the right. Split, write-only and read-only modes.' },
-      { label: 'Real PDF export', text: 'Exports selectable, searchable text with working links rather than a screenshot of the page.' },
+      { label: 'Real PDF export', text: 'Exports selectable, searchable text with working links rather than a screenshot of the page. Its two-page built-in sample, table included, exports from the live app at 13.4 KB.' },
       { label: 'Local autosave', text: 'Drafts persist in the browser. Nothing is uploaded.' },
     ],
     story: [
@@ -121,27 +168,28 @@ export const projects: Project[] = [
     ],
   },
   {
+    // Route stays /projects/kilo; the app deployed at kilo.madebygio.dev is branded "Smaller".
     slug: 'kilo',
-    name: 'KILO',
-    tagline: 'Less weight. Same picture.',
+    name: 'Smaller',
+    tagline: 'Make images lighter.',
     description:
-      'A batch image compressor and resizer with a before-and-after comparison. Fine-tune the quality and see exactly what changes.',
+      'Convert, resize and compress a list of images in the browser. Choose WebP, JPEG, PNG or AVIF, set dimensions and quality, and see the original size, new size and reduction before you download.',
     type: 'Browser application',
     role: 'Design & development',
     year: '2026',
-    stack: ['React 19', 'Vite', 'Tailwind CSS', 'Canvas API'],
+    stack: ['HTML', 'CSS', 'JavaScript', 'Canvas API'],
     live: 'https://kilo.madebygio.dev',
-    source: `${toolsBase}/03-image-compressor`,
+    source: toolsFile('03-image-compressor/index.html'),
     image: kilo,
-    alt: 'KILO ("smaller.") on a dark canvas: the headline "Make images lighter", a large dashed drop zone for JPG, PNG, WebP, AVIF, GIF, BMP and SVG, and a "100% private · processed on your device" badge',
+    alt: 'Smaller image converter on a dark canvas: the headline "Make images lighter", a large dashed drop zone for JPG, PNG, WebP, AVIF, GIF, BMP and SVG, and a "100% private · processed on your device" badge',
     accent: '#c9e28a',
     facts: [
-      { label: 'Batch processing', text: 'Drop many images at once; each one is converted, resized and compressed on your own device.' },
-      { label: 'Visual comparison', text: 'Before-and-after preview so quality changes are seen, not guessed.' },
-      { label: 'Formats', text: 'JPG, PNG, WebP, AVIF, GIF, BMP and SVG in; modern formats out.' },
+      { label: 'Several images at once', text: 'Drop, choose or paste images into one list; the same export settings apply to every image in it.' },
+      { label: 'Size before download', text: 'Each image shows its original size, new size and reduction, and an option keeps the original file when re-encoding it at the same format and size would make it larger.' },
+      { label: 'Formats', text: 'Reads JPG, PNG, WebP, AVIF, GIF, BMP, SVG and other browser-supported images; writes WebP, JPEG, PNG, or AVIF where the browser can encode it.' },
     ],
     story: [
-      { heading: 'Why', body: ['Image tools that upload your photos to a server are slow and a little uncomfortable. KILO does the work with the Canvas API in the tab, which turned out to be fast enough for whole folders of photographs.'] },
+      { heading: 'Why', body: ['Image tools that upload your photos to a server are slow and a little uncomfortable. Smaller decodes each image, redraws it at the target size on a canvas and re-encodes it, all in the tab. The whole app is one HTML page with inline CSS and JavaScript, no framework.'] },
     ],
   },
   {

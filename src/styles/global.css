@@ -80,6 +80,9 @@ main:focus { outline: none; }
 .github-link>svg { width: 16px; height: 16px; }
 .github-link>.small-arrow { width: 12px; height: 12px; margin-left: 7px; }
 .github-link:hover { background: #ffffff09; border-color: #ffffff50; }
+.header-actions { display: flex; align-items: center; gap: 10px; }
+.resume-link { background: var(--color-accent); color: var(--color-ink); border-color: transparent; }
+.resume-link:hover { background: #ffab88; border-color: transparent; }
 .menu-toggle { display: none; width: 44px; height: 44px; background: transparent; position: relative; }
 .menu-toggle span { width: 22px; height: 1px; background: var(--color-bright); position: absolute; left: 11px; top: 17px; transition: transform .3s,top .3s; }
 .menu-toggle span+span { top: 25px; }
@@ -106,7 +109,11 @@ main:focus { outline: none; }
 .line-mask>span { display: block; }
 .hero h1 .serif { color: #f1b296; font-size: 1.09em; letter-spacing: -.043em; }
 .hero-description { font-size: clamp(15px,1.22vw,18px); color: #a7a79d; line-height: 1.7; margin-top: 29px; }
-.hero-actions { display: flex; align-items: center; gap: 29px; margin-top: 33px; }
+.hero-sep { color: var(--color-accent); font-weight: 300; }
+.hero-description { max-width: 520px; color: #c3c3b8; }
+.hero-description a { color: var(--color-bright); text-decoration: underline; text-decoration-color: #f28b6390; text-underline-offset: 4px; text-decoration-thickness: 1px; transition: text-decoration-color .25s; }
+.hero-description a:hover { text-decoration-color: var(--color-accent); }
+.hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 29px; margin-top: 33px; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 27px; min-height: 52px; padding: 13px 22px; border: 1px solid transparent; font-size: 13px; font-weight: 500; border-radius: 4px; transition: background .25s,box-shadow .25s,transform .45s var(--ease); }
 .button-primary { background: var(--color-accent); color: #181510; box-shadow: 0 0 0 0 #f28b6300; }
 .button-primary:hover { background: #ffab88; box-shadow: 0 5px 28px #f28b6315; }
@@ -129,8 +136,10 @@ main:focus { outline: none; }
 
 /* Interactive sculpture. Only pointer or deliberate controls cause motion. */
 .shape-study { position: relative; width: 100%; max-width: 600px; justify-self: end; margin-top: 1px; }
-.shape-study::after { content: ''; display: block; height: 62px; }
-.study-controls { position: absolute; bottom: 0; left: 0; right: 0; }
+/* Controls sit in flow (not pinned to the bottom) so the work-sample note can follow them.
+   The 62px reserve keeps the layout identical before scripts unhide the controls. */
+.shape-study { --controls-h: 62px; }
+.study-controls[hidden] + .study-note { margin-top: calc(var(--controls-h) + 14px); }
 .study-heading { display: flex; align-items: center; justify-content: space-between; padding-inline: 24px; color: var(--color-mute); }
 .study-heading .eyebrow { display: flex; align-items: center; font-size: 9px; gap: 8px; color: #9b9c90; }
 .status-dot { display: inline-block; height: 5px; width: 5px; border-radius: 50%; background: var(--color-accent); }
@@ -162,6 +171,12 @@ main:focus { outline: none; }
 .inspect-toggle>svg { width: 13px; height: 13px; transition: transform .4s var(--ease); }
 .inspect-toggle[aria-pressed=true] { color: var(--color-accent); }
 .inspect-toggle[aria-pressed=true]>svg { transform: rotate(45deg); }
+/* The sculpture and the page build are labelled as work, with a link to their source. */
+.study-note { display: flex; align-items: center; justify-content: space-between; gap: 14px 20px; margin: 14px 24px 0; font-size: 11.5px; line-height: 1.6; color: #a3a397; }
+.study-note a { color: var(--color-bright); text-decoration: underline; text-decoration-color: #ffffff40; text-underline-offset: 3px; }
+.study-note a:hover { text-decoration-color: var(--color-accent); }
+.study-replay { display: inline-flex; align-items: center; gap: 9px; flex-shrink: 0; min-height: 40px; padding: 8px 13px; border: 1px solid #ffffff26; border-radius: 999px; background: transparent; color: var(--color-bright); font: 11px var(--font-mono); transition: background .2s, border-color .2s; }
+.study-replay:hover { background: #ffffff0a; border-color: #ffffff50; }
 
 /* Work: a large lead project and two companion presentations. */
 .section-topline { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
@@ -260,8 +275,14 @@ main:focus { outline: none; }
 .contact-arrow:hover svg { transform: rotate(45deg); }
 .contact-arrow:active { scale: .96; }
 .contact-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 50px; padding-top: 30px; border-top: 1px solid #555c4130; gap: 30px; }
-.contact-bottom p { font-size: 14px; }
-.contact-bottom .text-link { color: #30382a; }
+.contact-bottom p { font-size: 14px; max-width: 420px; }
+.contact-list { display: grid; gap: 4px; min-width: min(100%, 360px); }
+.contact-link { display: grid; grid-template-columns: 70px 1fr 18px; align-items: center; gap: 14px; min-height: 48px; border-bottom: 1px solid #555c4130; color: #30382a; transition: color .25s; }
+.contact-link .mono { color: #4a5040; text-transform: uppercase; letter-spacing: .1em; font-size: 9px; }
+.contact-value { font-size: 15px; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.contact-link svg { width: 15px; height: 15px; transition: transform .3s var(--ease); }
+.contact-link:hover { color: #965034; }
+.contact-link:hover svg { transform: translate(2px,-2px); }
 .contact-section :focus-visible { outline-color: #763517; }
 .site-footer { min-height: 115px; display: flex; align-items: center; justify-content: space-between; gap: 25px; }
 .site-footer .wordmark { font-size: 20px; }
@@ -280,19 +301,11 @@ main:focus { outline: none; }
 .hero-baseline { position: relative; border-bottom: 0; }
 .hero-baseline::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--color-line); transform-origin: left; }
 @media (prefers-reduced-motion: no-preference) {
-  /* Something moves within the first 100ms so the page never reads as "waiting". */
-  .js .site-header .wordmark, .js .site-header .github-link, .js .site-header .menu-toggle { animation: fade-down .6s var(--ease) both; }
-  .js .desktop-nav > a { animation: fade-down .5s var(--ease) both; animation-delay: calc(.05s + var(--i, 0) * 45ms); }
+  /* The header, name, introduction and actions are visible in the very first frame: a reviewer
+     on a phone should never wait for them. Only decoration moves: the dash draws and the
+     sculpture settles in beside text that is already readable. */
   .hero-intro .intro-dash { animation: draw-x .6s .1s var(--ease) both; }
-  .hero-intro .intro-text, .hero-intro .intro-wave { animation: fade-in .5s .22s var(--ease) both; }
-  .hero-intro .intro-wave { animation: spin-in .8s .3s var(--ease) both; }
-  .hero .line-mask > span { animation: type-enter .95s .2s var(--ease) both; }
-  .hero .line-mask:nth-child(2) > span { animation-delay: .32s; }
-  .hero h1 .word { animation: track-in 1s var(--ease) both; animation-delay: calc(.38s + var(--i, 0) * 90ms); }
-  .hero-description { animation: clip-down .85s .55s var(--ease) both; }
-  .hero-actions { animation: section-enter .75s .68s var(--ease) both; }
-  .hero-role { animation: fade-in .6s .8s var(--ease) both; }
-  .shape-study { animation: shape-enter 1s .3s var(--ease) both; }
+  .shape-study { animation: shape-enter 1s .15s var(--ease) both; }
   .hero-baseline::after { animation: draw-x 1s .8s var(--ease-inout) both; }
   .hero-baseline > * { animation: fade-in .6s .95s var(--ease) both; }
   /* Leaving the hero: the composition recedes with the scroll (compositor-only, no JS). */
@@ -338,7 +351,10 @@ main:focus { outline: none; }
   .header-inner { gap: 16px; }
   .wordmark { font-size: 22px; }
   .desktop-nav { display: none; }
-  .github-link { margin-left: auto; padding: 8px 12px; }
+  .header-actions { margin-left: auto; }
+  .github-link { padding: 8px 12px; }
+  .resume-link>.small-arrow { display: none; }
+  .resume-link>.resume-word { display: inline !important; }
   .github-link>span { display: none; }
   .github-link>.small-arrow { display: none; }
   .menu-toggle { display: block; }
@@ -357,6 +373,7 @@ main:focus { outline: none; }
   .shape-stage { margin-top: -9px; margin-bottom: -13px; }
   .study-controls { margin-inline: 8px; }
   .stage-axis,.stage-caption { bottom: 28px; font-size: 7px; }
+  .study-note { margin-inline: 8px; flex-wrap: wrap; font-size: 11px; }
   .study-heading .eyebrow,.study-edition { font-size: 8px; }
   .hero-baseline { height: 87px; margin-top: 13px; }
   .hero-baseline>p { display: none; }
@@ -418,7 +435,7 @@ main:focus { outline: none; }
   .contact-arrow { width: 64px; height: 64px; margin: 0; position: absolute; right: 0; bottom: 0; }
   .contact-bottom { display: block; margin-top: 34px; padding-top: 23px; }
   .contact-bottom p { font-size: 13px; }
-  .contact-bottom .text-link { margin-top: 16px; }
+  .contact-list { margin-top: 18px; }
   .site-footer { flex-wrap: wrap; min-height: auto; padding-block: 30px 24px; gap: 14px; }
   .site-footer .wordmark { font-size: 19px; }
   .site-footer>p { order: 3; width: 100%; font-size: 9px; }

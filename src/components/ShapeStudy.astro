@@ -1,6 +1,8 @@
 ---
 import { RING_COUNT, shapePath } from '../lib/sculpture';
 import Icon from './Icon.astro';
+import { SITE } from '../site.config';
+const source = (path: string) => `${SITE.siteSource.replace('/tree/', '/blob/')}/${path}`;
 ---
 <div class="shape-study" data-shape-study>
   <div class="study-heading"><span class="eyebrow"><span class="status-dot"></span> Form & interaction</span><span class="mono study-edition">Study 001</span></div>
@@ -20,4 +22,9 @@ import Icon from './Icon.astro';
     <div class="shape-options" role="group" aria-label="Sculpture shape"><button type="button" data-shape="0" aria-pressed="true">01 <span>Ribbon</span></button><button type="button" data-shape="1" aria-pressed="false">02 <span>Orbit</span></button></div>
     <button class="inspect-toggle" type="button" data-inspect aria-pressed="false" aria-label="Show construction guides"><Icon name="plus" /><span>Inspect</span></button>
   </div>
+  <!-- The creative pieces are work samples too: say what they are and where the code lives. -->
+  <p class="study-note">
+    <span>Built for this site: a 48-ring SVG sculpture (<a href={source('src/lib/sculpture.ts')} target="_blank" rel="noopener noreferrer">sculpture.ts</a>) and a canvas of cursor workers that assemble the page (<a href={source('src/scripts/swarm.ts')} target="_blank" rel="noopener noreferrer">swarm.ts</a>).</span>
+    <button type="button" class="study-replay" data-swarm-replay data-enhancement hidden><span class="swarm-toggle-dots" aria-hidden="true"><i></i><i></i><i></i></span>Replay build</button>
+  </p>
 </div>

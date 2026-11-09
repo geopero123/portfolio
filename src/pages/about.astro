@@ -17,7 +17,7 @@ const builds = [
   { id: 'frontend', n: '01', name: 'Frontend', voice: 'tight', title: 'Interfaces that hold up.', body: 'React and Next.js, TypeScript when a project is big enough to want it. I care about the parts people never notice: layout that survives long strings, keyboard focus that goes where you expect, and no layout shift while fonts load.', examples: [tempest, quire], glyph: 'frontend' },
   { id: 'fullstack', n: '02', name: 'Full stack', voice: 'default', title: 'From the form to the row.', body: 'Laravel and PHP with MySQL on the server side, Supabase when a project wants auth and a hosted database quickly. Tempest Archive is the largest: a linked content model, accounts, and every route prerendered for search.', examples: [tempest], glyph: 'fullstack' },
   { id: 'interaction', n: '03', name: 'UI & interaction', voice: 'serif', title: 'Motion with a reason.', body: 'Interaction should explain something: what changed, where it went, what is possible now. I build it with CSS and small amounts of TypeScript first, and reach for a library only when it earns its weight.', examples: [tempest, kilo], glyph: 'interaction' },
-  { id: 'tools', n: '04', name: 'Web tools', voice: 'mono', title: 'One job, done properly.', body: 'Five browser applications that do real work locally: PDF operations, image compression, Markdown to PDF, file conversion, QR codes and barcodes. No uploads, no accounts, real output verified in tests against the produced bytes.', examples: [quire, kilo, folio, transmute, signal], glyph: 'tools' },
+  { id: 'tools', n: '04', name: 'Web tools', voice: 'mono', title: 'One job, done properly.', body: 'Five browser applications that do real work locally: PDF operations, image compression, Markdown to PDF, file conversion, QR codes and barcodes. No uploads, no accounts.', examples: [quire, kilo, folio, transmute, signal], glyph: 'tools' },
   { id: 'experiments', n: '05', name: 'Experiments', voice: 'wide', title: 'Small studies.', body: 'The wire sculpture on the home page is one: deterministic geometry rendered on the server, then animated only in response to a pointer. This site itself is another - every section enters differently, on purpose.', examples: [], glyph: 'experiments' },
 ];
 
@@ -32,7 +32,7 @@ const flow = [
 const source = [
   { name: 'Portfolio-setup', note: 'Five browser tools: file converter, PDF toolkit, image compressor, QR generator, Markdown to PDF.', lang: 'JavaScript', href: SITE.projectsRepository },
   { name: '05-markdown-to-pdf', note: 'QUIRE - editor, preview and PDF engine.', lang: 'React', href: quire.source! },
-  { name: '03-image-compressor', note: 'KILO - Canvas-based compression and resizing.', lang: 'React', href: kilo.source! },
+  { name: '03-image-compressor', note: 'Smaller - Canvas-based conversion, resizing and compression in one HTML page.', lang: 'JavaScript', href: kilo.source! },
   { name: '02-pdf-toolkit', note: 'Folio - pdf-lib and pdf.js operations.', lang: 'React', href: folio.source! },
   { name: '01-file-converter', note: 'Transmute - images, DOCX and tabular data, converted locally.', lang: 'React', href: transmute.source! },
   { name: '04-qr-generator', note: 'SIGNAL - QR codes with tested escaping, nine barcode symbologies.', lang: 'React', href: signal.source! },
@@ -117,9 +117,9 @@ const schema = [{ "@type": "ProfilePage", "@id": `${SITE.url}/about#page`, name:
     <div class="section-heading"><h2 id="proof-title" data-m="mask"><span class="line-mask"><span style="--i:0">What each project</span></span><span class="line-mask"><span class="serif" style="--i:1">taught me.</span></span></h2></div>
     <div class="proof">
       {[
-        { p: tempest, what: 'Content architecture, spoiler-aware filtering, accounts, and prerendering several hundred routes for search. The largest thing I have built.' },
+        { p: tempest, what: 'Content architecture, spoiler-aware filtering, accounts, and prerendering the 304 URLs in its sitemap for search. The largest thing I have built.' },
         { p: quire, what: 'Laying out a document and writing a real PDF in the browser - searchable text and working links, not a screenshot.' },
-        { p: kilo, what: 'Canvas API image processing at batch scale, with a comparison view so quality is judged by eye, not by number.' },
+        { p: kilo, what: 'Canvas API conversion and compression for a list of images, showing the size saved before you download, in plain JavaScript with no framework.' },
         { p: folio, what: 'A page-level document workflow on pdf-lib and pdf.js: merge, split, compress and convert without anything leaving the tab.' },
         { p: transmute, what: 'Three conversion families behind one drop zone, with the awkward cases (JPG transparency, GIF palettes, PDF page sizes) handled and explained rather than hidden.' },
         { p: signal, what: 'Getting QR codes right: correct payload escaping proven by decoding tests, scannability warnings, and one geometry shared by preview, PNG and SVG.' },
@@ -148,7 +148,7 @@ const schema = [{ "@type": "ProfilePage", "@id": `${SITE.url}/about#page`, name:
   <section class="shell" aria-label="Get in touch">
     <div class="project-cta">
       <h2 data-m="mask"><span class="line-mask"><span>Want to work together?</span></span></h2>
-      <div data-m="stagger"><a class="button button-primary" href={SITE.socials.email || SITE.socials.github} data-magnetic>{SITE.socials.email ? 'Say hello' : 'Find me on GitHub'} <Icon class="button-arrow" /></a><a class="text-link" href="/#projects">See the work <Icon /></a></div>
+      <div data-m="stagger"><a class="button button-primary" href="/#contact" data-magnetic>Get in touch <Icon class="button-arrow" /></a>{SITE.resume && <a class="text-link" href={SITE.resume} target="_blank" rel="noopener">Résumé (PDF) <Icon /></a>}<a class="text-link" href="/#projects">See the work <Icon /></a></div>
     </div>
   </section>
 </Layout>

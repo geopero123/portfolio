@@ -649,25 +649,30 @@ async function renderTable(token, L, ctx, indent, width) {
   const widths =
     total <= width ? natural.map((w) => w + (width - total) / columns) : natural.map((w) => (w / total) * width)
 
-  const drawRow = (cells, { bold = false } = {}) => {
+  const rowHeightOf = (cells) => {
     const heights = cells.map((runs, i) => L.measure(runs, size, widths[i] - pad * 2, lh))
-    const rowHeight = Math.max(lh, ...heights) + pad
+    return Math.max(lh, ...heights) + pad
+  }
+
+  const drawRow = (cells, { bold = false } = {}) => {
+    const rowHeight = rowHeightOf(cells)
     L.need(rowHeight + 2)
     const top = L.y
-    let x = L.m + indent
+    // Column offset from the left margin. It goes through drawRuns' indent
+    // rather than by moving L.m: the page's bottom limit and the top of a new
+    // page are both derived from L.m, so shifting it per column made the
+    // right-hand cells think the page was full and break mid-row.
+    let offset = indent
     for (let i = 0; i < columns; i++) {
-      const saveY = L.y
-      const saveM = L.m
-      L.m = x + pad
       L.drawRuns(cells[i] ?? [], {
         size,
         maxWidth: widths[i] - pad * 2,
+        indent: offset + pad,
         lineHeight: lh,
         color: bold ? ctx.headingColor : undefined,
       })
-      L.m = saveM
-      L.y = saveY
-      x += widths[i]
+      L.y = top
+      offset += widths[i]
     }
     L.y = top - rowHeight
     L.page.drawLine({
@@ -683,7 +688,7 @@ async function renderTable(token, L, ctx, indent, width) {
   L.need(lh * 3)
   drawRow(header, { bold: true })
   for (const row of rows) {
-    if (L.y - lh * 2 < L.bottom) {
+    if (L.y - rowHeightOf(row) - 2 < L.bottom) {
       // Carry the header onto the next page so the columns stay readable.
       L.newPage()
       drawRow(header, { bold: true })

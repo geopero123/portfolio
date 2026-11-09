@@ -1,4 +1,8 @@
-/** Independent cursor workers build the real DOM, then disappear until more work arrives. */
+/**
+ * Independent cursor workers build the real DOM, then disappear.
+ * Opt-in: nothing is hidden on load. "Replay build" assembles whatever is on screen,
+ * and the skip button (or Escape) reveals everything at once.
+ */
 const COLORS = ['#ff986f', '#a899ff', '#6edbc0', '#75bcff', '#f4d36f', '#f38cb7'];
 type Job = { el: HTMLElement; state: 'waiting' | 'working' | 'done'; rect: DOMRect; start: number; duration: number; progress: number; lines: number; kind: 'type' | 'place' | 'draw' };
 type Agent = { x: number; y: number; vx: number; vy: number; angle: number; color: string; size: number; job: Job | null; phase: number };
@@ -8,11 +12,8 @@ export function initCursorSwarm(): () => void {
   const ctx = canvas?.getContext('2d', { alpha: true });
   const controls = document.querySelector<HTMLElement>('[data-swarm-controls]');
   const toggle = document.querySelector<HTMLButtonElement>('[data-swarm-toggle]');
-  const replay = document.querySelector<HTMLButtonElement>('[data-swarm-replay]');
-  if (!canvas || !ctx || !controls || !toggle || !replay) {
-    document.documentElement.classList.remove('swarm-pending');
-    return () => {};
-  }
+  const replays = [...document.querySelectorAll<HTMLButtonElement>('[data-swarm-replay]')];
+  if (!canvas || !ctx || !controls || !toggle || !replays.length) return () => {};
   const surface = canvas, pen = ctx;
   const host = surface.parentElement!;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -20,7 +21,8 @@ export function initCursorSwarm(): () => void {
   const { signal } = abort;
   let width = innerWidth, height = innerHeight, dpr = 1;
   let frame = 0, last = 0, clock = 0, startAt = performance.now();
-  let enabled = host.dataset.swarmPaused !== 'true', dirty = true, destroyed = false;
+  // `enabled` means a build is running; it is only ever started by the reader.
+  let enabled = false, dirty = true, destroyed = false;
   let nextAssignment = 0, jobs: Job[] = [];
   const agents: Agent[] = Array.from({ length: 24 }, (_, i) => ({
     x: width * .5 + Math.cos(i * 2.4) * 25, y: height * .5 + Math.sin(i * 2.4) * 25,
@@ -45,9 +47,9 @@ export function initCursorSwarm(): () => void {
   function finish() {
     jobs.forEach(reveal);
     agents.forEach(agent => agent.job = null);
+    jobs = [];
     surface.hidden = true;
     surface.dataset.swarmState = 'idle';
-    document.documentElement.classList.remove('swarm-pending');
   }
   function stop() { cancelAnimationFrame(frame); frame = 0; last = 0; }
   function schedule() {
@@ -77,12 +79,13 @@ export function initCursorSwarm(): () => void {
       'footer.site-footer > *',
     ];
     const candidates = [...document.querySelectorAll<HTMLElement>(selectors.join(','))]
-      .filter(el => !el.closest('[hidden], .story-screen:not(.is-active), .pindex-shot[aria-hidden="true"]'));
+      .filter(el => !el.closest('[hidden], .story-screen:not(.is-active), [data-spoiler-shot]:not(.is-active), .swarm-controls, .study-note'));
     const set = new Set(candidates);
     jobs = candidates.filter(el => {
       for (let p = el.parentElement; p; p = p.parentElement) if (set.has(p)) return false;
       const r = el.getBoundingClientRect();
-      return r.width > .5 && r.height > .5;
+      // Only what is on screen now; content below the fold is never hidden by a replay.
+      return r.width > .5 && r.height > .5 && r.bottom > 0 && r.top < height;
     }).map(el => {
       const rect = el.getBoundingClientRect();
       const visual = !!el.querySelector('img, canvas, svg.sculpture') || el.matches('.shape-stage');
@@ -99,32 +102,35 @@ export function initCursorSwarm(): () => void {
       a.vx = Math.cos(a.phase) * 80; a.vy = Math.sin(a.phase) * 80; a.angle = i;
     });
     startAt = performance.now(); nextAssignment = startAt + 180; clock = 0; dirty = true;
-    document.documentElement.classList.remove('swarm-pending');
     surface.hidden = false;
     surface.dataset.swarmState = 'building';
-    controls!.hidden = false;
+    updateControls();
     schedule();
   }
   function markDirty() { dirty = true; schedule(); }
   function updateControls() {
-    host.dataset.swarmPaused = String(!enabled);
-    toggle!.setAttribute('aria-pressed', String(enabled));
-    toggle!.setAttribute('aria-label', enabled ? 'Pause cursor swarm and finish building' : 'Enable cursor swarm');
+    const building = enabled && jobs.some(job => job.state !== 'done');
+    host.dataset.swarmBuilding = String(building);
+    // The skip button only exists while something is actually being built.
+    toggle!.hidden = !building;
     controls!.hidden = reduced.matches;
+    replays.forEach(button => button.setAttribute('aria-disabled', String(building)));
   }
-  function toggleSwarm() {
-    enabled = !enabled;
-    if (!enabled) { finish(); stop(); pen.clearRect(0, 0, width, height); }
-    else schedule();
+  function skip() {
+    const hadFocus = document.activeElement === toggle;
+    enabled = false; finish(); stop(); pen.clearRect(0, 0, width, height);
     updateControls();
+    // The skip button disappears; keep keyboard users next to where they were.
+    if (hadFocus) replays.find(button => button.closest('.swarm-controls'))?.focus();
   }
   function replayBuild() {
-    enabled = true; updateControls();
+    if (enabled && jobs.some(job => job.state !== 'done')) return;
+    enabled = true;
     // Replay at the current position; no forced scrolling or focus changes.
     plan();
   }
   function preference() {
-    if (reduced.matches) { finish(); stop(); pen.clearRect(0, 0, width, height); }
+    if (reduced.matches) { enabled = false; finish(); stop(); pen.clearRect(0, 0, width, height); }
     else schedule();
     updateControls();
   }
@@ -195,8 +201,8 @@ export function initCursorSwarm(): () => void {
     const building = available.length > 0 || working.length > 0 || elapsed < 400;
     surface.dataset.swarmState = building ? 'building' : 'idle';
     surface.hidden = !building;
-    // Completed content gets no cursor overlay or animation loop. Only new build jobs wake it.
-    if (!building) { last = 0; return; }
+    // Completed content gets no cursor overlay or animation loop. Only a new replay wakes it.
+    if (!building) { last = 0; enabled = false; finish(); updateControls(); return; }
     for (let i = 0; i < agents.length; i++) {
       const a = agents[i];
       if (a.job?.state === 'done') a.job = null;
@@ -255,13 +261,22 @@ export function initCursorSwarm(): () => void {
   addEventListener('resize', () => { resize(); schedule(); }, { passive: true, signal });
   document.addEventListener('focusin', focus, { signal });
   document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else { dirty = true; schedule(); } }, { signal });
-  toggle.addEventListener('click', toggleSwarm, { signal });
-  replay.addEventListener('click', replayBuild, { signal });
+  toggle.addEventListener('click', skip, { signal });
+  replays.forEach(button => button.addEventListener('click', replayBuild, { signal }));
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && enabled) skip(); }, { signal });
   reduced.addEventListener('change', preference, { signal });
   // A safety valve also reveals any unfinished offscreen blocks after a script interruption.
   document.addEventListener('astro:before-swap', finish, { signal });
-  resize(); plan(); updateControls();
+  // While the hero's own "Replay build" is on screen, the floating copy would just repeat it.
+  const inline = replays.find(button => !button.closest('.swarm-controls'));
+  let inlineObserver: IntersectionObserver | undefined;
+  if (inline && 'IntersectionObserver' in window) {
+    inlineObserver = new IntersectionObserver(([entry]) => { host.dataset.inlineReplay = entry.isIntersecting ? 'visible' : 'hidden'; });
+    inlineObserver.observe(inline);
+  } else delete host.dataset.inlineReplay;
+  resize(); updateControls();
   return () => {
+    inlineObserver?.disconnect(); delete host.dataset.inlineReplay;
     destroyed = true; stop(); abort.abort(); finish();
     document.documentElement.classList.remove('swarm-active');
     pen.clearRect(0, 0, width, height);

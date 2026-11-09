@@ -1,20 +1,27 @@
 ---
 import ShapeStudy from './ShapeStudy.astro';
 import Icon from './Icon.astro';
+import { SITE } from '../site.config';
+// Everything a reviewer needs in the first screen: who, what, proof, and how to reach me.
+// No entrance animation hides any of it; see the hero rules in global.css.
 ---
 <section id="home" class="hero shell" aria-labelledby="hero-title" data-hero>
   <div class="hero-layout">
     <div class="hero-copy">
-      <p class="hero-intro"><span class="intro-dash"></span><span class="intro-text">Hi, I'm Gio</span> <span class="intro-wave">✳</span></p>
+      <p class="hero-intro"><span class="intro-dash"></span><span class="intro-text">Open to React &amp; frontend roles</span></p>
       <h1 id="hero-title">
-        <span class="line-mask"><span class="hero-line hero-line-1" data-weight>Serious code.</span></span>
-        <span class="line-mask"><span class="hero-line hero-line-2 serif"><span class="word" style="--i:0">Playful</span> <span class="word" style="--i:1">details.</span></span></span>
+        <span class="line-mask"><span class="hero-line hero-line-1" data-weight>Giorgi <span class="hero-sep">·</span> </span></span>
+        <span class="line-mask"><span class="hero-line hero-line-2 serif">React Developer</span></span>
       </h1>
-      <p class="hero-description">A React and full-stack developer with an eye for design.<br />From focused browser tools to a full content platform,<br class="desktop-break" /> I build things that feel as good as they work.</p>
-      <div class="hero-actions"><a class="button button-primary" href="#flagship" data-magnetic>Explore my work <Icon class="button-arrow" /></a><a class="text-link" href="/about">About me <Icon /></a></div>
-      <p class="hero-role mono">React <span>/</span> Next.js <span>/</span> Full-stack <span>/</span> The little details</p>
+      <p class="hero-description">I build React apps like <a href="#tempest">Tempest Archive</a>, a spoiler-aware reference site, and browser tools that process files on your device.</p>
+      <div class="hero-actions">
+        <a class="button button-primary" href="#tempest" data-magnetic>See Tempest Archive <Icon class="button-arrow" /></a>
+        {SITE.resume && <a class="text-link" href={SITE.resume} target="_blank" rel="noopener">Résumé (PDF) <Icon /></a>}
+        <a class="text-link" href="#contact">Contact <Icon /></a>
+      </div>
+      <p class="hero-role mono">React <span>/</span> Vite <span>/</span> Tailwind CSS <span>/</span> Supabase <span>/</span> pdf-lib</p>
     </div>
     <ShapeStudy />
   </div>
-  <div class="hero-baseline"><a href="#flagship" class="scroll-link mono"><span class="scroll-icon"><Icon name="down" /></span>Scroll to explore</a><p class="mono">Thoughtfully designed. Personally built.</p><span class="mono hero-year">PORTFOLIO - 2026</span></div>
+  <div class="hero-baseline"><a href="#projects" class="scroll-link mono"><span class="scroll-icon"><Icon name="down" /></span>Selected work</a><p class="mono">Six live projects, two in depth.</p><span class="mono hero-year">PORTFOLIO - 2026</span></div>
 </section>

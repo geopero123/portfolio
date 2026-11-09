@@ -48,6 +48,7 @@ const storyChapters = (p.story ?? []).map((s, i) => ({ ...s, screen: storyScreen
       <div class="project-actions" data-m="stagger" style="--delay:420ms">
         <a class="button button-primary" href={p.live} target="_blank" rel="noopener noreferrer" data-magnetic>Visit the live site <Icon class="button-arrow" /></a>
         {p.source && <a class="text-link" href={p.source} target="_blank" rel="noopener noreferrer"><Icon name="github" /> View source</a>}
+        {p.slug === 'quire' && <a class="text-link" href="/samples/quire-field-notes.pdf" target="_blank" rel="noopener">Sample PDF (13.4 KB) <Icon /></a>}
       </div>
     </header>
 
@@ -127,7 +128,7 @@ const storyChapters = (p.story ?? []).map((s, i) => ({ ...s, screen: storyScreen
         <p class="eyebrow" data-m="slide"><span class="section-index">{n()} /</span> Stack</p>
         <div>
           <h2 id="s-stack" data-m="mask"><span class="line-mask"><span>Built with.</span></span></h2>
-          <p data-m="clip" style="--delay:120ms">{p.flagship ? 'Identified from the production build: a Vite-built React application with Motion for interface transitions, Tailwind for styling, Supabase for accounts, served prerendered from Cloudflare.' : 'A React 19 application built with Vite and Tailwind CSS. Everything runs in the browser; the build is a static folder deployed to Vercel on its own subdomain.'}</p>
+          <p data-m="clip" style="--delay:120ms">{p.flagship ? 'Identified from the production build: a Vite-built React application with Motion for interface transitions, Tailwind for styling, Supabase for accounts, served prerendered from Cloudflare.' : p.stack.includes('React 19') ? 'A React 19 application built with Vite and Tailwind CSS. Everything runs in the browser; the build is a static folder deployed to Vercel on its own subdomain.' : 'A single HTML page with inline CSS and plain JavaScript, no framework. Everything runs in the browser and it deploys as a static page on its own subdomain.'}</p>
           <TechStrip items={p.stack} delay={200} />
         </div>
       </section>

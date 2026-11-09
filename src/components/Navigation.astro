@@ -17,15 +17,19 @@ const links = [
       <span class="nav-indicator" data-nav-indicator aria-hidden="true"></span>
       {links.map(({href, id, label}, i) => <a href={href} data-nav={id} data-nav-page={href.startsWith('/#') || href === '/' ? '/' : href} style={`--i:${i}`}><span class="nav-word" data-label={label}><span>{label}</span></span></a>)}
     </nav>
-    <a class="github-link" href={SITE.socials.github} target="_blank" rel="noopener noreferrer" aria-label="Gio on GitHub" data-github-link><Icon name="github" /><span>GitHub</span><Icon class="small-arrow" /></a>
+    <div class="header-actions">
+      {SITE.resume && <a class="github-link resume-link" href={SITE.resume} target="_blank" rel="noopener" data-resume-link><span class="resume-word">Résumé</span><Icon class="small-arrow" /></a>}
+      <a class="github-link" href={SITE.socials.github} target="_blank" rel="noopener noreferrer" aria-label="Giorgi on GitHub" data-github-link><Icon name="github" /><span>GitHub</span><Icon class="small-arrow" /></a>
+    </div>
     <button class="menu-toggle" type="button" aria-controls="mobile-menu" aria-expanded="false" aria-label="Open menu" data-menu-toggle data-enhancement hidden><span></span><span></span></button>
   </div>
   <nav id="mobile-menu" class="mobile-menu" aria-label="Mobile navigation" hidden>
     <div class="mobile-menu-inner shell">
       <p class="eyebrow">Take a look around</p>
       {links.map(({href, label}, i) => <a href={href} style={`--i:${i}`}><span class="mono">0{i+1}</span>{label}<Icon /></a>)}
-      <a class="mobile-github" href={SITE.socials.github} target="_blank" rel="noopener noreferrer" style={`--i:${links.length}`}><Icon name="github" />GitHub<Icon /></a>
-      <p class="mobile-menu-note">A little code. A lot of care.</p>
+      {SITE.resume && <a class="mobile-github" href={SITE.resume} target="_blank" rel="noopener" style={`--i:${links.length}`}>Résumé (PDF)<Icon /></a>}
+      <a class="mobile-github" href={SITE.socials.github} target="_blank" rel="noopener noreferrer" style={`--i:${links.length + 1}`}><Icon name="github" />GitHub<Icon /></a>
+      <p class="mobile-menu-note">Giorgi · React Developer</p>
     </div>
   </nav>
 </header>

@@ -56,19 +56,12 @@ const graph: Record<string, unknown>[] = isHome
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#131310" />
     <!-- Before first paint: motion styles only hide content when scripts run. `is-loaded` gates
-         paint-heavy decoration (sculpture glow) until after the first frames are on screen. -->
+         paint-heavy decoration (sculpture glow) until after the first frames are on screen.
+         Nothing hides the page on load: the cursor-swarm build is opt-in via "Replay build". -->
     <script is:inline>
       document.documentElement.classList.add('js');
-      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        document.documentElement.classList.add('swarm-pending');
-        // Keep the document usable if the enhancement bundle fails to load.
-        setTimeout(() => document.documentElement.classList.remove('swarm-pending'), 6000);
-      }
       addEventListener('load', () => requestAnimationFrame(() => document.documentElement.classList.add('is-loaded')));
     </script>
-    <style is:inline>
-      .swarm-pending .site-header, .swarm-pending main, .swarm-pending footer { visibility: hidden; }
-    </style>
     {graph.length > 0 && <script is:inline type="application/ld+json" set:html={JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(/</g, "\\u003c")} />}
     <ClientRouter />
   </head>

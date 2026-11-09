@@ -12,22 +12,26 @@ function watch(page: Page) {
 test('home loads without browser errors, missing assets, or broken anchors', async ({page}) => {
   const {errors, failed} = watch(page);
   await page.goto('/');
-  await expect(page.locator('h1')).toHaveText('Serious code.Playful details.');
+  await expect(page.locator('h1')).toHaveText(/Giorgi\s*·\s*React Developer/);
   await page.locator('#contact').scrollIntoViewIfNeeded();
-  await expect(page.locator('#flagship')).toContainText('Tempest');
-  await expect(page.locator('.pindex-item')).toHaveCount(6);
-  await expect(page.locator('article.spot')).toHaveCount(5);
+  await expect(page.locator('#tempest')).toContainText('Tempest');
+  await expect(page.locator('article.feature')).toHaveCount(2);
+  await expect(page.locator('.tool-card')).toHaveCount(4);
   expect(await page.evaluate(() => [...document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')].filter(a => !document.querySelector(a.hash)).map(a => a.hash))).toEqual([]);
   expect(errors).toEqual([]);
   expect(failed).toEqual([]);
 });
 
-test('Tempest Archive is the flagship: live link, real stack, case study route', async ({page}) => {
+test('Tempest Archive is featured: role, decision, evidence, live link, case study route', async ({page}) => {
   await page.goto('/');
-  const flagship = page.locator('#flagship');
-  await expect(flagship.getByRole('heading', {level: 2})).toHaveText(/Tempest\s*Archive\./);
+  const flagship = page.locator('#tempest');
+  await expect(flagship.getByRole('heading', {level: 3, name: 'Tempest Archive'})).toBeVisible();
+  await expect(flagship.locator('.feature-meta')).toContainText('Design, frontend, data model');
+  await expect(flagship.locator('.feature-meta')).toContainText('React, Vite, Tailwind CSS, Motion, Supabase, Cloudflare');
+  await expect(flagship.locator('.decision h4')).toContainText('linked records');
+  await expect(flagship.locator('.evidence')).toContainText('304 URLs');
+  await expect(flagship.getByRole('link', {name: /Project scale/})).toHaveAttribute('href', 'https://tempestarchive.com/sitemap.xml');
   await expect(flagship.getByRole('link', {name: /Visit Tempest Archive/})).toHaveAttribute('href', 'https://tempestarchive.com/');
-  await expect(flagship.getByRole('list', {name: 'Built with'}).locator('li')).toContainText(['React', 'Vite', 'Tailwind CSS', 'Motion', 'Supabase', 'Cloudflare']);
   await flagship.getByRole('link', {name: /Read the case study/}).click();
   await expect(page).toHaveURL(/\/projects\/tempest-archive\/?$/);
   await expect(page.locator('h1')).toHaveText(/Tempest\s*Archive/);
@@ -36,44 +40,121 @@ test('Tempest Archive is the flagship: live link, real stack, case study route',
   await expect(page.getByRole('link', {name: /View source/})).toHaveCount(0);
 });
 
-test('pinned Tempest story: frame stays, chapters change the screen', async ({page}) => {
-  await page.setViewportSize({width: 1440, height: 900});
+test('spoiler demo: picking a level swaps the real screen, the counts row and the note', async ({page}) => {
   await page.goto('/');
-  const frame = page.locator('.story-frame');
-  await page.locator('[data-chapter="0"]').scrollIntoViewIfNeeded();
-  await expect(page.locator('[data-screen="0"]')).toHaveClass(/is-active/);
-  // Compare two pinned states (chapter 2 and chapter 3), not the pre-pin natural position.
-  await page.locator('[data-chapter="1"]').evaluate(el => el.scrollIntoView({block: 'center'}));
-  await expect(page.locator('[data-screen="1"]')).toHaveClass(/is-active/);
-  const before = await frame.boundingBox();
-  await page.locator('[data-chapter="2"]').evaluate(el => el.scrollIntoView({block: 'center'}));
-  await expect(page.locator('[data-screen="2"]')).toHaveClass(/is-active/);
-  await expect(page.locator('[data-screen="0"]')).not.toHaveClass(/is-active/);
-  await expect(page.locator('[data-story-label]')).toHaveText('Character dossier');
-  await expect(page.locator('[data-story-n]')).toHaveText('03');
-  const after = await frame.boundingBox();
-  // Pinned: the frame's viewport position barely moves while the chapters scroll by.
-  expect(Math.abs((after!.y) - (before!.y))).toBeLessThan(40);
-  await expect(page.locator('[data-chapter="2"]')).toHaveClass(/is-active/);
-  await expect(page.locator('[data-chapter="2"] .story-tags li').first()).toHaveCSS('opacity', '1');
-  await page.waitForTimeout(900);
-  await page.screenshot({path: 'test-results/story-1440.png'});
+  const demo = page.locator('[data-spoiler-demo]');
+  await demo.scrollIntoViewIfNeeded();
+  await expect(demo.locator('[data-spoiler-shot="anime"]')).toHaveClass(/is-active/);
+  await expect(demo.locator('tr.is-active th')).toHaveText('Anime');
+  await demo.getByRole('button', {name: /Full/}).click();
+  await expect(demo.getByRole('button', {name: /Full/})).toHaveAttribute('aria-pressed', 'true');
+  await expect(demo.locator('[data-spoiler-shot="full"]')).toHaveClass(/is-active/);
+  await expect(demo.locator('[data-spoiler-shot="anime"]')).toHaveAttribute('aria-hidden', 'true');
+  await expect(demo.locator('tr.is-active')).toContainText('Full');
+  await expect(demo.locator('tr.is-active td').first()).toHaveText('84');
+  await expect(demo.locator('[data-spoiler-note]')).toContainText('231 entries');
+  // Full matches the published sitemap scale.
+  await expect(demo.locator('tr[data-spoiler-row="full"] td')).toHaveText(['84', '85', '36', '26', '231']);
 });
 
-test('custom cursor and smooth scroll run for a mouse, grow on hover, and stay off for touch and reduced motion', async ({page, browser}) => {
+test('QUIRE is featured with a real exported PDF and links into the PDF engine source', async ({page, request}) => {
+  await page.goto('/');
+  const quire = page.locator('#quire');
+  await expect(quire.getByRole('heading', {level: 3, name: 'QUIRE'})).toBeVisible();
+  await expect(quire.locator('.decision')).toContainText('pdf-lib');
+  const pdf = await request.get('/samples/quire-field-notes.pdf');
+  expect(pdf.ok()).toBe(true);
+  expect(pdf.headers()['content-type']).toContain('pdf');
+  const bytes = await pdf.body();
+  expect(bytes.subarray(0, 5).toString()).toBe('%PDF-');
+  expect(bytes.length).toBeLessThan(15000);
+  await expect(quire.getByRole('link', {name: /Sample PDF/})).toHaveAttribute('href', '/samples/quire-field-notes.pdf');
+  await expect(quire.getByRole('link', {name: /Link annotations/})).toHaveAttribute('href', /Portfolio-setup\/blob\/claude\/five-utility-react-apps-ajzt9l\/05-markdown-to-pdf\/src\/lib\/pdf\.js#L346$/);
+});
+
+test('secondary tools show the names and domains of the live apps', async ({page}) => {
+  await page.goto('/');
+  const cards = page.locator('.tool-card');
+  const expected = [['Smaller', 'kilo.madebygio.dev'], ['Folio', 'folio.madebygio.dev'], ['Transmute', 'convert.madebygio.dev'], ['SIGNAL', 'qr.madebygio.dev']];
+  for (const [i, [name, domain]] of expected.entries()) {
+    await expect(cards.nth(i).locator('h4')).toHaveText(name);
+    await expect(cards.nth(i).getByRole('link', {name: `${name} live at ${domain}`})).toHaveAttribute('href', `https://${domain}`);
+    await expect(cards.nth(i).getByRole('link', {name: `${name} source code`})).toHaveAttribute('href', /github\.com\/geopero123\/Portfolio-setup/);
+  }
+  await expect(page.getByText('KILO', {exact: true})).toHaveCount(0);
+  await cards.nth(0).getByRole('link', {name: 'Smaller details'}).click();
+  await expect(page).toHaveURL(/\/projects\/kilo\/?$/);
+  await expect(page.locator('h1')).toHaveText('Smaller');
+});
+
+test('fresh visit: header, headline and project link are visible and usable at once; the build is opt-in', async ({page}) => {
+  for (const viewport of [{width: 1440, height: 900}, {width: 390, height: 844}]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/', {waitUntil: 'commit'});
+    await page.waitForSelector('h1');
+    // Within the first frames: nothing is hidden or clipped by an intro.
+    const state = await page.evaluate(() => {
+      const visible = (el: Element | null) => { if (!el) return false; const s = getComputedStyle(el); const r = el.getBoundingClientRect(); return s.visibility === 'visible' && s.opacity === '1' && r.height > 0 && r.top < innerHeight; };
+      return {
+        header: visible(document.querySelector('.site-header .wordmark')),
+        h1: visible(document.querySelector('h1')),
+        cta: visible([...document.querySelectorAll('a')].find(a => a.textContent?.includes('See Tempest Archive')) ?? null),
+        contact: visible(document.querySelector('.hero-actions a[href="#contact"]')),
+        pieces: document.querySelectorAll('[data-swarm-piece]').length,
+        pending: document.documentElement.className.includes('swarm'),
+      };
+    });
+    expect(state).toEqual({header: true, h1: true, cta: true, contact: true, pieces: 0, pending: false});
+    await expect(page.locator('[data-swarm-canvas]')).toBeHidden();
+    await page.getByRole('link', {name: 'See Tempest Archive'}).click();
+    await expect(page).toHaveURL(/#tempest$/);
+  }
+  // Replay build is the only way in, it assembles the current screen, and Escape skips it.
   await page.setViewportSize({width: 1440, height: 900});
   await page.goto('/');
-  await page.mouse.move(400, 300);
-  await page.mouse.move(420, 320);
-  await expect(page.locator('html')).toHaveClass(/has-cursor/);
+  await page.locator('.study-replay').click();
+  await expect.poll(() => page.locator('[data-swarm-piece]').count()).toBeGreaterThan(0);
+  await expect(page.getByRole('button', {name: 'Skip build animation'})).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-swarm-piece]')).toHaveCount(0);
+  await expect(page.locator('[data-swarm-canvas]')).toBeHidden();
+  await page.locator('#contact').scrollIntoViewIfNeeded();
+  await expect(page.locator('#contact h2')).toBeVisible();
+});
+
+test('keyboard: skip link, navigation and the primary action are reachable in order', async ({page}) => {
+  await page.goto('/');
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', {name: 'Skip to content'})).toBeFocused();
+  const order: string[] = [];
+  for (let i = 0; i < 9; i++) {
+    await page.keyboard.press('Tab');
+    order.push(await page.evaluate(() => document.activeElement!.getAttribute('aria-label') || (document.activeElement as HTMLElement).innerText.trim().replace(/\s+/g, ' ')));
+  }
+  expect(order.slice(0, 6)).toEqual(['Made by Gio, home', 'Home', 'Work', 'About', 'Contact', 'Giorgi on GitHub']);
+  expect(order).toContain('See Tempest Archive');
+  await page.getByRole('link', {name: 'See Tempest Archive'}).focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/#tempest$/);
+});
+
+test('contact shows only verified channels and links to the current site source', async ({page}) => {
+  await page.goto('/');
+  const contact = page.locator('#contact');
+  await expect(contact.getByRole('list', {name: 'Ways to reach Giorgi'}).locator('a').first()).toHaveAttribute('href', /^(mailto:|https:\/\/)/);
+  // Nothing renders for an empty value: no blank mailto, no empty résumé link.
+  expect(await page.locator('a[href="mailto:"], a[href=""]').count()).toBe(0);
+  await expect(contact.getByRole('list', {name: 'Ways to reach Giorgi'}).getByRole('link', {name: /GitHub/})).toHaveAttribute('href', 'https://github.com/geopero123');
+  await expect(page.locator('footer').getByRole('link', {name: /Site source/})).toHaveAttribute('href', 'https://github.com/geopero123/portfolio/tree/local/current-site');
+  await expect(page.locator('.study-note a').first()).toHaveAttribute('href', 'https://github.com/geopero123/portfolio/blob/local/current-site/src/lib/sculpture.ts');
+});
+
+// The custom cursor was removed when the cursor-swarm build replaced it (commit aa099d2);
+// smooth scrolling remains, and must stay off for touch and reduced motion.
+test('smooth scroll runs for a mouse and stays off for touch and reduced motion', async ({page, browser}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto('/');
   await expect(page.locator('html')).toHaveClass(/lenis/);
-  await expect(page.locator('[data-cursor]')).toHaveClass(/is-visible/);
-  // Dot snaps to the pointer; ring catches up.
-  await expect.poll(() => page.locator('.cursor-dot').evaluate(el => el.style.transform)).toContain('420px, 320px');
-  await expect.poll(() => page.locator('.cursor-ring').evaluate(el => el.style.transform), {timeout: 3000}).toMatch(/translate3d\(4(19|20)(\.\d+)?px, 3(19|20)(\.\d+)?px/);
-  await page.getByRole('link', {name: /Explore my work/}).hover();
-  await expect(page.locator('[data-cursor]')).toHaveClass(/is-hover/);
-  await expect(page.locator('.cursor-ring')).toHaveCSS('width', '64px');
   // Wheel input eases rather than jumping: a few frames after one tick, scroll is in progress, not settled.
   await page.mouse.move(700, 500);
   await page.mouse.wheel(0, 800);
@@ -85,26 +166,12 @@ test('custom cursor and smooth scroll run for a mouse, grow on hover, and stay o
   expect(late).toBeGreaterThan(early);
   await page.emulateMedia({reducedMotion: 'reduce'});
   await page.goto('/');
-  await page.mouse.move(400, 300);
-  await expect(page.locator('html')).not.toHaveClass(/has-cursor/);
   await expect(page.locator('html')).not.toHaveClass(/lenis/);
   const touch = await browser.newContext({baseURL: 'http://127.0.0.1:4322', viewport: {width: 390, height: 844}, isMobile: true, hasTouch: true});
   const tp = await touch.newPage();
   await tp.goto('/');
-  await expect(tp.locator('html')).not.toHaveClass(/has-cursor/);
+  await expect(tp.locator('html')).not.toHaveClass(/lenis/);
   await touch.close();
-});
-
-test('project index swaps the preview on hover and links to detail pages', async ({page}) => {
-  await page.goto('/');
-  await page.locator('#projects').scrollIntoViewIfNeeded();
-  await expect(page.locator('[data-index-preview="tempest-archive"]')).toHaveClass(/is-active/);
-  await page.locator('[data-index-item="kilo"]').hover();
-  await expect(page.locator('[data-index-preview="kilo"]')).toHaveClass(/is-active/);
-  await expect(page.locator('[data-index-preview="tempest-archive"]')).not.toHaveClass(/is-active/);
-  await expect(page.locator('[data-index-number]')).toHaveText('03');
-  await page.locator('[data-index-item="kilo"]').click();
-  await expect(page).toHaveURL(/\/projects\/kilo\/?$/);
 });
 
 for (const width of [320,390,768,1024,1440,1920]) {
@@ -150,7 +217,7 @@ test('desktop navigation: section links activate, About is a real page, back but
   await expect(page.locator('h1')).toHaveText(/I build things/);
   await page.goBack();
   await expect(page).toHaveURL(/\/(#home)?$/);
-  await expect(page.locator('h1')).toHaveText('Serious code.Playful details.');
+  await expect(page.locator('h1')).toHaveText(/Giorgi\s*·\s*React Developer/);
 });
 
 test('mobile menu traps focus, closes with Escape, navigates, and resets on resize', async ({page}) => {
@@ -201,7 +268,9 @@ test('reduced motion keeps every section visible and disables pointer motion', a
   await page.goto('/');
   await expect(page.locator('[data-m]:not(.in)')).toHaveCount(0);
   expect(await page.locator('html').evaluate(el=>getComputedStyle(el).scrollBehavior)).toBe('auto');
-  const hidden = await page.locator('h2, .flagship-lead, .pindex-item').evaluateAll(els => els.filter(el => { const s = getComputedStyle(el); return s.opacity === '0' || s.clipPath.includes('100%'); }).length);
+  await expect(page.locator('.study-replay')).toBeHidden();
+  await expect(page.locator('.swarm-controls')).toBeHidden();
+  const hidden = await page.locator('h2, h3, .feature-does, .tool-card').evaluateAll(els => els.filter(el => { const s = getComputedStyle(el); return s.opacity === '0' || s.clipPath.includes('100%'); }).length);
   expect(hidden).toBe(0);
   const ring=page.locator('[data-ring="0"]');
   const initial=await ring.getAttribute('d');
@@ -212,17 +281,18 @@ test('reduced motion keeps every section visible and disables pointer motion', a
   expect(await page.evaluate(()=>document.getAnimations().filter(animation=>animation.playState==='running').length)).toBe(0);
 });
 
-test('touch: index taps preview first then navigate; menu works; no sideways scroll', async ({browser}) => {
+test('touch: spoiler demo and tool links respond to taps; menu works; no sideways scroll', async ({browser}) => {
   const context=await browser.newContext({baseURL:'http://127.0.0.1:4322', viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const page=await context.newPage();
   await page.goto('/');
   await page.getByRole('button',{name:'02 Orbit',exact:true}).tap();
   await expect(page.getByRole('button',{name:'02 Orbit',exact:true})).toHaveAttribute('aria-pressed','true');
-  const folio = page.locator('[data-index-item="folio"]');
+  const full = page.locator('[data-spoiler-demo]').getByRole('button', {name: /Full/});
+  await full.scrollIntoViewIfNeeded();
+  await full.tap();
+  await expect(page.locator('[data-spoiler-shot="full"]')).toHaveClass(/is-active/);
+  const folio = page.getByRole('link', {name: 'Folio details'});
   await folio.scrollIntoViewIfNeeded();
-  await folio.tap();
-  await expect(page.locator('[data-index-preview="folio"]')).toHaveClass(/is-active/);
-  await expect(page).toHaveURL(/\/(#\w+)?$/);
   await folio.tap();
   await expect(page).toHaveURL(/\/projects\/folio\/?$/);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -239,9 +309,11 @@ test('the pages remain useful with JavaScript disabled', async ({browser}) => {
   await page.goto('/');
   await expect(page.locator('h1')).toBeVisible();
   await expect(page.locator('.sculpture')).toBeVisible();
-  await expect(page.locator('#flagship h2')).toBeVisible();
-  await expect(page.locator('.flagship-lead')).toBeVisible();
-  await page.getByRole('link',{name:'Contact',exact:true}).click();
+  await expect(page.getByRole('link', {name: 'See Tempest Archive'})).toBeVisible();
+  await expect(page.locator('#tempest h3')).toBeVisible();
+  await expect(page.locator('.feature-does').first()).toBeVisible();
+  await expect(page.locator('.spoiler-table')).toBeVisible();
+  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'Contact',exact:true}).click();
   await expect(page).toHaveURL(/#contact$/);
   await expect(page.locator('#contact h2')).toBeVisible();
   await page.goto('/about');
