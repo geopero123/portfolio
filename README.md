@@ -12,6 +12,7 @@ Gio's developer portfolio. A static Astro site with Tailwind CSS, self-hosted ty
 - Run browser checks against the production build: `npm test`
 - Preview the production build: `npm run preview`
 - Regenerate share images: `npm run social-card`
+- Regenerate the résumé PDF: edit `resume/resume.html`, then `node scripts/resume-pdf.mjs` (writes `public/giorgi-resume.pdf`; prefix `PW_CHANNEL=` for Playwright's bundled Chromium)
 - Regenerate Tempest Archive screenshots: `node scripts/capture-tempest.mjs` (add `--spoilers` for only the three spoiler-level captures; prefix `PW_CHANNEL=` to use Playwright's bundled Chromium)
 
 The browser suite uses an installed Chrome (`channel: 'chrome'`). It covers all three page types (home, `/about`, `/projects/*`) at six viewport widths, navigation and page transitions, the back button, keyboard focus, touch, reduced motion, no-JavaScript behaviour, accessibility, structured data, and initial layout shift. Screenshots are saved to the ignored `test-results/` directory.

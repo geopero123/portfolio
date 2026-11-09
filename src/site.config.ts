@@ -19,7 +19,7 @@ export const SITE = {
     email: "giorgi@madebygio.dev" as string,
   },
   /** Path to a résumé PDF in /public, e.g. "/giorgi-resume.pdf". */
-  resume: "" as string,
+  resume: "/giorgi-resume.pdf" as string,
   projectsRepository: "https://github.com/geopero123/Portfolio-setup/tree/claude/five-utility-react-apps-ajzt9l",
   /** This site's source. The repository's default branch holds the older portfolio. */
   siteSource: "https://github.com/geopero123/portfolio/tree/local/current-site",

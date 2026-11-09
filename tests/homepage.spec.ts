@@ -131,7 +131,7 @@ test('keyboard: skip link, navigation and the primary action are reachable in or
     await page.keyboard.press('Tab');
     order.push(await page.evaluate(() => document.activeElement!.getAttribute('aria-label') || (document.activeElement as HTMLElement).innerText.trim().replace(/\s+/g, ' ')));
   }
-  expect(order.slice(0, 6)).toEqual(['Made by Gio, home', 'Home', 'Work', 'About', 'Contact', 'Giorgi on GitHub']);
+  expect(order.slice(0, 7)).toEqual(['Made by Gio, home', 'Home', 'Work', 'About', 'Contact', 'Résumé', 'Giorgi on GitHub']);
   expect(order).toContain('See Tempest Archive');
   await page.getByRole('link', {name: 'See Tempest Archive'}).focus();
   await page.keyboard.press('Enter');
@@ -147,6 +147,19 @@ test('contact shows only verified channels and links to the current site source'
   await expect(contact.getByRole('list', {name: 'Ways to reach Giorgi'}).getByRole('link', {name: /GitHub/})).toHaveAttribute('href', 'https://github.com/geopero123');
   await expect(page.locator('footer').getByRole('link', {name: /Site source/})).toHaveAttribute('href', 'https://github.com/geopero123/portfolio/tree/local/current-site');
   await expect(page.locator('.study-note a').first()).toHaveAttribute('href', 'https://github.com/geopero123/portfolio/blob/local/current-site/src/lib/sculpture.ts');
+});
+
+test('résumé is reachable from the first screen, the header and Contact, and is a one-page PDF', async ({page, request}) => {
+  await page.goto('/');
+  await expect(page.locator('.hero-actions').getByRole('link', {name: /Résumé/})).toHaveAttribute('href', '/giorgi-resume.pdf');
+  await expect(page.locator('[data-resume-link]')).toHaveAttribute('href', '/giorgi-resume.pdf');
+  await expect(page.locator('#contact').getByRole('link', {name: /Résumé/})).toHaveAttribute('href', '/giorgi-resume.pdf');
+  const pdf = await request.get('/giorgi-resume.pdf');
+  expect(pdf.ok()).toBe(true);
+  expect(pdf.headers()['content-type']).toContain('pdf');
+  const text = (await pdf.body()).toString('latin1');
+  expect(text.startsWith('%PDF-')).toBe(true);
+  expect(text.match(/\/Type\s*\/Page[^s]/g)?.length).toBe(1);
 });
 
 // The custom cursor was removed when the cursor-swarm build replaced it (commit aa099d2);
