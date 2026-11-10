@@ -1,0 +1,189 @@
+---
+import { projects } from '../data/projects';
+import { SITE } from '../site.config';
+
+const keywords = (label: string) => label.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+const commands = [
+  ...projects.map(project => ({ label: project.name, group: 'Project', action: 'project', value: `/projects/${project.slug}/` })),
+  { label: 'Résumé (PDF)', group: 'Document', action: 'open', value: SITE.resume },
+  { label: 'Copy email', group: 'Contact', action: 'copy', value: SITE.socials.email },
+  { label: 'GitHub', group: 'External', action: 'open', value: SITE.socials.github },
+  { label: 'Replay build', group: 'Motion', action: 'replay', value: '' },
+];
+---
+<dialog id="command-palette" class="command-palette" aria-labelledby="palette-title" transition:persist="command-palette">
+  <div class="palette-header">
+    <h2 id="palette-title" class="eyebrow">Quick links</h2>
+    <button type="button" class="palette-close mono">Close <kbd>Esc</kbd></button>
+  </div>
+  <label for="palette-query" class="sr-only">Find a project or action</label>
+  <input id="palette-query" type="text" role="combobox" aria-controls="palette-options" aria-expanded="true"
+    aria-autocomplete="list" placeholder="Find a project or action" autocomplete="off" />
+  <ul id="palette-options" class="palette-options" role="listbox" aria-label="Projects and actions" data-lenis-prevent>
+    {commands.map(({ label, group, action, value }, index) => (
+      <li id={`palette-option-${index}`} class="palette-option" role="option" aria-selected="false"
+        data-command={action} data-value={value} data-keywords={keywords(label)}>
+        <span>{label}</span><span class="mono" aria-hidden="true">{group}</span>
+      </li>
+    ))}
+  </ul>
+  <p class="palette-status mono" role="status"></p>
+</dialog>
+
+<style>
+  .command-palette {
+    position: fixed;
+    inset: min(12vh, 100px) 0 auto;
+    width: min(92vw, 520px);
+    max-height: 84dvh;
+    margin: 0 auto;
+    padding: 18px;
+    border: 1px solid #ffffff2e;
+    border-radius: 10px;
+    color: var(--color-bright);
+    background: var(--color-surface);
+    box-shadow: 0 28px 70px #0008;
+  }
+  .command-palette[open] { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 10px; }
+  .command-palette::backdrop { background: #000a; }
+  .palette-header { display: flex; justify-content: space-between; align-items: center; }
+  .palette-header h2 { color: var(--color-accent); }
+  .palette-close { min-height: 32px; border-radius: 4px; padding: 3px 8px; }
+  .palette-close:hover { background: #ffffff0f; }
+  .palette-close kbd { color: var(--color-body); margin-left: 6px; }
+  #palette-query {
+    min-height: 46px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+    background: var(--color-ink);
+  }
+  #palette-query:focus-visible { outline-offset: 2px; }
+  .palette-options { position: relative; max-height: 320px; overflow-y: auto; overscroll-behavior: contain; }
+  .palette-option {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    min-height: 40px;
+    padding: 7px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .palette-option[aria-selected="true"] { background: #f28b6320; color: #ffb79d; }
+  .palette-option[aria-disabled="true"] { color: var(--color-mute); cursor: default; }
+  .palette-option .mono { color: var(--color-body); }
+  .palette-status { min-height: 1.6em; padding-inline: 2px; color: var(--color-body); }
+</style>
+
+<script>
+  import { navigate } from 'astro:transitions/client';
+
+  const dialog = document.querySelector<HTMLDialogElement>('#command-palette')!;
+  const input = dialog.querySelector<HTMLInputElement>('#palette-query')!;
+  const close = dialog.querySelector<HTMLButtonElement>('.palette-close')!;
+  const list = dialog.querySelector<HTMLElement>('#palette-options')!;
+  const status = dialog.querySelector<HTMLElement>('.palette-status')!;
+  const options = [...list.querySelectorAll<HTMLElement>('[role="option"]')];
+  const replay = options.find(option => option.dataset.command === 'replay')!;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  let results = options;
+  let selected: HTMLElement | undefined;
+  let returnFocus: HTMLElement | null = null;
+
+  function selectOption(option: HTMLElement | undefined, scroll = false) {
+    selected?.setAttribute('aria-selected', 'false');
+    selected = option;
+    if (!option) {
+      input.removeAttribute('aria-activedescendant');
+      return;
+    }
+    option.setAttribute('aria-selected', 'true');
+    input.setAttribute('aria-activedescendant', option.id);
+    if (scroll) option.scrollIntoView({block: 'nearest'});
+  }
+
+  function filter() {
+    const query = input.value.trim().toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+    for (const option of options) option.hidden = !option.dataset.keywords!.includes(query);
+    results = options.filter(option => !option.hidden && option.getAttribute('aria-disabled') !== 'true');
+    input.setAttribute('aria-expanded', String(options.some(option => !option.hidden)));
+    status.textContent = options.every(option => option.hidden) ? 'No matching commands.' : '';
+    list.scrollTop = 0;
+    selectOption(results[0]);
+  }
+
+  function syncReplay() {
+    replay.setAttribute('aria-disabled', String(reduced.matches));
+    if (dialog.open) filter();
+  }
+
+  function openPalette() {
+    returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    input.value = '';
+    dialog.showModal();
+    syncReplay();
+    input.focus({preventScroll: true});
+  }
+
+  async function run(option: HTMLElement | undefined) {
+    if (!option || option.getAttribute('aria-disabled') === 'true') return;
+    const value = option.dataset.value!;
+    if (option.dataset.command === 'copy') {
+      try {
+        await navigator.clipboard.writeText(value);
+        status.textContent = 'Email address copied.';
+      } catch {
+        status.textContent = 'Could not copy the email address.';
+      }
+      return;
+    }
+
+    dialog.close();
+    switch (option.dataset.command) {
+      case 'project': await navigate(value); break;
+      case 'open': window.open(value, '_blank', 'noopener,noreferrer'); break;
+      case 'replay': document.querySelector<HTMLButtonElement>('footer [data-swarm-replay]')?.click(); break;
+    }
+  }
+
+  input.addEventListener('input', filter);
+  dialog.addEventListener('keydown', event => {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      (document.activeElement === input ? close : input).focus();
+      return;
+    }
+    if (event.target !== input) return;
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      void run(selected);
+    } else if (results.length && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
+      event.preventDefault();
+      const direction = event.key === 'ArrowDown' ? 1 : -1;
+      const next = (results.indexOf(selected!) + direction + results.length) % results.length;
+      selectOption(results[next], true);
+    }
+  });
+  list.addEventListener('click', event => {
+    void run((event.target as HTMLElement).closest<HTMLElement>('[role="option"]') ?? undefined);
+  });
+  close.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('close', () => {
+    if (returnFocus?.isConnected) returnFocus.focus({preventScroll: true});
+    returnFocus = null;
+  });
+  document.querySelector('[data-command-trigger]')?.addEventListener('click', openPalette);
+  document.addEventListener('keydown', event => {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey || event.key.toLowerCase() !== 'k') return;
+    event.preventDefault();
+    if (event.repeat) return;
+    if (dialog.open) dialog.close();
+    else openPalette();
+  });
+  document.addEventListener('astro:before-swap', () => { if (dialog.open) dialog.close(); });
+  reduced.addEventListener('change', syncReplay);
+</script>

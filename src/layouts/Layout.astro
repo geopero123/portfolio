@@ -4,6 +4,7 @@ import Analytics from '@vercel/analytics/astro';
 import "../styles/global.css";
 import { SITE } from "../site.config";
 import Navigation from "../components/Navigation.astro";
+import CommandPalette from "../components/CommandPalette.astro";
 import Footer from "../components/Footer.astro";
 import CursorSwarm from "../components/CursorSwarm.astro";
 import "../styles/swarm.css";
@@ -83,6 +84,7 @@ const graph: Record<string, unknown>[] = isHome
   <body data-page={page}>
     <a href="#main" class="skip-link">Skip to content</a>
     <Navigation />
+    <CommandPalette />
     <main id="main" tabindex="-1" transition:animate="fade"><slot /></main>
     <Footer />
     <div class="dev-grid" aria-hidden="true" data-dev-grid hidden></div>

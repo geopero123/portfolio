@@ -20,6 +20,8 @@ const links = [
     <div class="header-actions">
       {SITE.resume && <a class="github-link resume-link" href={SITE.resume} target="_blank" rel="noopener" data-resume-link><span class="resume-word">Résumé</span><Icon class="small-arrow" /></a>}
       <a class="github-link" href={SITE.socials.github} target="_blank" rel="noopener noreferrer" aria-label="Giorgi on GitHub" data-github-link><Icon name="github" /><span>GitHub</span><Icon class="small-arrow" /></a>
+      <button type="button" class="command-hint mono" data-command-trigger aria-haspopup="dialog"
+        aria-controls="command-palette" aria-keyshortcuts="Control+K Meta+K" aria-label="Open command palette">Ctrl K</button>
     </div>
     <button class="menu-toggle" type="button" aria-controls="mobile-menu" aria-expanded="false" aria-label="Open menu" data-menu-toggle data-enhancement hidden><span></span><span></span></button>
   </div>

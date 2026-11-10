@@ -173,15 +173,75 @@ test('keyboard: skip link, navigation and the primary action are reachable in or
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', {name: 'Skip to content'})).toBeFocused();
   const order: string[] = [];
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 10; i++) {
     await page.keyboard.press('Tab');
     order.push(await page.evaluate(() => document.activeElement!.getAttribute('aria-label') || (document.activeElement as HTMLElement).innerText.trim().replace(/\s+/g, ' ')));
   }
-  expect(order.slice(0, 7)).toEqual(['Made by Gio, home', 'Home', 'Work', 'About', 'Contact', 'Résumé', 'Giorgi on GitHub']);
+  expect(order.slice(0, 8)).toEqual(['Made by Gio, home', 'Home', 'Work', 'About', 'Contact', 'Résumé', 'Giorgi on GitHub', 'Open command palette']);
   expect(order).toContain('See Tempest Archive');
   await page.getByRole('link', {name: 'See Tempest Archive'}).focus();
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/#tempest$/);
+});
+
+test('the command palette filters, traps focus and navigates by keyboard', async ({page}) => {
+  await page.goto('/');
+  const trigger = page.getByRole('button', {name: 'Open command palette'});
+  const dialog = page.getByRole('dialog', {name: 'Quick links'});
+  const query = dialog.getByRole('combobox', {name: 'Find a project or action'});
+  await trigger.focus();
+  await page.keyboard.press('Control+k');
+  await expect(query).toBeFocused();
+  await query.press('Shift+Tab');
+  await expect(dialog.getByRole('button', {name: /Close/})).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(query).toBeFocused();
+  await query.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+
+  await page.keyboard.press('Meta+k');
+  await query.fill('tempest');
+  await expect(dialog.getByRole('option')).toHaveCount(2);
+  await query.press('ArrowDown');
+  await expect(dialog.getByRole('option', {name: 'Tempest Rebirth'})).toHaveAttribute('aria-selected', 'true');
+  await query.press('Enter');
+  await expect(page).toHaveURL(/\/projects\/tempest-rebirth\/?$/);
+  await trigger.click();
+  await expect(query).toBeFocused();
+  await query.fill('resume');
+  await expect(dialog.getByRole('option', {name: 'Résumé (PDF)'})).toBeVisible();
+});
+
+test('the command palette copies email and respects reduced motion for Replay build', async ({page, context}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.goto('/about');
+  await page.keyboard.press('Control+k');
+  const dialog = page.getByRole('dialog', {name: 'Quick links'});
+  const query = dialog.getByRole('combobox');
+  await query.fill('copy');
+  await query.press('Enter');
+  await expect(dialog.getByRole('status')).toHaveText('Email address copied.');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('giorgi@madebygio.dev');
+  await query.fill('replay');
+  await expect(dialog.getByRole('option', {name: 'Replay build'})).toHaveAttribute('aria-disabled', 'true');
+  await query.press('Enter');
+  await expect(dialog).toBeVisible();
+  const results = await new AxeBuilder({page}).include('#command-palette').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+  expect(results.violations.map(violation => violation.id)).toEqual([]);
+});
+
+test('the command palette can replay the page build', async ({page}) => {
+  await page.goto('/');
+  await page.keyboard.press('Control+k');
+  const dialog = page.getByRole('dialog', {name: 'Quick links'});
+  await dialog.getByRole('combobox').fill('replay');
+  await dialog.getByRole('option', {name: 'Replay build'}).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByRole('button', {name: 'Skip build animation'})).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-swarm-canvas]')).toBeHidden();
 });
 
 test('contact shows only verified channels and links to the current site source', async ({page}) => {
