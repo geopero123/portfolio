@@ -8,7 +8,6 @@ import { initCursorSwarm } from './swarm';
  *                                                                   (count markup is server-rendered by SectionIndex.astro)
  *   data-depth                                                      pointer depth: sets --mx/--my on the container
  *   data-magnetic                                                   buttons drift toward the pointer
- *   data-velocity                                                   headings skew with scroll velocity (--vel)
  *
  * Hidden states only apply under `html.js`, so a failed script leaves everything visible.
  * Everything is idempotent per element (`data-motion-ready`) because pages are swapped by the router.
@@ -25,7 +24,6 @@ export function initMotion() {
   entrances();
   depth();
   magnetic();
-  velocity();
   story();
   cursor();
   footerArrival();
@@ -108,26 +106,6 @@ function magnetic() {
     el.addEventListener('pointermove', move); el.addEventListener('pointerleave', leave);
     cleanups.push(() => { el.removeEventListener('pointermove', move); el.removeEventListener('pointerleave', leave); leave(); });
   });
-}
-
-// ── Scroll velocity → a faint skew on large headings. Felt, not seen. ──
-function velocity() {
-  const els = [...document.querySelectorAll<HTMLElement>('[data-velocity]')];
-  if (!els.length || reduced.matches || !fine.matches) return;
-  let last = scrollY, vel = 0, frame = 0, idle = 0;
-  const tick = () => {
-    frame = 0;
-    vel *= .82;
-    const v = Math.max(-1, Math.min(1, vel / 60));
-    els.forEach(el => el.style.setProperty('--vel', Math.abs(v) < .01 ? '0' : v.toFixed(3)));
-    if (Math.abs(v) >= .01) frame = requestAnimationFrame(tick);
-  };
-  const onScroll = () => {
-    const y = scrollY; vel += (y - last) * .5; last = y;
-    clearTimeout(idle); if (!frame) frame = requestAnimationFrame(tick);
-  };
-  addEventListener('scroll', onScroll, {passive:true});
-  cleanups.push(() => { removeEventListener('scroll', onScroll); cancelAnimationFrame(frame); els.forEach(el => el.style.removeProperty('--vel')); });
 }
 
 // ── Pinned story: the frame stays while chapters scroll; the chapter nearest the

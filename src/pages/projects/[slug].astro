@@ -38,7 +38,7 @@ const storyChapters = (p.story ?? []).map((s, i) => ({ ...s, screen: storyScreen
   <article class="project-page" style={`--accent-project:${p.accent}`}>
     <header class="page-hero shell">
       <p class="eyebrow crumbs" data-m="slide"><a href="/#projects"><Icon /> Work</a><span aria-hidden="true">/</span><span class="section-index">{number}</span><span>{p.type}</span></p>
-      <h1 data-m="mask" data-velocity>
+      <h1 data-m="mask">
         <span class="line-mask"><span style="--i:0" transition:name={`project-title-${p.slug}`}>{first}</span></span>{rest.length > 0 && ' '}
         {rest.length > 0 && <span class="line-mask"><span class="serif" style="--i:1">{rest.join(' ')}</span></span>}
       </h1>

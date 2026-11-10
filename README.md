@@ -53,7 +53,7 @@ Elements declare what they are with `data-m`, and CSS decides how that kind of t
 | `stagger` | short lists | one item at a time |
 | `count` | section numbers and stats | odometer roll |
 
-`motion.ts` only observes and sets variables. It also handles pointer depth (`data-depth`), magnetic controls (`data-magnetic`), scroll-velocity skew on large headings (`data-velocity`), and a developer grid overlay on the `.` key. Parallax and mobile depth are scroll-driven CSS (`animation-timeline: view()`) where supported, with no JavaScript fallback needed. Hidden states only apply under `html.js`, so a failed script leaves every section visible; `prefers-reduced-motion` removes all movement and keeps content visible, and the tests check that.
+`motion.ts` only observes and sets variables. It also handles pointer depth (`data-depth`), magnetic controls (`data-magnetic`), and a developer grid overlay on the `.` key. Parallax and mobile depth are scroll-driven CSS (`animation-timeline: view()`) where supported, with no JavaScript fallback needed. Hidden states only apply under `html.js`, so a failed script leaves every section visible; `prefers-reduced-motion` removes all movement and keeps content visible, and the tests check that.
 
 **Pinned stories** (`[data-story]`, styles in `work.css` with variants in `pages.css`): a sticky column stays put while `[data-chapter]` items scroll past; the chapter in the upper-middle band of the viewport becomes active and lights the matching `[data-screen]`. Used in three places on purpose - the Tempest flagship (real screens swap per chapter), every project page (*The idea / The challenge / The build*), and the About workflow (the step list is the pinned side). On phones the pinned side sits under the header.
 
