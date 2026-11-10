@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { test, expect, type Page } from '@playwright/test';
 import { PDFDocument } from 'pdf-lib';
 import AxeBuilder from '@axe-core/playwright';
+import { readFileSync } from 'node:fs';
 
 function watch(page: Page) {
   const errors: string[] = [], failed: string[] = [];
@@ -328,34 +329,39 @@ test('smooth scroll runs for a mouse and stays off for touch and reduced motion'
   await touch.close();
 });
 
-for (const width of [320,390,768,1024,1440,1920]) {
-  test(`no overflow or clipped headings at ${width}px`, async ({page}) => {
-    await page.setViewportSize({width,height:900});
-    await page.emulateMedia({reducedMotion:'reduce'});
-    for (const path of ['/', '/about', '/projects/tempest-archive']) {
-      await page.goto(path);
-      await page.evaluate(()=>document.fonts.ready);
-      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth), `${path} overflows at ${width}`).toBe(true);
-      const clipped = await page.locator('h1,h2,h3').evaluateAll(elements=>elements.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.textContent));
-      expect(clipped, `${path} clipped at ${width}`).toEqual([]);
-    }
-    if (width === 390 || width === 1440) {
-      await page.goto('/');
-      // Walk the page so lazy images request, then wait for the network to settle before capturing.
-      await page.evaluate(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += innerHeight * .8) { scrollTo(0, y); await new Promise(r => setTimeout(r, 80)); } scrollTo(0, 0); });
-      await page.waitForLoadState('networkidle');
-      await page.getByRole('link',{name:'Made by Gio, home',exact:true}).click();
-      await page.screenshot({path:`test-results/home-${width}.png`, fullPage:true});
-      await page.goto('/about');
-      await page.screenshot({path:`test-results/about-${width}.png`, fullPage:true});
-      await page.goto('/projects/tempest-archive');
-      await page.evaluate(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += innerHeight * .8) { scrollTo(0, y); await new Promise(r => setTimeout(r, 80)); } scrollTo(0, 0); });
-      await page.waitForLoadState('networkidle');
-      expect(await page.locator('.screens img').evaluateAll(imgs => imgs.every(i => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0)), 'case-study screenshots load').toBe(true);
-      await page.screenshot({path:`test-results/tempest-${width}.png`, fullPage:true});
-    }
-  });
-}
+const checkLayout = (width: number) => async ({page}: {page: Page}) => {
+  await page.setViewportSize({width,height:900});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  for (const path of ['/', '/about', '/projects/tempest-archive']) {
+    await page.goto(path);
+    await page.evaluate(()=>document.fonts.ready);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth), `${path} overflows at ${width}`).toBe(true);
+    const clipped = await page.locator('h1,h2,h3').evaluateAll(elements=>elements.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.textContent));
+    expect(clipped, `${path} clipped at ${width}`).toEqual([]);
+  }
+  if (width === 390 || width === 1440) {
+    await page.goto('/');
+    // Walk the page so lazy images request, then wait for the network to settle before capturing.
+    await page.evaluate(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += innerHeight * .8) { scrollTo(0, y); await new Promise(r => setTimeout(r, 80)); } scrollTo(0, 0); });
+    await page.waitForLoadState('networkidle');
+    await page.getByRole('link',{name:'Made by Gio, home',exact:true}).click();
+    await page.screenshot({path:`test-results/home-${width}.png`, fullPage:true});
+    await page.goto('/about');
+    await page.screenshot({path:`test-results/about-${width}.png`, fullPage:true});
+    await page.goto('/projects/tempest-archive');
+    await page.evaluate(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += innerHeight * .8) { scrollTo(0, y); await new Promise(r => setTimeout(r, 80)); } scrollTo(0, 0); });
+    await page.waitForLoadState('networkidle');
+    expect(await page.locator('.screens img').evaluateAll(imgs => imgs.every(i => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0)), 'case-study screenshots load').toBe(true);
+    await page.screenshot({path:`test-results/tempest-${width}.png`, fullPage:true});
+  }
+};
+
+test('no overflow or clipped headings at 320px', checkLayout(320));
+test('no overflow or clipped headings at 390px', checkLayout(390));
+test('no overflow or clipped headings at 768px', checkLayout(768));
+test('no overflow or clipped headings at 1024px', checkLayout(1024));
+test('no overflow or clipped headings at 1440px', checkLayout(1440));
+test('no overflow or clipped headings at 1920px', checkLayout(1920));
 
 test('desktop navigation: section links activate, About is a real page, back button works', async ({page}) => {
   await page.emulateMedia({reducedMotion:'reduce'});
@@ -548,6 +554,15 @@ test('the full name appears in the title, description, profile and copyright', a
   await expect(page.locator('.about-name strong')).toHaveText('Giorgi Giorgashvili');
 });
 
+test('the quality strip counts browser tests at build time and links to their source', async ({page}) => {
+  const spec = readFileSync(new URL(import.meta.url), 'utf8');
+  const count = (spec.match(/^\s*test\(/gm) ?? []).length;
+  await page.goto('/');
+  const strip = page.getByRole('complementary', {name: 'Portfolio quality checks'});
+  await expect(strip).toContainText(`${count} browser tests - 0 accessibility violations (axe, WCAG 2.1 AA) - tested at 6 screen widths`);
+  await expect(strip.getByRole('link', {name: 'Read the tests'})).toHaveAttribute('href', 'https://github.com/geopero123/portfolio/blob/local/current-site/tests/homepage.spec.ts');
+});
+
 test('local previews do not request the Vercel-only analytics script', async ({page}) => {
   const analytics: string[] = [];
   page.on('request', request => {
@@ -575,7 +590,7 @@ test('no serious accessibility violations on desktop or mobile, all pages', asyn
   for (const path of ['/', '/about', '/projects/tempest-archive']) for (const width of [1440,390]) {
     await page.setViewportSize({width,height:1000});
     await page.goto(path);
-    const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
+    const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
     expect(JSON.stringify(results.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,nodes:v.nodes.map(n=>n.target)})), null, 1), `${path} @ ${width}`).toBe('[]');
   }
 });
