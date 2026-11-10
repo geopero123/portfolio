@@ -21,12 +21,16 @@ const description = p.flagship
 const schema = [
   p.flagship
     ? { "@type": "CreativeWork", "@id": `${SITE.url}/projects/${p.slug}#work`, name: p.name, url: p.live, description, author: { "@type": "Person", name: SITE.fullName, url: SITE.url }, genre: "Fan companion / reference web application", keywords: p.stack.join(', ') }
-    : { "@type": "SoftwareApplication", "@id": `${SITE.url}/projects/${p.slug}#app`, name: p.name, url: p.live, description: p.description, applicationCategory: "UtilitiesApplication", operatingSystem: "Web browser", author: { "@type": "Person", name: SITE.fullName, url: SITE.url }, ...(p.source ? { codeRepository: p.source } : {}) },
+    : { "@type": "SoftwareApplication", "@id": `${SITE.url}/projects/${p.slug}#app`, name: p.name, url: p.live, description: p.description, applicationCategory: p.schemaCategory ?? "UtilitiesApplication", operatingSystem: "Web browser", author: { "@type": "Person", name: SITE.fullName, url: SITE.url }, ...(p.source ? { codeRepository: p.source } : {}) },
 ];
 let section = 0;
 const n = () => String(++section).padStart(2, '0');
 // Pinned story: the frame stays while The idea / The challenge / The build scroll past.
 // Tempest swaps between its real reference screens; tools hold their single screenshot.
+const tone = p.tone ?? (p.flagship ? 'dark' : 'light');
+const stackNote = p.stackNote ?? (p.stack.includes('React 19')
+  ? 'A React 19 application built with Vite and Tailwind CSS. Everything runs in the browser; the build is a static folder deployed to Vercel on its own subdomain.'
+  : 'A single HTML page with inline CSS and plain JavaScript, no framework. Everything runs in the browser and it deploys as a static page on its own subdomain.');
 const storyScreens = p.screens?.length ? [p.screens[2], p.screens[1], p.screens[0]] : [{ image: p.image, alt: p.alt, label: p.name }];
 const storyChapters = (p.story ?? []).map((s, i) => ({ ...s, screen: storyScreens[i % storyScreens.length], index: n() }));
 ---
@@ -35,7 +39,7 @@ const storyChapters = (p.story ?? []).map((s, i) => ({ ...s, screen: storyScreen
     <header class="page-hero shell">
       <p class="eyebrow crumbs" data-m="slide"><a href="/#projects"><Icon /> Work</a><span aria-hidden="true">/</span><span class="section-index">{number}</span><span>{p.type}</span></p>
       <h1 data-m="mask" data-velocity>
-        <span class="line-mask"><span style="--i:0" transition:name={`project-title-${p.slug}`}>{first}</span></span>
+        <span class="line-mask"><span style="--i:0" transition:name={`project-title-${p.slug}`}>{first}</span></span>{rest.length > 0 && ' '}
         {rest.length > 0 && <span class="line-mask"><span class="serif" style="--i:1">{rest.join(' ')}</span></span>}
       </h1>
       <p class="page-lead" data-m="clip" style="--delay:260ms">{p.flagship ? p.description : `${p.tagline} ${p.description}`}</p>
@@ -54,7 +58,7 @@ const storyChapters = (p.story ?? []).map((s, i) => ({ ...s, screen: storyScreen
 
     <div class="project-visual shell" data-depth>
       <div class="depth-layer" style="--dz:.35" data-m="scale">
-        <BrowserFrame image={p.image} alt={p.alt} url={p.live} tone={p.flagship ? 'dark' : 'light'} sizes="(max-width: 760px) 92vw, 82vw" loading="eager" transitionName={`project-image-${p.slug}`} />
+        <BrowserFrame image={p.image} alt={p.alt} url={p.live} tone={tone} sizes="(max-width: 760px) 92vw, 82vw" loading="eager" transitionName={`project-image-${p.slug}`} />
       </div>
     </div>
 
@@ -66,7 +70,7 @@ const storyChapters = (p.story ?? []).map((s, i) => ({ ...s, screen: storyScreen
             <div class="story-frame" data-depth>
               {storyScreens.slice(0, storyChapters.length).map((s, i) => (
                 <div class:list={['story-screen', 'depth-layer', {'is-active': i === 0}]} style="--dz:.5" data-screen={i} aria-hidden={i !== 0}>
-                  <BrowserFrame image={s.image} alt={s.alt} url={p.live} tone={p.flagship ? 'dark' : 'light'} sizes="(max-width: 760px) 92vw, 46vw" />
+                  <BrowserFrame image={s.image} alt={s.alt} url={p.live} tone={tone} sizes="(max-width: 760px) 92vw, 46vw" />
                 </div>
               ))}
             </div>
@@ -128,7 +132,7 @@ const storyChapters = (p.story ?? []).map((s, i) => ({ ...s, screen: storyScreen
         <p class="eyebrow" data-m="slide"><span class="section-index">{n()} /</span> Stack</p>
         <div>
           <h2 id="s-stack" data-m="mask"><span class="line-mask"><span>Built with.</span></span></h2>
-          <p data-m="clip" style="--delay:120ms">{p.flagship ? 'Identified from the production build: a Vite-built React application with Motion for interface transitions, Tailwind for styling, Supabase for accounts, served prerendered from Cloudflare.' : p.stack.includes('React 19') ? 'A React 19 application built with Vite and Tailwind CSS. Everything runs in the browser; the build is a static folder deployed to Vercel on its own subdomain.' : 'A single HTML page with inline CSS and plain JavaScript, no framework. Everything runs in the browser and it deploys as a static page on its own subdomain.'}</p>
+          <p data-m="clip" style="--delay:120ms">{stackNote}</p>
           <TechStrip items={p.stack} delay={200} />
         </div>
       </section>

@@ -10,6 +10,8 @@ import folio from '../assets/projects/folio.png';
 import convert from '../assets/projects/convert.png';
 import qr from '../assets/projects/qr.png';
 import quirePdfPage from '../assets/projects/quire-pdf-page.png';
+import rebirth from '../assets/projects/rebirth.png';
+import siteforge from '../assets/projects/siteforge.png';
 
 const toolsBranch = 'https://github.com/geopero123/Portfolio-setup';
 const toolsRef = 'claude/five-utility-react-apps-ajzt9l';
@@ -49,6 +51,12 @@ export interface Project {
   story?: { heading: string; body: string[] }[];
   /** Accent used only inside this project's own presentation. */
   accent: string;
+  /** Browser-frame chrome that suits the screenshot. Defaults to dark for the flagship, light otherwise. */
+  tone?: 'light' | 'dark';
+  /** One paragraph for the detail page's Stack section. */
+  stackNote?: string;
+  /** schema.org applicationCategory for the detail page. */
+  schemaCategory?: string;
   /** Homepage feature: what it lets people do, one engineering decision, and evidence to inspect. */
   feature?: {
     does: string;
@@ -79,6 +87,8 @@ export const projects: Project[] = [
     mobile: { image: tempestMobile, alt: 'Tempest Archive on a phone, with a bottom tab bar for Archive, Story, Characters and Search' },
     flagship: true,
     accent: '#7cc7dd',
+    tone: 'dark',
+    stackNote: 'A React application built with Vite, with Motion for interface transitions and Tailwind for styling. Supabase handles accounts, and every route is prerendered and served from Cloudflare.',
     feature: {
       does: 'Readers pick how far they have read or watched (Anime, Moderate or Full) and the whole archive follows: character, skill, location and faction indexes, dossiers and the timeline only show what they have reached.',
       decision: {
@@ -264,6 +274,63 @@ export const projects: Project[] = [
     ],
     story: [
       { heading: 'Why', body: ['Most generators will happily hand you a code that looks right and scans wrong, or not at all. SIGNAL treats a QR code as an engineering artefact: one geometry drives the preview, the PNG and the SVG, so they cannot drift apart, and the tool tells you when a design choice will fail on a real scanner.'] },
+    ],
+  },
+  {
+    slug: 'siteforge',
+    name: 'SiteForge',
+    tagline: 'Find what breaks before your users do.',
+    description:
+      'Website and code QA. Give it a URL, a GitHub repository or both: it audits the live site in a real browser and scans the repository, then reports every finding with its evidence, its exact location and a suggested fix.',
+    type: 'Web application',
+    role: 'Design & development',
+    year: '2026',
+    stack: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Supabase', 'Playwright', 'axe-core'],
+    live: 'https://siteforge.madebygio.dev',
+    source: 'https://github.com/geopero123/siteforge',
+    image: siteforge,
+    alt: 'SiteForge landing page on a dark background: the headline "Find what breaks before your users do", a field for a site or GitHub repository with a Run audit button, and a sample report scoring accessibility, security, responsiveness and dependencies',
+    accent: '#7ee2a8',
+    tone: 'dark',
+    schemaCategory: 'DeveloperApplication',
+    stackNote: 'Next.js and React with TypeScript and Tailwind CSS. Supabase provides sign-in, the database and the audit queue; a separate worker drives Chromium through Playwright and runs axe-core on each page.',
+    facts: [
+      { label: 'Real browser audits', text: 'Pages are loaded in Chromium at three viewports (1440×900, 768×1024 and 390×844) and checked with axe, along with console errors, failed requests, overflow and clipping.' },
+      { label: 'Repository scans', text: 'A pinned commit is checked for leaked secrets, risky code patterns, configuration problems and vulnerable dependencies, using OSV.dev for advisories.' },
+      { label: 'Evidence, not guesses', text: 'An AI finding must quote real code from the file it names or it is discarded, and a suggested patch is kept only if every line it removes exists in that file.' },
+      { label: 'Queue and worker', text: 'The app queues each audit and a separate worker runs it, with per-account limits enforced in the database.' },
+    ],
+    story: [
+      { heading: 'What it is', body: ['SiteForge tests a website in a real browser and reads its GitHub repository, then lists each problem with its evidence, where it is and how to fix it. Next.js serves the workspace while a separate worker performs the audits from a queue, so a long audit never blocks the app.'] },
+    ],
+  },
+  {
+    slug: 'tempest-rebirth',
+    name: 'Tempest Rebirth',
+    tagline: 'A 3D action RPG in the browser.',
+    description:
+      'A playable vertical slice of a 3D action RPG: one dense region, combo combat, seven spells that evolve through use and a three-phase boss. Every model, texture, particle and sound is generated in code.',
+    type: 'Browser game',
+    role: 'Design & development',
+    year: '2026',
+    stack: ['TypeScript', 'Three.js', 'GLSL', 'Web Audio', 'Vite'],
+    live: 'https://play.tempestarchive.com',
+    source: 'https://github.com/geopero123/play-tensura',
+    image: rebirth,
+    alt: 'Tempest Rebirth title screen: a low-poly village with pink trees, a campfire and a blue slime, under the gold title "Tempest Rebirth, from slime to sovereign" with Play, Characters and Settings buttons',
+    accent: '#e8c26a',
+    tone: 'dark',
+    schemaCategory: 'GameApplication',
+    stackNote: 'TypeScript and Three.js, built with Vite into a static folder. Rendering uses custom GLSL cel-shading materials and a post-processing chain; all audio is synthesized with the Web Audio API.',
+    facts: [
+      { label: 'No downloaded assets', text: 'Every model, texture, particle, magic circle and sound is generated in code.' },
+      { label: 'Combat', text: 'A four-hit ground combo with a launcher, aerial juggles and a dive finisher, plus hit-stop, perfect dodges and target lock.' },
+      { label: 'Spells that evolve', text: 'Seven spells, each with five evolution tiers unlocked through use; every tier adds a new mechanic.' },
+      { label: 'Rendering', text: 'Custom GLSL cel-shading with bloom, colour grading, vignette, radial blur, speed lines and impact frames.' },
+      { label: 'Synthesized audio', text: 'Footsteps, impacts, spells and ambience, with a sequencer that crossfades exploration, combat, boss and victory music.' },
+    ],
+    story: [
+      { heading: 'What it is', body: ['Tempest Rebirth is a vertical slice rather than a full game: one dense region, a complete combat system and a three-phase boss. Nothing is downloaded. Models, textures, particles and sound are all generated in code, with custom cel-shading on top of Three.js. It is played with keyboard and mouse.'] },
     ],
   },
 ];

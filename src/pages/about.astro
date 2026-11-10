@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Experience from '../components/Experience.astro';
 import Icon from '../components/Icon.astro';
 import TechStrip from '../components/TechStrip.astro';
 import SectionIndex from '../components/SectionIndex.astro';
@@ -18,7 +19,7 @@ const builds = [
   { id: 'fullstack', n: '02', name: 'Full stack', voice: 'default', title: 'From the form to the row.', body: 'Laravel and PHP with MySQL on the server side, Supabase when a project wants auth and a hosted database quickly. Tempest Archive is the largest: a linked content model, accounts, and every route prerendered for search.', examples: [tempest], glyph: 'fullstack' },
   { id: 'interaction', n: '03', name: 'UI & interaction', voice: 'serif', title: 'Motion with a reason.', body: 'Interaction should explain something: what changed, where it went, what is possible now. I build it with CSS and small amounts of TypeScript first, and reach for a library only when it earns its weight.', examples: [tempest, kilo], glyph: 'interaction' },
   { id: 'tools', n: '04', name: 'Web tools', voice: 'mono', title: 'One job, done properly.', body: 'Five browser applications that do real work locally: PDF operations, image compression, Markdown to PDF, file conversion, QR codes and barcodes. No uploads, no accounts.', examples: [quire, kilo, folio, transmute, signal], glyph: 'tools' },
-  { id: 'experiments', n: '05', name: 'Experiments', voice: 'wide', title: 'Small studies.', body: 'The wire sculpture on the home page is one: deterministic geometry rendered on the server, then animated only in response to a pointer. This site itself is another - every section enters differently, on purpose.', examples: [], glyph: 'experiments' },
+  { id: 'experiments', n: '05', name: 'Experiments', voice: 'wide', title: 'Small studies.', body: 'The wire sculpture on the home page is one: deterministic geometry rendered on the server, then animated by pointer movement or touch scrolling. This site itself is another - every section enters differently, on purpose.', examples: [], glyph: 'experiments' },
 ];
 
 const flow = [
@@ -53,6 +54,8 @@ const schema = [{ "@type": "ProfilePage", "@id": `${SITE.url}/about#page`, name:
     <TechStrip items={['React', 'Next.js', 'TypeScript', 'JavaScript', 'HTML', 'CSS / SCSS', 'MUI', 'Laravel', 'PHP', 'MySQL', 'Supabase', 'Git / GitHub', 'Vercel']} label="Things I work with" delay={500} />
     <span class="page-rule" data-m="draw" aria-hidden="true"></span>
   </section>
+
+  <Experience />
 
   <!-- What I build -->
   <section class="shell section-pad" aria-labelledby="builds-title">

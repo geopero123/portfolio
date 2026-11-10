@@ -1,0 +1,14 @@
+---
+/**
+ * Digits rendered as an odometer. Rendered at build time so nothing is rewritten in the
+ * browser (no layout shift); the roll itself is CSS on `.in`.
+ */
+interface Props { text: string; class?: string }
+const { text, class: className } = Astro.props;
+---
+<span class={className} data-m="count">
+  <span class="sr-only">{text}</span>
+  {[...text].map(ch => /\d/.test(ch)
+    ? <span class="digit" aria-hidden="true"><span class="digit-roll" style={`--d:${ch}`}>{Array.from({length: 10}, (_, i) => <span>{i}</span>)}</span></span>
+    : <span aria-hidden="true">{ch}</span>)}
+</span>

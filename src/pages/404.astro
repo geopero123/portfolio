@@ -1,0 +1,20 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Page not found" description="The page you requested could not be found." page="not-found">
+  <section class="page-hero shell" aria-labelledby="not-found-title">
+    <p class="eyebrow">404</p>
+    <h1 id="not-found-title">Page not found</h1>
+    <p class="page-lead">The page you requested could not be found.</p>
+    <div class="hero-actions">
+      <a class="button button-primary" href="/">Back to home</a>
+      <a class="button work-button" href="/#projects">See the work</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .page-hero { padding-bottom: clamp(73px, 9vw, 118px); }
+  .work-button { border-color: var(--color-line); color: var(--color-bright); }
+  .work-button:hover { border-color: var(--color-accent); }
+</style>

@@ -18,7 +18,7 @@ const cards = {
   'social-card': frame(`
 <text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">Giorgi <tspan fill="#f28b63">·</tspan></text>
 <text x="70" y="365" fill="#f1b296" font-family="Georgia,serif" font-style="italic" font-size="89" letter-spacing="-4">React Developer</text>
-<text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">Tempest Archive, QUIRE and four more live browser tools</text>
+<text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">Tempest Archive, QUIRE and six more live projects</text>
 ${rings(950, 315, 35, '#f28b63')}`),
   'og-about': frame(`
 <text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">I build things</text>
@@ -36,6 +36,16 @@ ${rings(950, 315, 35, '#f28b63')}`, {foot: 'What I build, how I build it, and th
 <text x="70" y="365" fill="#a8c29a" font-family="Georgia,serif" font-style="italic" font-size="72" letter-spacing="-3">Writing, without the friction.</text>
 <text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">Markdown editor with live preview and a real PDF engine - React · pdf-lib</text>
 ${rings(950, 300, 28, '#a8c29a')}`, {foot: 'quire.madebygio.dev'}),
+  'og-siteforge': frame(`
+<text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">SiteForge</text>
+<text x="70" y="365" fill="#7ee2a8" font-family="Georgia,serif" font-style="italic" font-size="46" letter-spacing="-2">Find what breaks before your users do.</text>
+<text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">Website and code QA - Next.js · Supabase · Playwright</text>
+${rings(1000, 285, 28, '#7ee2a8')}`, {foot: 'siteforge.madebygio.dev'}),
+  'og-tempest-rebirth': frame(`
+<text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">Tempest Rebirth</text>
+<text x="70" y="365" fill="#e8c26a" font-family="Georgia,serif" font-style="italic" font-size="56" letter-spacing="-2">A 3D action RPG in the browser.</text>
+<text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">TypeScript · Three.js · GLSL · Web Audio</text>
+${rings(1000, 285, 28, '#e8c26a')}`, {foot: 'play.tempestarchive.com'}),
   'og-kilo': frame(`
 <text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">Smaller</text>
 <text x="70" y="365" fill="#c9e28a" font-family="Georgia,serif" font-style="italic" font-size="72" letter-spacing="-3">Make images lighter.</text>
@@ -63,3 +73,13 @@ for (const [name, svg] of Object.entries(cards)) {
   await sharp(Buffer.from(svg)).png().toFile(`public/${name}.png`);
   console.log(`Created public/${name}.png (1200 × 630)`);
 }
+
+const touchIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 64 64">
+<rect width="64" height="64" fill="#131310"/>
+<g fill="#f28b63">
+  <path d="M38 19H27c-8 0-13 5-13 12s5 12 13 12h9v4c0 4-4 6-9 6h-8v-7h8c2 0 3-1 3-3h-3c-12 0-20-4-20-12s8-19 20-19h11v7Zm-8 7h-3c-4 0-6 2-6 5s2 5 6 5h3V26Z"/>
+  <circle cx="48" cy="40" r="5"/>
+</g>
+</svg>`;
+await sharp(Buffer.from(touchIcon)).png().toFile('public/apple-touch-icon.png');
+console.log('Created public/apple-touch-icon.png (180 × 180)');

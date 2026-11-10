@@ -9,7 +9,6 @@ import { initCursorSwarm } from './swarm';
  *   data-depth                                                      pointer depth: sets --mx/--my on the container
  *   data-magnetic                                                   buttons drift toward the pointer
  *   data-velocity                                                   headings skew with scroll velocity (--vel)
- *   data-index / data-index-item / data-index-preview               project index: hover/focus/tap swaps preview
  *
  * Hidden states only apply under `html.js`, so a failed script leaves everything visible.
  * Everything is idempotent per element (`data-motion-ready`) because pages are swapped by the router.
@@ -21,11 +20,12 @@ const cleanups: Array<() => void> = [];
 export function initMotion() {
   cleanups.splice(0).forEach(fn => fn());
   document.documentElement.classList.add('js');
+  // Controls that need scripts ship hidden; each page swap brings new ones (the footer, for one).
+  document.querySelectorAll<HTMLElement>('[data-enhancement]').forEach(el => el.hidden = false);
   entrances();
   depth();
   magnetic();
   velocity();
-  projectIndex();
   story();
   cursor();
   heroType();
@@ -123,44 +123,6 @@ function velocity() {
   };
   addEventListener('scroll', onScroll, {passive:true});
   cleanups.push(() => { removeEventListener('scroll', onScroll); cancelAnimationFrame(frame); els.forEach(el => el.style.removeProperty('--vel')); });
-}
-
-// ── Project index: pointing at a name swaps the preview instantly ──
-function projectIndex() {
-  document.querySelectorAll<HTMLElement>('[data-index]:not([data-index-ready])').forEach(index => {
-    index.dataset.indexReady = '1';
-    const items = [...index.querySelectorAll<HTMLElement>('[data-index-item]')];
-    const previews = [...index.querySelectorAll<HTMLElement>('[data-index-preview]')];
-    const number = index.querySelector<HTMLElement>('[data-index-number]');
-    const select = (slug: string | undefined) => {
-      if (!slug) return;
-      items.forEach(i => i.classList.toggle('is-active', i.dataset.indexItem === slug));
-      previews.forEach(p => { const on = p.dataset.indexPreview === slug; p.classList.toggle('is-active', on); p.toggleAttribute('aria-hidden', !on); });
-      if (number) { const n = items.findIndex(i => i.dataset.indexItem === slug) + 1; number.style.setProperty('--n', String(n)); number.textContent = String(n).padStart(2, '0'); }
-    };
-    items.forEach(item => {
-      const on = () => select(item.dataset.indexItem);
-      // Hover only on fine pointers; on touch, pointerenter would pre-select and defeat the two-tap flow.
-      item.addEventListener('pointerenter', () => { if (fine.matches) on(); });
-      item.addEventListener('focusin', on);
-    });
-    // Touch: first tap previews, second tap follows the link. A tap focuses the link before the
-    // click (which already selects it via focusin), so the gate keeps its own record of what was
-    // tapped. It runs on `window` capture to get ahead of the client router's document listener.
-    let tapped: string | undefined;
-    const firstTap = (e: MouseEvent) => {
-      if (fine.matches) return;
-      const item = (e.target as Element | null)?.closest<HTMLElement>('[data-index-item]');
-      if (!item || !index.contains(item)) return;
-      const slug = item.dataset.indexItem;
-      if (tapped === slug) return;
-      e.preventDefault(); e.stopImmediatePropagation();
-      tapped = slug; select(slug);
-    };
-    addEventListener('click', firstTap, { capture: true });
-    cleanups.push(() => removeEventListener('click', firstTap, { capture: true }));
-    select(items[0]?.dataset.indexItem);
-  });
 }
 
 // ── Pinned story: the frame stays while chapters scroll; the chapter nearest the

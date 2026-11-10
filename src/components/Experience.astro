@@ -1,0 +1,129 @@
+---
+import { education, experience } from '../data/experience';
+import { projects } from '../data/projects';
+import Odometer from './Odometer.astro';
+import SectionIndex from './SectionIndex.astro';
+
+interface Props { n?: string }
+const { n } = Astro.props;
+const stats = [
+  { value: '19', unit: 'months', description: 'Full-stack developer on a live booking platform' },
+  { value: String(projects.length), description: 'Live projects' },
+  { value: '304', description: 'Pages prerendered in Tempest Archive' },
+];
+---
+<section id="experience" class="shell section-pad" aria-labelledby="experience-title">
+  <div class="section-topline">
+    <p class="eyebrow" data-m="slide">{n && <SectionIndex n={n} />} Experience</p>
+  </div>
+  <div class="section-heading">
+    <h2 id="experience-title" data-m="mask">
+      <span class="line-mask"><span>Where I've <em class="serif">worked.</em></span></span>
+    </h2>
+  </div>
+
+  <ul class="xp-stats" aria-label="Experience in numbers">
+    {stats.map(({ value, unit, description }) => (
+      <li class="stat">
+        <p class="stat-value"><Odometer text={value} />{unit && <span class="stat-unit">{unit}</span>}</p>
+        <p class="stat-description">{description}</p>
+      </li>
+    ))}
+  </ul>
+
+  <div class="xp-timeline">
+    <span class="xp-line" data-m="draw" data-from="top" aria-hidden="true"></span>
+    <ol class="xp-list">
+      {experience.map(entry => (
+        <li class="xp-row" data-m="slide">
+          <p class="mono xp-period">{entry.period}</p>
+          <div>
+            <h3>{entry.role}</h3>
+            {entry.organization && <p class="xp-organization">{entry.organization}</p>}
+            {entry.description.map(line => <p class="xp-description">{line}</p>)}
+            {entry.stack && <p class="mono xp-stack">{entry.stack.join(' / ')}</p>}
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+
+  <div class="xp-education">
+    <h3 class="eyebrow">Education</h3>
+    <ul>
+      {education.map(entry => (
+        <li data-m="slide">
+          {entry.href ? <a href={entry.href}>{entry.name}</a> : <strong>{entry.name}</strong>}
+          <p class="mono">{entry.detail}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .xp-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 30px;
+    border-block: 1px solid var(--color-line);
+  }
+  .stat { padding: 20px clamp(12px, 3vw, 40px); }
+  .stat:first-child { padding-left: 0; }
+  .stat + .stat { border-left: 1px solid var(--color-line); }
+  .stat-value {
+    display: flex;
+    align-items: baseline;
+    gap: .24em;
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: clamp(28px, 5vw, 64px);
+    line-height: 1;
+    letter-spacing: -.055em;
+  }
+  .stat-unit { font-size: .38em; letter-spacing: 0; }
+  .stat-description { font-size: 13px; margin-top: 8px; max-width: 28ch; }
+  .xp-timeline { position: relative; margin-top: 42px; }
+  .xp-line {
+    position: absolute;
+    inset: 12px auto 0 4px;
+    width: 1px;
+    background: var(--color-line);
+  }
+  .xp-list { list-style: none; margin: 0; padding: 0 0 0 26px; }
+  .xp-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(150px, 1fr) 3fr;
+    gap: 20px;
+    padding-bottom: 32px;
+  }
+  .xp-row:last-child { padding-bottom: 0; }
+  .xp-row::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: -26px;
+    width: 9px;
+    height: 9px;
+    border: 1px solid var(--color-accent);
+    border-radius: 50%;
+    background: var(--color-ink);
+  }
+  .xp-period { color: var(--color-accent); padding-top: 4px; font-size: 11px; }
+  .xp-row h3 { font-size: clamp(18px, 2vw, 24px); }
+  .xp-organization { color: var(--color-bright); margin-top: 3px; }
+  .xp-description { max-width: 68ch; margin-top: 8px; }
+  .xp-stack { margin-top: 12px; }
+  .xp-education { margin-top: 46px; padding-top: 18px; border-top: 1px solid var(--color-line); }
+  .xp-education ul { display: grid; gap: 12px 24px; grid-template-columns: repeat(2, 1fr); margin-top: 12px; }
+  .xp-education a, .xp-education strong { color: var(--color-bright); font-weight: 500; }
+  .xp-education a { text-decoration: underline; text-underline-offset: 3px; }
+  .xp-education a:hover { color: var(--color-accent); }
+
+  @media (max-width: 760px) {
+    .stat-description { font-size: 11px; }
+    .xp-row { grid-template-columns: 1fr; gap: 6px; }
+    .xp-education ul { grid-template-columns: 1fr; }
+  }
+</style>

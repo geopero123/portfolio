@@ -1,15 +1,7 @@
 ---
-/**
- * Section number as an odometer. Rendered at build time so nothing is rewritten in the
- * browser (no layout shift); the roll itself is CSS on `.in`.
- */
+import Odometer from './Odometer.astro';
+
 interface Props { n: string; class?: string }
 const { n, class: className } = Astro.props;
-const text = `${n} /`;
 ---
-<span class:list={['section-index', className]} data-m="count">
-  <span class="sr-only">{text}</span>
-  {[...text].map(ch => /\d/.test(ch)
-    ? <span class="digit" aria-hidden="true"><span class="digit-roll" style={`--d:${ch}`}>{Array.from({length: 10}, (_, i) => <span>{i}</span>)}</span></span>
-    : <span aria-hidden="true">{ch}</span>)}
-</span>
+<Odometer class={className ? `section-index ${className}` : 'section-index'} text={`${n} /`} />

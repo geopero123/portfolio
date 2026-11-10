@@ -11,22 +11,27 @@ const layers = [
   { id: 'back', name: 'Backend', note: 'The logic that holds it together.', items: ['Laravel', 'PHP', 'MySQL', 'Supabase'] },
   { id: 'ship', name: 'Workflow', note: 'From branch to production.', items: ['Git / GitHub', 'Vite', 'Vercel', 'Cloudflare'] },
 ];
+const stackSources = [...projects, {
+  slug: 'booking-platform',
+  name: 'Booking platform (work)',
+  stack: ['React', 'Next.js', 'JavaScript', 'HTML', 'CSS / SCSS', 'MUI', 'Laravel', 'PHP'],
+}];
 // Normalise stack labels so "React 19" lights "React", "Motion" is its own thing, etc.
 const key = (s: string) => s.toLowerCase().replace(/\s*\d+$/, '').replace(/[^a-z/]/g, '');
-const uses = (tech: string) => projects.filter(p => p.stack.some(s => key(s) === key(tech))).map(p => p.slug).join(' ');
+const uses = (tech: string) => stackSources.filter(p => p.stack.some(s => key(s) === key(tech))).map(p => p.slug).join(' ');
 ---
 <section id="stack" class="stack-section shell section-pad" aria-labelledby="stack-title">
-  <div class="section-topline"><p class="eyebrow"><SectionIndex n="02" /> The toolkit</p><span class="mono subtle" data-m="slide" data-from="right">Good tools. Better possibilities.</span></div>
+  <div class="section-topline"><p class="eyebrow"><SectionIndex n="03" /> The toolkit</p><span class="mono subtle" data-m="slide" data-from="right">Good tools. Better possibilities.</span></div>
   <div class="section-heading">
     <h2 id="stack-title" data-m="mask" data-velocity><span class="line-mask"><span style="--i:0">Built on</span></span><span class="line-mask"><span class="serif" style="--i:1">solid foundations.</span></span></h2>
-    <p data-m="clip" style="--delay:200ms">From the first pixel<br />to the last database query.</p>
+    <p data-m="clip" style="--delay:200ms">From the first pixel<br /> to the last database query.</p>
   </div>
 
   <div class="stack-map" data-stack>
     <div class="stack-rail" role="group" aria-label="Highlight the stack behind a project">
       <span class="mono stack-rail-label">Show what powers</span>
       <button type="button" class="stack-chip is-active" data-stack-project="" aria-pressed="true">Everything</button>
-      {projects.map(p => <button type="button" class="stack-chip" data-stack-project={p.slug} aria-pressed="false">{p.name}</button>)}
+      {stackSources.map(p => <button type="button" class="stack-chip" data-stack-project={p.slug} aria-pressed="false">{p.name}</button>)}
     </div>
     <div class="stack-layers">
       {layers.map((layer, i) => (

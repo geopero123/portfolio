@@ -16,7 +16,7 @@ test('home loads without browser errors, missing assets, or broken anchors', asy
   await page.locator('#contact').scrollIntoViewIfNeeded();
   await expect(page.locator('#tempest')).toContainText('Tempest');
   await expect(page.locator('article.feature')).toHaveCount(2);
-  await expect(page.locator('.tool-card')).toHaveCount(4);
+  await expect(page.locator('.tool-card')).toHaveCount(6);
   expect(await page.evaluate(() => [...document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')].filter(a => !document.querySelector(a.hash)).map(a => a.hash))).toEqual([]);
   expect(errors).toEqual([]);
   expect(failed).toEqual([]);
@@ -72,17 +72,24 @@ test('QUIRE is featured with a real exported PDF and links into the PDF engine s
   await expect(quire.getByRole('link', {name: /Link annotations/})).toHaveAttribute('href', /Portfolio-setup\/blob\/claude\/five-utility-react-apps-ajzt9l\/05-markdown-to-pdf\/src\/lib\/pdf\.js#L346$/);
 });
 
-test('secondary tools show the names and domains of the live apps', async ({page}) => {
+test('secondary projects show the names and domains of the live apps', async ({page}) => {
   await page.goto('/');
   const cards = page.locator('.tool-card');
-  const expected = [['Smaller', 'kilo.madebygio.dev'], ['Folio', 'folio.madebygio.dev'], ['Transmute', 'convert.madebygio.dev'], ['SIGNAL', 'qr.madebygio.dev']];
-  for (const [i, [name, domain]] of expected.entries()) {
+  const expected = [
+    ['SiteForge', 'siteforge.madebygio.dev', 'siteforge'],
+    ['Tempest Rebirth', 'play.tempestarchive.com', 'play-tensura'],
+    ['Transmute', 'convert.madebygio.dev', 'Portfolio-setup'],
+    ['SIGNAL', 'qr.madebygio.dev', 'Portfolio-setup'],
+    ['Folio', 'folio.madebygio.dev', 'Portfolio-setup'],
+    ['Smaller', 'kilo.madebygio.dev', 'Portfolio-setup'],
+  ];
+  for (const [i, [name, domain, repo]] of expected.entries()) {
     await expect(cards.nth(i).locator('h4')).toHaveText(name);
     await expect(cards.nth(i).getByRole('link', {name: `${name} live at ${domain}`})).toHaveAttribute('href', `https://${domain}`);
-    await expect(cards.nth(i).getByRole('link', {name: `${name} source code`})).toHaveAttribute('href', /github\.com\/geopero123\/Portfolio-setup/);
+    await expect(cards.nth(i).getByRole('link', {name: `${name} source code`})).toHaveAttribute('href', new RegExp(`^https://github[.]com/geopero123/${repo}(?:/|$)`));
   }
   await expect(page.getByText('KILO', {exact: true})).toHaveCount(0);
-  await cards.nth(0).getByRole('link', {name: 'Smaller details'}).click();
+  await cards.getByRole('link', {name: 'Smaller details'}).click();
   await expect(page).toHaveURL(/\/projects\/kilo\/?$/);
   await expect(page.locator('h1')).toHaveText('Smaller');
 });
@@ -149,6 +156,35 @@ test('contact shows only verified channels and links to the current site source'
   await expect(page.locator('.study-note a').first()).toHaveAttribute('href', 'https://github.com/geopero123/portfolio/blob/local/current-site/src/lib/sculpture.ts');
 });
 
+test('Experience shows the booking platform dates on home and About', async ({page}) => {
+  for (const path of ['/', '/about']) {
+    await page.goto(path);
+    const experience = page.getByRole('region', {name: "Where I've worked."});
+    await expect(experience.getByText('Feb 2025 - Sep 2026', {exact: true})).toBeVisible();
+  }
+});
+
+test('Copy email writes the address to the clipboard and shows Copied', async ({page, context}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/#contact');
+  const contact = page.locator('#contact');
+  const button = contact.getByRole('button', {name: 'Copy email', exact: true});
+  const mailto = await contact.locator('.contact-list a[href^="mailto:"]').getAttribute('href');
+  expect(mailto).toBeTruthy();
+  await button.click();
+  await expect(contact.getByRole('button', {name: 'Copied', exact: true})).toBeVisible();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(mailto!.slice('mailto:'.length));
+  await expect(button).toBeVisible();
+});
+
+test('an unknown route serves the custom 404 page with a way home', async ({page}) => {
+  const response = await page.goto('/nope');
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole('heading', {level: 1, name: 'Page not found'})).toBeVisible();
+  await expect(page.getByRole('link', {name: 'Back to home'})).toHaveAttribute('href', '/');
+  await expect(page.getByRole('link', {name: 'See the work'})).toHaveAttribute('href', '/#projects');
+});
+
 test('résumé is reachable from the first screen, the header and Contact, and is a one-page PDF', async ({page, request}) => {
   await page.goto('/');
   await expect(page.locator('.hero-actions').getByRole('link', {name: /Résumé/})).toHaveAttribute('href', '/giorgi-resume.pdf');
@@ -184,6 +220,15 @@ test('smooth scroll runs for a mouse and stays off for touch and reduced motion'
   const tp = await touch.newPage();
   await tp.goto('/');
   await expect(tp.locator('html')).not.toHaveClass(/lenis/);
+  const ring = tp.locator('[data-ring="0"]');
+  const initial = await ring.getAttribute('d');
+  await tp.evaluate(() => scrollTo({top: 240, behavior: 'instant'}));
+  await expect.poll(() => ring.getAttribute('d')).not.toBe(initial);
+  await tp.emulateMedia({reducedMotion: 'reduce'});
+  await expect.poll(() => ring.getAttribute('d')).toBe(initial);
+  await tp.evaluate(() => scrollTo({top: 300, behavior: 'instant'}));
+  await tp.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
+  await expect(ring).toHaveAttribute('d', initial!);
   await touch.close();
 });
 
@@ -231,6 +276,25 @@ test('desktop navigation: section links activate, About is a real page, back but
   await page.goBack();
   await expect(page).toHaveURL(/\/(#home)?$/);
   await expect(page.locator('h1')).toHaveText(/Giorgi\s*·\s*React Developer/);
+});
+
+test('the desktop nav dot sits under the active link', async ({page}) => {
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.goto('/');
+  const nav = page.getByRole('navigation', {name: 'Main navigation'});
+  const indicator = nav.locator('[data-nav-indicator]');
+  for (const name of ['Home', 'Work', 'About']) {
+    const link = nav.getByRole('link', {name, exact: true});
+    await link.click();
+    await expect(link).toHaveAttribute('aria-current', /^(location|page)$/);
+    await expect(indicator).toHaveCSS('opacity', '1');
+    await expect.poll(async () => {
+      const [dot, active] = await Promise.all([indicator.boundingBox(), link.boundingBox()]);
+      if (!dot || !active) return false;
+      const center = dot.x + dot.width / 2;
+      return center >= active.x && center <= active.x + active.width;
+    }).toBe(true);
+  }
 });
 
 test('mobile menu traps focus, closes with Escape, navigates, and resets on resize', async ({page}) => {
@@ -329,6 +393,7 @@ test('the pages remain useful with JavaScript disabled', async ({browser}) => {
   await page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'Contact',exact:true}).click();
   await expect(page).toHaveURL(/#contact$/);
   await expect(page.locator('#contact h2')).toBeVisible();
+  await expect(page.locator('[data-copy-email]')).toBeHidden();
   await page.goto('/about');
   await expect(page.locator('h1')).toBeVisible();
   await expect(page.locator('#panel-frontend')).toBeVisible();
@@ -356,7 +421,7 @@ test('about page: tabs, workflow, and source list work', async ({page}) => {
 
 test('every project page renders with live link, real stack and metadata', async ({page}) => {
   const {errors, failed} = watch(page);
-  for (const slug of ['tempest-archive', 'quire', 'kilo', 'folio', 'transmute', 'signal']) {
+  for (const slug of ['tempest-archive', 'quire', 'kilo', 'folio', 'transmute', 'signal', 'siteforge', 'tempest-rebirth']) {
     await page.goto(`/projects/${slug}`);
     await expect(page.locator('h1')).toBeVisible();
     await expect(page.getByRole('link', {name: /Visit the live site/})).toHaveAttribute('href', /^https:\/\//);

@@ -26,7 +26,18 @@ const canonical = new URL(Astro.url.pathname, site);
 const isHome = Astro.url.pathname === '/';
 const graph: Record<string, unknown>[] = isHome
   ? [
-      { "@type": "Person", "@id": `${SITE.url}/#person`, name: SITE.fullName, alternateName: SITE.author, url: SITE.url, jobTitle: SITE.role, sameAs: Object.values(SITE.socials).filter(href => href.startsWith('https://')) },
+      {
+        "@type": "Person",
+        "@id": `${SITE.url}/#person`,
+        name: SITE.fullName,
+        alternateName: SITE.author,
+        url: SITE.url,
+        jobTitle: SITE.role,
+        email: SITE.socials.email || undefined,
+        address: { "@type": "PostalAddress", addressLocality: "Tbilisi", addressCountry: "GE" },
+        knowsAbout: ['React', 'Next.js', 'TypeScript', 'JavaScript', 'Tailwind CSS', 'Laravel', 'PHP', 'MySQL'],
+        sameAs: Object.values(SITE.socials).filter(href => href.startsWith('https://')),
+      },
       { "@type": "WebSite", "@id": `${SITE.url}/#website`, url: SITE.url, name: SITE.name, publisher: { "@id": `${SITE.url}/#person` } },
       ...schema,
     ]
@@ -38,6 +49,7 @@ const graph: Record<string, unknown>[] = isHome
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="canonical" href={canonical} />
     <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />

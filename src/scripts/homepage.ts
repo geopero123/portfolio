@@ -1,6 +1,6 @@
 import { shapePath } from '../lib/sculpture';
 
-/** The hero sculpture: only a pointer or a deliberate control causes motion. */
+/** The hero sculpture responds to pointer movement, touch scrolling and its controls. */
 export function initSculpture() {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const fine = matchMedia('(hover: hover) and (pointer: fine)');
@@ -8,6 +8,8 @@ export function initSculpture() {
   const stage = study?.querySelector<HTMLElement>('[data-shape-stage]');
   if (!study || !stage || study.dataset.ready) return;
   study.dataset.ready = '1';
+  const lifetime = new AbortController();
+  const { signal } = lifetime;
   const paths = [...study.querySelectorAll<SVGPathElement>('[data-ring]')];
   const buttons = [...study.querySelectorAll<HTMLButtonElement>('[data-shape]')];
   const inspect = study.querySelector<HTMLButtonElement>('[data-inspect]');
@@ -45,7 +47,21 @@ export function initSculpture() {
     study.style.setProperty('--light-y', `${y*26}px`);
     schedule();
   });
-  stage.addEventListener('pointerleave', () => { target.pitch = 0; target.yaw = 0; schedule(); });
+  stage.addEventListener('pointerleave', () => {
+    if (!fine.matches) return;
+    target.pitch = 0;
+    target.yaw = 0;
+    schedule();
+  });
+  addEventListener('scroll', () => {
+    if (!visible || fine.matches || reduced.matches) return;
+    const { top, height } = stage.getBoundingClientRect();
+    const center = top + height / 2;
+    const tilt = Math.max(-.5, Math.min(.5, center / innerHeight - .5));
+    target.pitch = tilt * .42;
+    target.yaw = tilt * .65;
+    schedule();
+  }, { passive: true, signal });
   buttons.forEach(button => button.addEventListener('click', () => {
     target.morph = Number(button.dataset.shape);
     buttons.forEach(item => item.setAttribute('aria-pressed', String(item===button)));
@@ -61,13 +77,19 @@ export function initSculpture() {
   reduced.addEventListener('change', () => {
     stop(); target.pitch = 0; target.yaw = 0; Object.assign(current,target); draw();
     study.style.removeProperty('--light-x'); study.style.removeProperty('--light-y');
-  });
+  }, { signal });
   if ('IntersectionObserver' in window) {
-    new IntersectionObserver(entries => {
+    const observer = new IntersectionObserver(entries => {
       visible = entries[0].isIntersecting;
       if (!visible) stop(); else schedule();
-    }, {threshold:0}).observe(stage);
+    }, {threshold:0});
+    observer.observe(stage);
+    signal.addEventListener('abort', () => observer.disconnect(), { once: true });
   }
-  document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else schedule(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else schedule(); }, { signal });
+  document.addEventListener('astro:before-swap', () => {
+    lifetime.abort();
+    stop();
+  }, { once: true });
   document.querySelectorAll<HTMLElement>('[data-enhancement]').forEach(el => el.hidden = false);
 }

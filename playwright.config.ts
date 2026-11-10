@@ -7,7 +7,7 @@ export default defineConfig({
   reporter: 'list',
   use: {
     baseURL: 'http://127.0.0.1:4322',
-    channel: 'chrome',
+    ...(process.env.PW_CHANNEL === '' ? {} : { channel: process.env.PW_CHANNEL ?? 'chrome' }),
     headless: true,
     viewport: {width:1440,height:1000},
     screenshot: 'only-on-failure',

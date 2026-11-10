@@ -12,11 +12,11 @@ import SectionIndex from './SectionIndex.astro';
 /**
  * Selected work. Two featured projects, each in the same order a reviewer asks:
  * what does it let people do → my role → one engineering decision → evidence to inspect.
- * The other four tools follow as a compact grid with their real names and domains.
+ * The other six projects follow as a compact grid with their real names and domains.
  */
 const tempest = getProject('tempest-archive')!;
 const quire = getProject('quire')!;
-const secondary = ['kilo', 'folio', 'transmute', 'signal'].map(slug => getProject(slug)!);
+const secondary = ['siteforge', 'tempest-rebirth', 'transmute', 'signal', 'folio', 'kilo'].map(slug => getProject(slug)!);
 const host = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 const external = (href: string) => /^https?:/.test(href);
 
@@ -133,14 +133,14 @@ const features: { p: Project; n: string; kind: string }[] = [
 
   <div class="shell more-work" aria-labelledby="more-title">
     <div class="more-head">
-      <h3 id="more-title">More browser tools</h3>
-      <p>Each one does its work in the tab, on your device. All four are live.</p>
+      <h3 id="more-title">More projects</h3>
+      <p>A QA tool, a 3D browser game and four tools that work on your device. All six are live.</p>
     </div>
     <ul class="tool-grid">
       {secondary.map(p => (
         <li class="tool-card" style={`--tool-accent:${p.accent}`}>
           <a class="tool-shot" href={p.live} target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">
-            <Image src={p.image} alt="" widths={[400, 640, 900]} sizes="(max-width: 760px) 92vw, (max-width: 1100px) 46vw, 23vw" format="webp" quality={80} loading="lazy" decoding="async" />
+            <Image src={p.image} alt="" widths={[400, 640, 900]} sizes="(max-width: 760px) 92vw, (max-width: 1100px) 46vw, (max-width: 1600px) 30vw, 480px" format="webp" quality={80} loading="lazy" decoding="async" />
           </a>
           <div class="tool-body">
             <h4><a href={`/projects/${p.slug}`} transition:name={`project-title-${p.slug}`}>{p.name}</a></h4>

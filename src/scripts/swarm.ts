@@ -74,8 +74,8 @@ export function initCursorSwarm(): () => void {
       '.hero-intro', '.hero h1 .line-mask', '.hero-description', '.hero-actions', '.hero-role',
       '.study-heading', '.shape-stage', '.study-controls', '.hero-baseline > *',
       'main [data-m]', 'main .section-topline', 'main p', 'main h1:not(.hero h1)', 'main h2', 'main h3',
-      'main .flagship-visual', 'main .story-visual', 'main .story-chapter', 'main .pindex-preview',
-      'main .spot-links', 'main .stack-rail', 'main .tech-strip', 'main a.button', 'main a.text-link',
+      'main .story-visual', 'main .story-chapter', 'main .spoiler-frame', 'main .pdf-demo', 'main .tool-card',
+      'main .xp-row', 'main .stat', 'main .stack-rail', 'main .tech-strip', 'main a.button', 'main a.text-link',
       'footer.site-footer > *',
     ];
     const candidates = [...document.querySelectorAll<HTMLElement>(selectors.join(','))]
@@ -89,7 +89,7 @@ export function initCursorSwarm(): () => void {
     }).map(el => {
       const rect = el.getBoundingClientRect();
       const visual = !!el.querySelector('img, canvas, svg.sculpture') || el.matches('.shape-stage');
-      const kind: Job['kind'] = visual ? 'place' : el.matches('.section-topline, .tech-strip, .study-controls, .hero-actions, .flagship-actions, [aria-hidden="true"]') ? 'draw' : 'type';
+      const kind: Job['kind'] = visual ? 'place' : el.matches('.section-topline, .tech-strip, .study-controls, .hero-actions, .feature-actions, [aria-hidden="true"]') ? 'draw' : 'type';
       el.dataset.swarmPiece = kind;
       el.style.setProperty('--swarm-reveal', '100%');
       const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || rect.height;
@@ -121,7 +121,7 @@ export function initCursorSwarm(): () => void {
     enabled = false; finish(); stop(); pen.clearRect(0, 0, width, height);
     updateControls();
     // The skip button disappears; keep keyboard users next to where they were.
-    if (hadFocus) replays.find(button => button.closest('.swarm-controls'))?.focus();
+    if (hadFocus) replays.find(button => button.getClientRects().length > 0)?.focus();
   }
   function replayBuild() {
     if (enabled && jobs.some(job => job.state !== 'done')) return;
@@ -267,16 +267,8 @@ export function initCursorSwarm(): () => void {
   reduced.addEventListener('change', preference, { signal });
   // A safety valve also reveals any unfinished offscreen blocks after a script interruption.
   document.addEventListener('astro:before-swap', finish, { signal });
-  // While the hero's own "Replay build" is on screen, the floating copy would just repeat it.
-  const inline = replays.find(button => !button.closest('.swarm-controls'));
-  let inlineObserver: IntersectionObserver | undefined;
-  if (inline && 'IntersectionObserver' in window) {
-    inlineObserver = new IntersectionObserver(([entry]) => { host.dataset.inlineReplay = entry.isIntersecting ? 'visible' : 'hidden'; });
-    inlineObserver.observe(inline);
-  } else delete host.dataset.inlineReplay;
   resize(); updateControls();
   return () => {
-    inlineObserver?.disconnect(); delete host.dataset.inlineReplay;
     destroyed = true; stop(); abort.abort(); finish();
     document.documentElement.classList.remove('swarm-active');
     pen.clearRect(0, 0, width, height);
