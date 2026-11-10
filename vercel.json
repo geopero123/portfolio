@@ -5,7 +5,7 @@
   "outputDirectory": "dist",
   "redirects": [
     {
-      "source": "/:path*",
+      "source": "/:path(.*)",
       "destination": "https://madebygio.dev/:path*",
       "permanent": true,
       "has": [{ "type": "host", "value": "www.madebygio.dev" }]
