@@ -16,14 +16,14 @@ ${body}
 
 const cards = {
   'social-card': frame(`
-<text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">Giorgi <tspan fill="#f28b63">·</tspan></text>
+<text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">Giorgi Giorgashvili <tspan fill="#f28b63">·</tspan></text>
 <text x="70" y="365" fill="#f1b296" font-family="Georgia,serif" font-style="italic" font-size="89" letter-spacing="-4">React Developer</text>
 <text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">Tempest Archive, QUIRE and six more live projects</text>
 ${rings(950, 315, 35, '#f28b63')}`),
   'og-about': frame(`
 <text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">I build things</text>
 <text x="70" y="365" fill="#f1b296" font-family="Georgia,serif" font-style="italic" font-size="89" letter-spacing="-4">for the web.</text>
-<text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">About Giorgi (Gio) - React Developer</text>
+<text x="73" y="425" fill="#a7a79d" font-family="Arial,sans-serif" font-size="23">About Giorgi Giorgashvili (Gio) - React Developer</text>
 ${rings(950, 315, 35, '#f28b63')}`, {foot: 'What I build, how I build it, and the stack behind it.'}),
   'og-tempest-archive': frame(`
 <text x="70" y="267" fill="#f0ede6" font-family="Arial,sans-serif" font-size="85" letter-spacing="-5">Tempest</text>

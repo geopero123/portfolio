@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import Analytics from '@vercel/analytics/astro';
 import "../styles/global.css";
 import { SITE } from "../site.config";
 import Navigation from "../components/Navigation.astro";
@@ -35,6 +36,7 @@ const graph: Record<string, unknown>[] = isHome
         jobTitle: SITE.role,
         email: SITE.socials.email || undefined,
         address: { "@type": "PostalAddress", addressLocality: "Tbilisi", addressCountry: "GE" },
+        knowsLanguage: SITE.languages.map(language => language.code),
         knowsAbout: ['React', 'Next.js', 'TypeScript', 'JavaScript', 'Tailwind CSS', 'Laravel', 'PHP', 'MySQL'],
         sameAs: Object.values(SITE.socials).filter(href => href.startsWith('https://')),
       },
@@ -76,6 +78,7 @@ const graph: Record<string, unknown>[] = isHome
     </script>
     {graph.length > 0 && <script is:inline type="application/ld+json" set:html={JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(/</g, "\\u003c")} />}
     <ClientRouter />
+    {process.env.VERCEL === '1' && <Analytics scriptSrc="/_vercel/insights/script.js" />}
   </head>
   <body data-page={page}>
     <a href="#main" class="skip-link">Skip to content</a>

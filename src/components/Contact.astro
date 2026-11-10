@@ -52,6 +52,13 @@ const lead = primary.kind === 'email' ? 'Email is quickest.' : primary.kind === 
     background: transparent;
   }
   .copy-email:hover { background: #555c411a; }
+
+  @media (max-width: 760px) {
+    .contact-email-row { display: block; }
+    .contact-email-row .contact-value { white-space: nowrap; }
+    .copy-email { display: block; margin: 0 0 4px 54px; }
+    :global(.js) .contact-email-row:has(.copy-email[hidden]) { padding-bottom: 48px; }
+  }
 </style>
 
 <script>

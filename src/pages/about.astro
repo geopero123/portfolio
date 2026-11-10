@@ -39,15 +39,15 @@ const source = [
   { name: '04-qr-generator', note: 'SIGNAL - QR codes with tested escaping, nine barcode symbologies.', lang: 'React', href: signal.source! },
 ];
 
-const description = "Gio (Giorgi) is a React and full-stack web developer building Tempest Archive and a set of focused browser tools. How I work, what I build, and the stack behind it.";
-const schema = [{ "@type": "ProfilePage", "@id": `${SITE.url}/about#page`, name: "About Gio", url: `${SITE.url}/about`, mainEntity: { "@type": "Person", name: SITE.fullName, alternateName: SITE.author, jobTitle: SITE.role, url: SITE.url, sameAs: [SITE.socials.github], knowsAbout: ['React', 'Next.js', 'TypeScript', 'Laravel', 'PHP', 'MySQL', 'Supabase'] } }];
+const description = `${SITE.fullName} (Gio) is a React and full-stack web developer building Tempest Archive and a set of focused browser tools. How I work, what I build, and the stack behind it.`;
+const schema = [{ "@type": "ProfilePage", "@id": `${SITE.url}/about#page`, name: "About Gio", url: `${SITE.url}/about`, mainEntity: { "@type": "Person", name: SITE.fullName, alternateName: SITE.author, jobTitle: SITE.role, url: SITE.url, sameAs: [SITE.socials.github], knowsLanguage: SITE.languages.map(language => language.code), knowsAbout: ['React', 'Next.js', 'TypeScript', 'Laravel', 'PHP', 'MySQL', 'Supabase'] } }];
 ---
 <Layout title="About" description={description} page="about" schema={schema} image="/og-about.png">
   <section class="page-hero shell" aria-labelledby="about-heading">
-    <p class="eyebrow" data-m="slide"><span class="section-index">About</span> Gio / Giorgi</p>
+    <p class="eyebrow" data-m="slide"><span class="section-index">About</span> Gio</p>
     <h1 id="about-heading" data-m="mask" data-velocity><span class="line-mask"><span style="--i:0">I build things</span></span><span class="line-mask"><span class="serif" style="--i:1">for the web.</span></span></h1>
     <div class="about-name" data-m="stagger" style="--delay:300ms">
-      <strong>Gio<span>/</span>Giorgi</strong>
+      <strong>{SITE.fullName}</strong>
       <span class="mono">{SITE.role}</span>
     </div>
     <p class="page-lead" data-m="clip" style="--delay:380ms">Mostly React, increasingly the whole stack. I like a small idea executed carefully more than a big idea executed loosely - and I like shipping it to a real domain even more.</p>

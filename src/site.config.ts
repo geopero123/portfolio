@@ -6,10 +6,15 @@ export const SITE = {
   url: "https://madebygio.dev",
   name: "madebygio",
   author: "Gio",
-  fullName: "Giorgi",
+  fullName: "Giorgi Giorgashvili",
   role: "React Developer",
-  titleDefault: "Giorgi · React Developer - madebygio",
-  description: "Giorgi (Gio), React developer. I build React apps like Tempest Archive, a spoiler-aware reference site, and browser tools that process files on your device.",
+  titleDefault: "Giorgi Giorgashvili - React Developer",
+  description: "Giorgi Giorgashvili (Gio), React developer. I build React apps like Tempest Archive, a spoiler-aware reference site, and browser tools that process files on your device.",
+  languages: [
+    { code: "ka", label: "Georgian (native)" },
+    { code: "en", label: "English (B2-C1)" },
+    { code: "de", label: "German (basic)" },
+  ],
   ogImage: "/social-card.png",
   socials: {
     github: "https://github.com/geopero123",

@@ -288,7 +288,8 @@ main:focus { outline: none; }
 .site-footer { min-height: 115px; display: flex; align-items: center; justify-content: space-between; gap: 25px; }
 .site-footer .wordmark { font-size: 20px; }
 .site-footer>p { font-size: 10px; }
-.site-footer>div { display: flex; align-items: center; gap: 30px; }
+.site-footer>div { display: flex; align-items: center; flex-wrap: wrap; gap: 0 30px; }
+.site-footer>div :is(a, button) { white-space: nowrap; }
 .site-footer>div>a { display: inline-flex; align-items: center; gap: 9px; font-size: 11px; min-height: 44px; }
 .site-footer>div>a:hover { color: var(--color-bright); }
 .site-footer svg { width: 13px; height: 13px; }
@@ -441,7 +442,7 @@ main:focus { outline: none; }
   .site-footer { flex-wrap: wrap; min-height: auto; padding-block: 30px 24px; gap: 14px; }
   .site-footer .wordmark { font-size: 19px; }
   .site-footer>p { order: 3; width: 100%; font-size: 9px; }
-  .site-footer>div { gap: 16px; }
+  .site-footer>div { column-gap: 16px; }
   .site-footer>div>a { font-size: 10px; gap: 5px; }
 }
 @media (max-width: 370px) {

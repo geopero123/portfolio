@@ -164,6 +164,47 @@ test('Experience shows the booking platform dates on home and About', async ({pa
   }
 });
 
+test('footer labels wrap as whole controls on a phone', async ({page}) => {
+  await page.setViewportSize({width: 320, height: 800});
+  await page.goto('/');
+  const footer = page.locator('footer');
+  await expect(footer.getByRole('button', {name: 'Replay build'})).toBeVisible();
+  const labels = footer.locator('div').first().locator('a, button');
+  const wraps = await labels.evaluateAll(controls => controls.map(el => getComputedStyle(el).whiteSpace));
+  expect(wraps.every(value => value === 'nowrap')).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('the email address stays on one line at 320px with Copy email below it', async ({page}) => {
+  await page.setViewportSize({width: 320, height: 800});
+  await page.goto('/#contact');
+  const address = page.locator('.contact-email-row .contact-value');
+  await expect(page.getByRole('button', {name: 'Copy email', exact: true})).toBeVisible();
+  const layout = await address.evaluate(el => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const button = el.closest('li')!.querySelector('button')!;
+    return {
+      lines: range.getClientRects().length,
+      fits: range.getBoundingClientRect().right <= el.getBoundingClientRect().right,
+      below: button.getBoundingClientRect().top >= el.getBoundingClientRect().bottom,
+    };
+  });
+  expect(layout).toEqual({lines: 1, fits: true, below: true});
+});
+
+test('spoken languages appear on home and About and in Person metadata', async ({page}) => {
+  for (const path of ['/', '/about']) {
+    await page.goto(path);
+    await expect(page.locator('#experience')).toContainText('Georgian (native), English (B2-C1), German (basic)');
+    const person = await page.locator('script[type="application/ld+json"]').first().evaluate(el => {
+      const node = JSON.parse(el.textContent!)['@graph'][0];
+      return node.mainEntity ?? node;
+    });
+    expect(person).toMatchObject({name: 'Giorgi Giorgashvili', knowsLanguage: ['ka', 'en', 'de']});
+  }
+});
+
 test('Copy email writes the address to the clipboard and shows Copied', async ({page, context}) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/#contact');
@@ -196,6 +237,10 @@ test('résumé is reachable from the first screen, the header and Contact, and i
   const text = (await pdf.body()).toString('latin1');
   expect(text.startsWith('%PDF-')).toBe(true);
   expect(text.match(/\/Type\s*\/Page[^s]/g)?.length).toBe(1);
+  const dimensions = text.match(/\/MediaBox\s*\[0 0 ([\d.]+) ([\d.]+)\]/);
+  expect(dimensions).not.toBeNull();
+  expect(Math.round(Number(dimensions![1]))).toBe(595);
+  expect(Math.round(Number(dimensions![2]))).toBe(842);
 });
 
 // The custom cursor was removed when the cursor-swarm build replaced it (commit aa099d2);
@@ -438,6 +483,25 @@ test('every project page renders with live link, real stack and metadata', async
   }
   expect(errors).toEqual([]);
   expect(failed).toEqual([]);
+});
+
+test('the full name appears in the title, description, profile and copyright', async ({page}) => {
+  await page.goto('/');
+  await expect(page).toHaveTitle('Giorgi Giorgashvili - React Developer');
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Giorgi Giorgashvili/);
+  await expect(page.locator('footer')).toContainText('Giorgi Giorgashvili');
+  await page.goto('/about');
+  await expect(page.locator('.about-name strong')).toHaveText('Giorgi Giorgashvili');
+});
+
+test('local previews do not request the Vercel-only analytics script', async ({page}) => {
+  const analytics: string[] = [];
+  page.on('request', request => {
+    if (request.url().includes('/_vercel/insights/')) analytics.push(request.url());
+  });
+  await page.goto('/');
+  await expect(page.locator('vercel-analytics')).toHaveCount(0);
+  expect(analytics).toEqual([]);
 });
 
 test('structured data and discoverability files are valid', async ({page, request}) => {

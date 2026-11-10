@@ -1,6 +1,7 @@
 ---
 import { education, experience } from '../data/experience';
 import { projects } from '../data/projects';
+import { SITE } from '../site.config';
 import Odometer from './Odometer.astro';
 import SectionIndex from './SectionIndex.astro';
 
@@ -59,6 +60,10 @@ const stats = [
       ))}
     </ul>
   </div>
+  <div class="xp-languages" data-m="slide">
+    <h3 class="eyebrow">Languages</h3>
+    <p>{SITE.languages.map(language => language.label).join(', ')}</p>
+  </div>
 </section>
 
 <style>
@@ -115,6 +120,8 @@ const stats = [
   .xp-organization { color: var(--color-bright); margin-top: 3px; }
   .xp-description { max-width: 68ch; margin-top: 8px; }
   .xp-stack { margin-top: 12px; }
+  .xp-languages { margin-top: 24px; }
+  .xp-languages p { margin-top: 8px; }
   .xp-education { margin-top: 46px; padding-top: 18px; border-top: 1px solid var(--color-line); }
   .xp-education ul { display: grid; gap: 12px 24px; grid-template-columns: repeat(2, 1fr); margin-top: 12px; }
   .xp-education a, .xp-education strong { color: var(--color-bright); font-weight: 500; }
