@@ -1,0 +1,55 @@
+---
+const practices = [
+  'I send written updates at the end of each working day.',
+  'I ask questions in chat or email.',
+  'I ship work in small, reviewable pieces.',
+  'I reply within one working day.',
+];
+---
+<section class="work-practices shell" aria-labelledby="practices-title">
+  <div class="work-practices-inner">
+    <div>
+      <p class="eyebrow" data-m="slide">How I work</p>
+      <h2 id="practices-title" data-m="mask">
+        <span class="line-mask"><span>Remote, and <em class="serif">in writing.</em></span></span>
+      </h2>
+    </div>
+    <ol class="practice-list" role="list" data-m="stagger">
+      {practices.map((practice, i) => (
+        <li>
+          <span class="mono" aria-hidden="true">0{i + 1}</span>
+          <p>{practice}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .work-practices-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: clamp(28px, 5vw, 72px);
+    padding: clamp(24px, 4vw, 58px);
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    background: var(--color-surface);
+  }
+  .work-practices .eyebrow { color: var(--color-accent); }
+  .work-practices h2 { margin-top: 16px; font-size: clamp(38px, 4.4vw, 67px); }
+  .practice-list { list-style: none; margin: 0; padding: 0; }
+  .practice-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding-block: 10px;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .practice-list li:first-child { padding-top: 0; }
+  .practice-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+  .practice-list .mono { color: var(--color-accent); }
+  @media (max-width: 760px) {
+    .work-practices-inner { grid-template-columns: 1fr; }
+  }
+</style>

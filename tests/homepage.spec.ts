@@ -202,6 +202,19 @@ test('Experience shows the booking platform dates on home and About', async ({pa
   }
 });
 
+test('the homepage shows the four written-remote work practices before the toolkit', async ({page}) => {
+  await page.goto('/');
+  const practices = page.locator('#experience + section');
+  await expect(practices.getByRole('heading', {name: 'Remote, and in writing.'})).toBeVisible();
+  await expect(practices.locator('li p')).toHaveText([
+    'I send written updates at the end of each working day.',
+    'I ask questions in chat or email.',
+    'I ship work in small, reviewable pieces.',
+    'I reply within one working day.',
+  ]);
+  await expect(page.locator('#experience + section + #stack')).toHaveCount(1);
+});
+
 test('footer labels wrap as whole controls on a phone', async ({page}) => {
   await page.setViewportSize({width: 320, height: 800});
   await page.goto('/');
