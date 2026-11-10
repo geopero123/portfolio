@@ -133,6 +133,34 @@ test('secondary projects show the names and domains of the live apps', async ({p
   await expect(page.locator('h1')).toHaveText('Smaller');
 });
 
+test('Tempest Rebirth video loads in view, pauses offscreen, and uses its poster for reduced motion', async ({page}) => {
+  const requests: string[] = [];
+  page.on('request', request => {
+    if (/\/media\/rebirth\.(webm|mp4)$/.test(request.url())) requests.push(request.url());
+  });
+  await page.goto('/');
+  const clip = page.locator('video[data-rebirth-clip]');
+  await expect(clip).toHaveCount(1);
+  await expect(clip.locator('source[src]')).toHaveCount(0);
+  expect(requests).toEqual([]);
+  await clip.evaluate(el => el.scrollIntoView({block: 'center', behavior: 'instant'}));
+  await expect.poll(() => clip.evaluate(el => (el as HTMLVideoElement).currentTime)).toBeGreaterThan(0);
+  expect(requests.some(url => url.endsWith('/media/rebirth.webm'))).toBe(true);
+  await page.evaluate(() => scrollTo({top: 0, behavior: 'instant'}));
+  await expect.poll(() => clip.evaluate(el => (el as HTMLVideoElement).paused)).toBe(true);
+
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  requests.length = 0;
+  await page.goto('/projects/tempest-rebirth/');
+  const detail = page.locator('.project-visual video');
+  await expect(detail).toBeHidden();
+  await expect(detail).toHaveAttribute('poster', /rebirth/);
+  await expect(page.locator('.project-visual .browser-screen img')).toBeVisible();
+  await page.locator('.project-visual').scrollIntoViewIfNeeded();
+  await expect(detail.locator('source[src]')).toHaveCount(0);
+  expect(requests).toEqual([]);
+});
+
 test('fresh visit: header, headline and project link are visible and usable at once; the build is opt-in', async ({page}) => {
   for (const viewport of [{width: 1440, height: 900}, {width: 390, height: 844}]) {
     await page.setViewportSize(viewport);

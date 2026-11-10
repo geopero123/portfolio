@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+import RebirthClip from './RebirthClip.astro';
 /** A small browser chrome that matches the site, not a downloaded mockup. */
 interface Props {
   image: ImageMetadata;
@@ -13,8 +14,9 @@ interface Props {
   loading?: 'lazy' | 'eager';
   aspect?: string;
   transitionName?: string;
+  rebirthClip?: boolean;
 }
-const { image, alt, url, tone = 'light', widths = [480, 800, 1200, 1600], sizes = '(max-width: 760px) 92vw, 60vw', class: className, loading = 'lazy', aspect, transitionName } = Astro.props;
+const { image, alt, url, tone = 'light', widths = [480, 800, 1200, 1600], sizes = '(max-width: 760px) 92vw, 60vw', class: className, loading = 'lazy', aspect, transitionName, rebirthClip = false } = Astro.props;
 const host = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 ---
 <figure class:list={['browser', `browser-${tone}`, className]} style={aspect ? `--aspect:${aspect}` : undefined}>
@@ -25,5 +27,6 @@ const host = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
   </div>
   <div class="browser-screen" transition:name={transitionName}>
     <Image src={image} alt={alt} widths={widths} sizes={sizes} format="webp" quality={82} loading={loading} decoding="async" />
+    {rebirthClip && <RebirthClip image={image} />}
   </div>
 </figure>

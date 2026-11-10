@@ -58,7 +58,7 @@ const storyChapters = (p.story ?? []).map((s, i) => ({ ...s, screen: storyScreen
 
     <div class="project-visual shell" data-depth>
       <div class="depth-layer" style="--dz:.35" data-m="scale">
-        <BrowserFrame image={p.image} alt={p.alt} url={p.live} tone={tone} sizes="(max-width: 760px) 92vw, 82vw" loading="eager" transitionName={`project-image-${p.slug}`} />
+        <BrowserFrame image={p.image} alt={p.alt} url={p.live} tone={tone} sizes="(max-width: 760px) 92vw, 82vw" loading="eager" rebirthClip={p.slug === 'tempest-rebirth'} transitionName={`project-image-${p.slug}`} />
       </div>
     </div>
 

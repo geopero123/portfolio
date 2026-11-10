@@ -8,6 +8,7 @@ import spoilerFull from '../assets/projects/tempest-spoiler-full.png';
 import BrowserFrame from './BrowserFrame.astro';
 import Icon from './Icon.astro';
 import QuireDemo from './QuireDemo.astro';
+import RebirthClip from './RebirthClip.astro';
 import SectionIndex from './SectionIndex.astro';
 
 /**
@@ -171,7 +172,10 @@ const features: { p: Project; n: string; kind: string }[] = [
       {secondary.map(p => (
         <li class="tool-card" style={`--tool-accent:${p.accent}`}>
           <a class="tool-shot" href={p.live} target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">
-            <Image src={p.image} alt="" widths={[400, 640, 900]} sizes="(max-width: 760px) 92vw, (max-width: 1100px) 46vw, (max-width: 1600px) 30vw, 480px" format="webp" quality={80} loading="lazy" decoding="async" />
+            <span class="tool-preview">
+              <Image src={p.image} alt="" widths={[400, 640, 900]} sizes="(max-width: 760px) 92vw, (max-width: 1100px) 46vw, (max-width: 1600px) 30vw, 480px" format="webp" quality={80} loading="lazy" decoding="async" />
+              {p.slug === 'tempest-rebirth' && <RebirthClip image={p.image} />}
+            </span>
           </a>
           <div class="tool-body">
             <h4><a href={`/projects/${p.slug}`} transition:name={`project-title-${p.slug}`}>{p.name}</a></h4>
