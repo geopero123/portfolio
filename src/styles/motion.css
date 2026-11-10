@@ -29,11 +29,6 @@
   .js [data-m="draw"] { transform: scaleX(.02); transform-origin: left; transition: transform 1s var(--ease-inout); transition-delay: var(--delay, 0ms); }
   .js [data-m="draw"].in { transform: none; }
   .js [data-m="draw"][data-from="right"] { transform-origin: right; }
-  .js [data-m="draw"][data-from="top"] { transform-origin: top; }
-  .js [data-m="draw"][data-from="top"]:not(.in) { transform: scaleY(.02); }
-  /* svg strokes */
-  .js [data-m="draw"] path, .js [data-m="draw"] line { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.2s var(--ease-inout); transition-delay: calc(var(--i, 0) * 120ms + var(--delay, 0ms)); }
-  .js [data-m="draw"].in path, .js [data-m="draw"].in line { stroke-dashoffset: 0; }
 
   /* slide: metadata */
   .js [data-m="slide"] { opacity: 0; transform: translateX(-22px); transition: opacity .7s var(--ease-out), transform .8s var(--ease-out); transition-delay: var(--delay, 0ms); }
@@ -52,8 +47,8 @@
   .js [data-m="stagger"].in > :nth-child(1) { transition-delay: 0ms } .js [data-m="stagger"].in > :nth-child(2) { transition-delay: 70ms } .js [data-m="stagger"].in > :nth-child(3) { transition-delay: 140ms } .js [data-m="stagger"].in > :nth-child(4) { transition-delay: 210ms } .js [data-m="stagger"].in > :nth-child(5) { transition-delay: 280ms } .js [data-m="stagger"].in > :nth-child(6) { transition-delay: 350ms } .js [data-m="stagger"].in > :nth-child(n+7) { transition-delay: 420ms }
 
   /* count: odometer digits (structure lives outside this query; only the roll is motion) */
-  .js [data-m="count"] .digit-roll { transform: translateY(-2em); transition: transform 1.1s var(--ease-inout); }
-  .js [data-m="count"].in .digit-roll { transform: translateY(calc(var(--d) * -1em)); }
+  .js [data-m="count"].in .digit-roll { animation: section-count 1.1s var(--ease-inout); }
+  @keyframes section-count { from { transform: translateY(-2em); } }
 
   /* velocity skew on large headings */
   [data-velocity] { transform: skewY(calc(var(--vel, 0) * .7deg)); transition: transform .12s linear; will-change: transform; }

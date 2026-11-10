@@ -20,6 +20,7 @@ const commands = [
   <input id="palette-query" type="text" role="combobox" aria-controls="palette-options" aria-expanded="true"
     aria-autocomplete="list" placeholder="Find a project or action" autocomplete="off" />
   <ul id="palette-options" class="palette-options" role="listbox" aria-label="Projects and actions" data-lenis-prevent>
+    <li class="palette-highlight" role="presentation" aria-hidden="true" hidden></li>
     {commands.map(({ label, group, action, value }, index) => (
       <li id={`palette-option-${index}`} class="palette-option" role="option" aria-selected="false"
         data-command={action} data-value={value} data-keywords={keywords(label)}>
@@ -73,7 +74,20 @@ const commands = [
     cursor: pointer;
     font-size: 14px;
   }
-  .palette-option[aria-selected="true"] { background: #f28b6320; color: #ffb79d; }
+  .palette-highlight {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 40px;
+    border-radius: 4px;
+    background: #f28b6320;
+    pointer-events: none;
+  }
+  .palette-option[aria-selected="true"] { color: #ffb79d; }
+  @media (prefers-reduced-motion: no-preference) {
+    .command-palette[open] { animation: palette-in 150ms var(--ease-out) both; transform-origin: top center; }
+    .palette-highlight { transition: transform 150ms var(--ease-out); }
+    @keyframes palette-in { from { opacity: 0; transform: scale(.96); } }
+  }
   .palette-option[aria-disabled="true"] { color: var(--color-mute); cursor: default; }
   .palette-option .mono { color: var(--color-body); }
   .palette-status { min-height: 1.6em; padding-inline: 2px; color: var(--color-body); }
@@ -87,6 +101,7 @@ const commands = [
   const close = dialog.querySelector<HTMLButtonElement>('.palette-close')!;
   const list = dialog.querySelector<HTMLElement>('#palette-options')!;
   const status = dialog.querySelector<HTMLElement>('.palette-status')!;
+  const highlight = dialog.querySelector<HTMLElement>('.palette-highlight')!;
   const options = [...list.querySelectorAll<HTMLElement>('[role="option"]')];
   const replay = options.find(option => option.dataset.command === 'replay')!;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -97,12 +112,15 @@ const commands = [
   function selectOption(option: HTMLElement | undefined, scroll = false) {
     selected?.setAttribute('aria-selected', 'false');
     selected = option;
+    highlight.hidden = !option;
     if (!option) {
       input.removeAttribute('aria-activedescendant');
       return;
     }
     option.setAttribute('aria-selected', 'true');
     input.setAttribute('aria-activedescendant', option.id);
+    highlight.style.height = `${option.offsetHeight}px`;
+    highlight.style.transform = `translateY(${option.offsetTop}px)`;
     if (scroll) option.scrollIntoView({block: 'nearest'});
   }
 

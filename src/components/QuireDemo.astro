@@ -16,7 +16,10 @@ This is **selectable text** with a [working link](https://quire.madebygio.dev).
   <label class="mono" for="quire-markdown">Markdown</label>
   <textarea id="quire-markdown" name="markdown" rows="6" spellcheck="false" required>{sample}</textarea>
   <button class="button button-primary" type="submit">Download PDF <Icon name="down" class="button-arrow" /></button>
-  <output class="mono" for="quire-markdown" role="status" data-quire-result></output>
+  <div class="quire-export">
+    <span class="quire-sheet" aria-hidden="true"><Icon name="down" /></span>
+    <output class="mono" for="quire-markdown" role="status" data-quire-result></output>
+  </div>
 </form>
 
 <style>
@@ -48,7 +51,26 @@ This is **selectable text** with a [working link](https://quire.madebygio.dev).
   }
   .quire-editor button { justify-self: start; }
   .quire-editor button:disabled { opacity: .7; }
-  .quire-editor output { min-height: 2lh; color: var(--color-body); }
+  .quire-export { display: grid; grid-template-columns: 24px 1fr; align-items: center; gap: 12px; min-height: 34px; }
+  .quire-sheet {
+    width: 24px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 2px 6px 2px 2px;
+    background: var(--color-bright);
+    color: var(--color-ink);
+    opacity: 0;
+  }
+  .quire-sheet svg { width: 14px; height: 14px; }
+  .quire-editor[data-exported="true"] .quire-sheet { opacity: 1; }
+  .quire-editor output { color: var(--color-body); }
+  @media (prefers-reduced-motion: no-preference) {
+    .quire-editor[data-exported="true"] .quire-sheet { animation: sheet-out 260ms var(--ease-out) both; }
+    .quire-editor[data-exported="true"] output { animation: sheet-caption 180ms 190ms var(--ease-out) both; }
+    @keyframes sheet-out { from { transform: translateY(-15px) rotate(-9deg); opacity: 0; } }
+    @keyframes sheet-caption { from { opacity: 0; } }
+  }
 </style>
 
 <script>

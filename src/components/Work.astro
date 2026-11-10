@@ -8,6 +8,7 @@ import spoilerFull from '../assets/projects/tempest-spoiler-full.png';
 import BrowserFrame from './BrowserFrame.astro';
 import Icon from './Icon.astro';
 import QuireDemo from './QuireDemo.astro';
+import Odometer from './Odometer.astro';
 import RebirthClip from './RebirthClip.astro';
 import SectionIndex from './SectionIndex.astro';
 
@@ -73,7 +74,7 @@ const features: { p: Project; n: string; kind: string }[] = [
               <div class="spoiler-switch" role="group" aria-label="Spoiler level" data-enhancement hidden>
                 {levels.map((l, i) => <button type="button" data-spoiler-level={l.id} data-note={noteFor(l)} aria-pressed={i === 0 ? 'true' : 'false'}><span aria-hidden="true">◆</span> {l.label}</button>)}
               </div>
-              <div class="spoiler-frame">
+              <div class="spoiler-frame" transition:name={`project-image-${p.slug}`}>
                 {levels.map((l, i) => (
                   <div class:list={['spoiler-shot', { 'is-active': i === 0 }]} data-spoiler-shot={l.id} aria-hidden={i !== 0 ? 'true' : undefined}>
                     <BrowserFrame image={l.image} alt={`Tempest Archive Characters index at the ${l.label} spoiler level, reading "${l.counts[0]} of ${l.counts[0]} shown"${l.id === 'full' ? ', with late characters such as Apito and Adalmann tagged FULL' : ''}`} url="https://tempestarchive.com/characters/" tone="dark" sizes="(max-width: 760px) 92vw, 52vw" loading={i === 0 ? 'eager' : 'lazy'} />
@@ -88,8 +89,8 @@ const features: { p: Project; n: string; kind: string }[] = [
                     {levels.map((l, i) => (
                       <tr data-spoiler-row={l.id} class:list={{ 'is-active': i === 0 }}>
                         <th scope="row">{l.label}</th>
-                        {l.counts.map(c => <td>{c}</td>)}
-                        <td>{total(l.counts)}</td>
+                        {l.counts.map(c => <td><Odometer text={String(c)} entrance={false} /></td>)}
+                        <td><Odometer text={String(total(l.counts))} entrance={false} /></td>
                       </tr>
                     ))}
                   </tbody>
@@ -106,13 +107,13 @@ const features: { p: Project; n: string; kind: string }[] = [
                 <span class="pdf-badge mono">Open sample PDF · {p.sample!.summary} <Icon /></span>
               </a>
               <div class="pdf-app">
-                <BrowserFrame image={p.image} alt={p.alt} url={p.live} sizes="(max-width: 760px) 92vw, 36vw" />
+                <BrowserFrame image={p.image} alt={p.alt} url={p.live} sizes="(max-width: 760px) 92vw, 36vw" transitionName={`project-image-${p.slug}`} />
               </div>
               <p class="pdf-caption mono">The paper is page 1 of the sample, exported from {host(p.live)}. Open it and select the text, or click the link under “Further reading”.</p>
             </div>
           ) : (
             <div class="siteforge-preview">
-              <BrowserFrame image={p.image} alt={p.alt} url={p.live} tone={p.tone} sizes="(max-width: 1100px) 90vw, 52vw" />
+              <BrowserFrame image={p.image} alt={p.alt} url={p.live} tone={p.tone} sizes="(max-width: 1100px) 90vw, 52vw" transitionName={`project-image-${p.slug}`} />
               <figure class="siteforge-flow">
                 <figcaption class="eyebrow">From request to report</figcaption>
                 <svg viewBox="0 0 420 176" role="img" aria-labelledby="siteforge-flow-title siteforge-flow-desc">
@@ -170,9 +171,9 @@ const features: { p: Project; n: string; kind: string }[] = [
     </div>
     <ul class="tool-grid">
       {secondary.map(p => (
-        <li class="tool-card" style={`--tool-accent:${p.accent}`}>
+        <li class="tool-card" data-depth style={`--tool-accent:${p.accent}`}>
           <a class="tool-shot" href={p.live} target="_blank" rel="noopener noreferrer" tabindex="-1" aria-hidden="true">
-            <span class="tool-preview">
+            <span class="tool-preview" transition:name={`project-image-${p.slug}`}>
               <Image src={p.image} alt="" widths={[400, 640, 900]} sizes="(max-width: 760px) 92vw, (max-width: 1100px) 46vw, (max-width: 1600px) 30vw, 480px" format="webp" quality={80} loading="lazy" decoding="async" />
               {p.slug === 'tempest-rebirth' && <RebirthClip image={p.image} />}
             </span>
@@ -201,6 +202,8 @@ const features: { p: Project; n: string; kind: string }[] = [
   </div>
 </section>
 <script>
+  import { rollDigits } from '../scripts/odometer';
+
   // Spoiler demo: swap the real screenshot and highlight the matching row. Without JS the
   // first screen and the full table stay visible, which already tells the story.
   function init() {
@@ -211,11 +214,19 @@ const features: { p: Project; n: string; kind: string }[] = [
     const shots = [...demo.querySelectorAll<HTMLElement>('[data-spoiler-shot]')];
     const rows = [...demo.querySelectorAll<HTMLElement>('[data-spoiler-row]')];
     const note = demo.querySelector<HTMLElement>('[data-spoiler-note]');
+    let active = rows[0];
     buttons.forEach(button => button.addEventListener('click', () => {
       const level = button.dataset.spoilerLevel!;
       buttons.forEach(b => b.setAttribute('aria-pressed', String(b === button)));
       shots.forEach(s => { const on = s.dataset.spoilerShot === level; s.classList.toggle('is-active', on); if (on) s.removeAttribute('aria-hidden'); else s.setAttribute('aria-hidden', 'true'); });
-      rows.forEach(r => r.classList.toggle('is-active', r.dataset.spoilerRow === level));
+      const next = rows.find(row => row.dataset.spoilerRow === level);
+      if (next && next !== active) {
+        const previous = [...active.querySelectorAll('[data-odometer] .sr-only')];
+        active.classList.remove('is-active');
+        next.classList.add('is-active');
+        next.querySelectorAll('[data-odometer]').forEach((cell, i) => rollDigits(cell, previous[i]?.textContent ?? '0'));
+        active = next;
+      }
       if (note) note.textContent = button.dataset.note ?? '';
     }));
     demo.querySelector<HTMLElement>('.spoiler-switch')?.removeAttribute('hidden');

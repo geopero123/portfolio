@@ -23,17 +23,17 @@ const stats = [
     </h2>
   </div>
 
-  <ul class="xp-stats" aria-label="Experience in numbers">
+  <ul class="xp-stats" data-experience-stats aria-label="Experience in numbers">
     {stats.map(({ value, unit, description }) => (
       <li class="stat">
-        <p class="stat-value"><Odometer text={value} />{unit && <span class="stat-unit">{unit}</span>}</p>
+        <p class="stat-value"><Odometer text={value} entrance={false} />{unit && <span class="stat-unit">{unit}</span>}</p>
         <p class="stat-description">{description}</p>
       </li>
     ))}
   </ul>
 
   <div class="xp-timeline">
-    <span class="xp-line" data-m="draw" data-from="top" aria-hidden="true"></span>
+    <span class="xp-line" aria-hidden="true"></span>
     <ol class="xp-list">
       {experience.map(entry => (
         <li class="xp-row" data-m="slide">
@@ -95,6 +95,30 @@ const stats = [
     width: 1px;
     background: var(--color-line);
   }
+  .xp-line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--color-accent);
+    opacity: .72;
+    transform-origin: top;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .xp-timeline { view-timeline-name: --xp-timeline; }
+      .xp-line::after {
+        animation: timeline-fill 1s linear both;
+        animation-range: entry 0% cover 72%;
+      }
+      .xp-timeline .xp-line::after { animation-timeline: --xp-timeline; }
+    }
+    :global(.js) .xp-row.in::before { animation: timeline-dot .5s var(--ease-out); }
+  }
+
+  @keyframes timeline-fill { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  @keyframes timeline-dot { 48% { transform: scale(1.55); opacity: .65; } }
+
   .xp-list { list-style: none; margin: 0; padding: 0 0 0 26px; }
   .xp-row {
     position: relative;
@@ -134,3 +158,28 @@ const stats = [
     .xp-education ul { grid-template-columns: 1fr; }
   }
 </style>
+
+<script>
+  import { rollDigits } from '../scripts/odometer';
+
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let observer: IntersectionObserver | undefined;
+
+  function initStats() {
+    observer?.disconnect();
+    const stats = document.querySelector<HTMLElement>('[data-experience-stats]');
+    if (!stats || stats.dataset.counted || reducedMotion.matches || !('IntersectionObserver' in window)) return;
+    const headerHeight = document.querySelector<HTMLElement>('[data-header]')?.offsetHeight ?? 0;
+    observer = new IntersectionObserver(([entry], watcher) => {
+      if (!entry.isIntersecting || entry.intersectionRatio < 1) return;
+      stats.dataset.counted = 'true';
+      stats.querySelectorAll('[data-odometer]').forEach((odometer, i) => rollDigits(odometer, '0', i * 80));
+      watcher.disconnect();
+    }, { threshold: 1, rootMargin: `-${headerHeight}px 0px 0px` });
+    observer.observe(stats);
+  }
+
+  initStats();
+  document.addEventListener('astro:page-load', initStats);
+  document.addEventListener('astro:before-swap', () => observer?.disconnect());
+</script>

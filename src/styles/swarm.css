@@ -13,7 +13,7 @@ html.swarm-active [data-swarm-piece] { clip-path: var(--swarm-clip, inset(0 var(
    text, so "Replay build" lives in the hero and the footer instead. */
 .cursor-swarm:not([data-swarm-building="true"]) .swarm-controls { display: none; }
 .swarm-controls .swarm-replay { display: none; }
-.swarm-controls button { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 42px; background: transparent; padding: 10px 13px; transition: background .18s; }
+.swarm-controls button { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 42px; background: transparent; padding: 10px 13px; }
 .swarm-controls button:hover { background: #ffffff0a; }
 .swarm-controls button:focus-visible { outline-offset: -4px; }
 .swarm-controls svg { width: 13px; height: 13px; opacity: .75; }

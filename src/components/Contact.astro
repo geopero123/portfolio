@@ -26,7 +26,12 @@ const lead = primary.kind === 'email' ? 'Email is quickest.' : primary.kind === 
           <li class:list={{ 'contact-email-row': l.kind === 'email' }}>
             <a class="contact-link" href={l.href} {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}><span class="mono">{l.label}</span><span class="contact-value">{l.value}</span><Icon /></a>
             {l.kind === 'email' && <>
-              <button class="copy-email mono" type="button" data-copy-email={SITE.socials.email} data-enhancement hidden>Copy email</button>
+              <button class="copy-email mono" type="button" data-copy-email={SITE.socials.email} data-enhancement hidden aria-label="Copy email">
+                <span class="copy-labels" aria-hidden="true">
+                  <span data-copy-label>Copy email</span>
+                  <span class="copy-confirmation"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m3 8 3 3 7-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg> Copied</span>
+                </span>
+              </button>
               <span class="sr-only" role="status" data-copy-status></span>
             </>}
           </li>
@@ -40,6 +45,7 @@ const lead = primary.kind === 'email' ? 'Email is quickest.' : primary.kind === 
 <style>
   .contact-intro p + p { margin-top: 8px; }
   .contact-email-row { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #555c4130; }
+  .contact-email-row .contact-value { white-space: nowrap; }
   .contact-email-row .contact-link { flex: 1; min-width: 0; border-bottom: 0; }
   .copy-email {
     flex-shrink: 0;
@@ -51,11 +57,19 @@ const lead = primary.kind === 'email' ? 'Email is quickest.' : primary.kind === 
     color: #30382a;
     background: transparent;
   }
+  .copy-labels { display: grid; place-items: center; white-space: nowrap; }
+  .copy-labels > span { grid-area: 1 / 1; }
+  .copy-confirmation { display: inline-flex; align-items: center; gap: 4px; opacity: 0; }
+  .copy-confirmation svg { width: 12px; height: 12px; }
+  .copy-email[data-copy-state="copied"] .copy-confirmation { opacity: 1; }
+  .copy-email[data-copy-state="copied"] [data-copy-label] { opacity: 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .copy-labels > span { transition: opacity 160ms ease-out; }
+  }
   .copy-email:hover { background: #555c411a; }
 
   @media (max-width: 760px) {
     .contact-email-row { display: block; }
-    .contact-email-row .contact-value { white-space: nowrap; }
     .copy-email { display: block; margin: 0 0 4px 54px; }
     :global(.js) .contact-email-row:has(.copy-email[hidden]) { padding-bottom: 48px; }
   }
@@ -67,20 +81,26 @@ const lead = primary.kind === 'email' ? 'Email is quickest.' : primary.kind === 
     if (!button || button.dataset.ready) return;
     button.dataset.ready = '1';
     const status = document.querySelector<HTMLElement>('[data-copy-status]');
+    const label = button.querySelector<HTMLElement>('[data-copy-label]')!;
+    const setLabel = (value: string) => {
+      button.setAttribute('aria-label', value);
+      button.dataset.copyState = value === 'Copied' ? 'copied' : 'idle';
+      if (value !== 'Copied') label.textContent = value;
+    };
     let reset: number | undefined;
 
     button.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(button.dataset.copyEmail!);
-        button.textContent = 'Copied';
+        setLabel('Copied');
         if (status) status.textContent = 'Email address copied.';
       } catch {
-        button.textContent = 'Try again';
+        setLabel('Try again');
         if (status) status.textContent = 'Could not copy the email address.';
       }
       window.clearTimeout(reset);
       reset = window.setTimeout(() => {
-        button.textContent = 'Copy email';
+        setLabel('Copy email');
         if (status) status.textContent = '';
       }, 2000);
     });

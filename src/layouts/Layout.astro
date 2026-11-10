@@ -70,13 +70,8 @@ const graph: Record<string, unknown>[] = isHome
     <meta property="og:site_name" content={SITE.name} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#131310" />
-    <!-- Before first paint: motion styles only hide content when scripts run. `is-loaded` gates
-         paint-heavy decoration (sculpture glow) until after the first frames are on screen.
-         Nothing hides the page on load: the cursor-swarm build is opt-in via "Replay build". -->
-    <script is:inline>
-      document.documentElement.classList.add('js');
-      addEventListener('load', () => requestAnimationFrame(() => document.documentElement.classList.add('is-loaded')));
-    </script>
+    <!-- Gate motion styles before first paint. The page build starts on request. -->
+    <script is:inline>document.documentElement.classList.add('js');</script>
     {graph.length > 0 && <script is:inline type="application/ld+json" set:html={JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(/</g, "\\u003c")} />}
     <ClientRouter />
     {process.env.VERCEL === '1' && <Analytics scriptSrc="/_vercel/insights/script.js" />}

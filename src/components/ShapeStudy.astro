@@ -1,5 +1,5 @@
 ---
-import { RING_COUNT, shapePath } from '../lib/sculpture';
+import { sculptureShapes, wireArtwork } from '../lib/sculpture';
 import Icon from './Icon.astro';
 import { SITE } from '../site.config';
 const source = (path: string) => `${SITE.siteSource.replace('/tree/', '/blob/')}/${path}`;
@@ -9,17 +9,24 @@ const source = (path: string) => `${SITE.siteSource.replace('/tree/', '/blob/')}
   <div class="shape-stage" data-shape-stage>
     <div class="stage-grid" aria-hidden="true"></div><div class="stage-light" aria-hidden="true"></div>
     <span class="crosshair crosshair-tl" aria-hidden="true">+</span><span class="crosshair crosshair-br" aria-hidden="true">+</span>
-    <svg class="sculpture" viewBox="0 0 520 520" fill="none" role="img" aria-labelledby="shape-title">
-      <title id="shape-title">An orange wire sculpture, folded into a continuous ribbon</title>
-      <defs><linearGradient id="copper" x1="70" y1="80" x2="420" y2="430" gradientUnits="userSpaceOnUse"><stop stop-color="#ffd0a6" /><stop offset=".4" stop-color="#f78152" /><stop offset=".75" stop-color="#bc4926" /><stop offset="1" stop-color="#ffc098" /></linearGradient></defs>
-      <g class="sculpture-lines" stroke="url(#copper)" stroke-width=".9">{Array.from({length:RING_COUNT},(_,i)=><path d={shapePath(i)} data-ring={i} />)}</g>
-      <g class="construction-lines" stroke="#a49a8a" stroke-width=".6" stroke-dasharray="3 6" aria-hidden="true"><circle cx="260" cy="260" r="208" /><path d="M20 260h480M260 20v480M100 100l320 320M420 100 100 420" /></g>
-    </svg>
+    <div class="sculpture" data-sculpture data-active-shape="ribbon" role="img" aria-label="Orange wire sculpture: Ribbon">
+      <svg class="sculpture-layer" data-shape-layer="ribbon" viewBox="0 0 520 520" aria-hidden="true">
+        <Fragment set:html={wireArtwork('ribbon')} />
+      </svg>
+      {sculptureShapes.slice(1).map(({id}) => (
+        <img class="sculpture-layer" data-shape-layer={id} src={`/sculpture/${id}.svg`} width="520" height="520" alt="" decoding="async" loading="lazy" />
+      ))}
+      <svg class="construction-lines" viewBox="0 0 520 520" fill="none" stroke="#a49a8a" stroke-width=".6" stroke-dasharray="3 6" aria-hidden="true">
+        <circle cx="260" cy="260" r="208" /><path d="M20 260h480M260 20v480M100 100l320 320M420 100 100 420" />
+      </svg>
+    </div>
     <span class="stage-axis mono" aria-hidden="true">X / Y / Z</span>
     <span class="stage-caption mono"><span class="pointer-instruction">Move your cursor to explore</span><span class="touch-instruction">A small study in interaction</span></span>
   </div>
   <div class="study-controls" data-enhancement hidden>
-    <div class="shape-options" role="group" aria-label="Sculpture shape"><button type="button" data-shape="0" aria-pressed="true">01 <span>Ribbon</span></button><button type="button" data-shape="1" aria-pressed="false">02 <span>Orbit</span></button></div>
+    <div class="shape-options" role="group" aria-label="Sculpture shape">
+      {sculptureShapes.map(({ id, name }, index) => <button type="button" data-shape={id} aria-pressed={index === 0 ? 'true' : 'false'}>0{index + 1} <span>{name}</span></button>)}
+    </div>
     <button class="inspect-toggle" type="button" data-inspect aria-pressed="false" aria-label="Show construction guides"><Icon name="plus" /><span>Inspect</span></button>
   </div>
   <!-- The creative pieces are work samples too: say what they are and where the code lives. -->

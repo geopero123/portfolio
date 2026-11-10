@@ -54,10 +54,24 @@ test('spoiler demo: picking a level swaps the real screen, the counts row and th
   await expect(demo.locator('[data-spoiler-shot="full"]')).toHaveClass(/is-active/);
   await expect(demo.locator('[data-spoiler-shot="anime"]')).toHaveAttribute('aria-hidden', 'true');
   await expect(demo.locator('tr.is-active')).toContainText('Full');
-  await expect(demo.locator('tr.is-active td').first()).toHaveText('84');
+  await expect(demo.locator('tr.is-active td .sr-only').first()).toHaveText('84');
   await expect(demo.locator('[data-spoiler-note]')).toContainText('231 entries');
   // Full matches the published sitemap scale.
-  await expect(demo.locator('tr[data-spoiler-row="full"] td')).toHaveText(['84', '85', '36', '26', '231']);
+  await expect(demo.locator('tr[data-spoiler-row="full"] td .sr-only')).toHaveText(['84', '85', '36', '26', '231']);
+});
+
+test('new spoiler numbers roll while their accessible values stay final', async ({page}) => {
+  await page.goto('/');
+  const demo = page.locator('[data-spoiler-demo]');
+  await demo.getByRole('button', {name: /Full/}).click();
+  const cell = demo.locator('tr.is-active td').first();
+  await expect(cell.locator('.sr-only')).toHaveText('84');
+  expect(await cell.locator('.digit-roll').first().evaluate(el => el.getAnimations().length)).toBeGreaterThan(0);
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await demo.getByRole('button', {name: /Moderate/}).click();
+  const moderate = demo.locator('tr.is-active td').first();
+  await expect(moderate.locator('.sr-only')).toHaveText('53');
+  expect(await moderate.locator('.digit-roll').first().evaluate(el => el.getAnimations().length)).toBe(0);
 });
 
 test('QUIRE is featured with a real exported PDF and links into the PDF engine source', async ({page, request}) => {
@@ -99,6 +113,17 @@ ${'This is a paragraph from the edited Markdown.\n\n'.repeat(65)}`);
   const pages = (await PDFDocument.load(bytes)).getPageCount();
   expect(pages).toBeGreaterThan(1);
   await expect(quire.getByRole('status')).toHaveText(`${pages} pages - ${(bytes.length / 1024).toFixed(1)} KB.`);
+});
+
+test('QUIRE reveals a sheet and result after export', async ({page}) => {
+  await page.goto('/');
+  const editor = page.locator('[data-quire-editor]');
+  const sheet = editor.locator('.quire-sheet');
+  await expect(sheet).toHaveCSS('opacity', '0');
+  await editor.getByRole('button', {name: 'Download PDF'}).click();
+  await expect(editor).toHaveAttribute('data-exported', 'true');
+  await expect(sheet).toHaveCSS('opacity', '1');
+  await expect(editor.getByRole('status')).toContainText('1 page');
 });
 
 test('SiteForge is featured with its audit pipeline, decision and evidence', async ({page}) => {
@@ -159,6 +184,31 @@ test('Tempest Rebirth video loads in view, pauses offscreen, and uses its poster
   await page.locator('.project-visual').scrollIntoViewIfNeeded();
   await expect(detail.locator('source[src]')).toHaveCount(0);
   expect(requests).toEqual([]);
+});
+
+test('project cards follow a fine pointer and turn off the spotlight under reduced motion', async ({page}) => {
+  await page.goto('/');
+  const card = page.locator('.tool-card').first();
+  await card.scrollIntoViewIfNeeded();
+  const box = (await card.boundingBox())!;
+  await page.mouse.move(box.x + box.width * .72, box.y + box.height * .3);
+  await expect.poll(() => card.evaluate(el => Number(el.style.getPropertyValue('--mx')))).toBeGreaterThan(.1);
+  await expect.poll(() => card.evaluate(el => getComputedStyle(el, '::after').opacity)).toBe('1');
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  expect(await card.evaluate(el => getComputedStyle(el, '::after').content)).toBe('none');
+});
+
+test('each home screenshot has a matching transition name on its detail page', async ({page}) => {
+  await page.goto('/');
+  const homeImages = page.locator('.spoiler-frame, .pdf-app .browser-screen, .siteforge-preview .browser-screen, .tool-preview');
+  const names = await homeImages.evaluateAll(images => images.map(el => getComputedStyle(el).viewTransitionName));
+  const slugs = ['tempest-archive', 'quire', 'siteforge', 'tempest-rebirth', 'transmute', 'signal', 'folio', 'kilo'];
+  expect(names).toEqual(slugs.map(slug => `project-image-${slug}`));
+  for (const slug of slugs) {
+    await page.goto(`/projects/${slug}/`);
+    const image = page.locator('.project-visual .browser-screen');
+    expect(await image.evaluate(el => getComputedStyle(el).viewTransitionName)).toBe(`project-image-${slug}`);
+  }
 });
 
 test('fresh visit: header, headline and project link are visible and usable at once; the build is opt-in', async ({page}) => {
@@ -260,6 +310,19 @@ test('the command palette copies email and respects reduced motion for Replay bu
   expect(results.violations.map(violation => violation.id)).toEqual([]);
 });
 
+test('the palette fades in and slides its selection with motion allowed', async ({page}) => {
+  await page.goto('/');
+  await page.keyboard.press('Control+k');
+  const dialog = page.getByRole('dialog', {name: 'Quick links'});
+  await expect(dialog).toHaveCSS('animation-duration', '0.15s');
+  const highlight = dialog.locator('.palette-highlight');
+  await dialog.getByRole('combobox').press('ArrowDown');
+  await expect(highlight).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 40)');
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await expect(dialog).toHaveCSS('animation-name', 'none');
+  expect(await dialog.evaluate(el => el.getAnimations({subtree: true}).length)).toBe(0);
+});
+
 test('the command palette can replay the page build', async ({page}) => {
   await page.goto('/');
   await page.keyboard.press('Control+k');
@@ -291,9 +354,38 @@ test('Experience shows the booking platform dates on home and About', async ({pa
   }
 });
 
+test('the experience line fills with scroll and the dot pulses once with motion allowed', async ({page}) => {
+  await page.goto('/');
+  const row = page.locator('.xp-row').first();
+  const line = page.locator('.xp-line');
+  await row.scrollIntoViewIfNeeded();
+  await expect(row).toHaveClass(/\bin\b/);
+  expect(await line.evaluate(el => getComputedStyle(el, '::after').animationTimeline)).toBe('--xp-timeline');
+  expect(await row.evaluate(el => getComputedStyle(el, '::before').animationName)).toBe('timeline-dot');
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  expect(await line.evaluate(el => getComputedStyle(el, '::after').animationName)).toBe('none');
+  expect(await row.evaluate(el => getComputedStyle(el, '::before').animationName)).toBe('none');
+});
+
+test('experience stats wait until fully visible and roll 80ms apart', async ({page}) => {
+  await page.goto('/');
+  const stats = page.locator('[data-experience-stats]');
+  await stats.evaluate(el => {
+    scrollTo({top: el.getBoundingClientRect().top + scrollY - innerHeight + 18, behavior: 'instant'});
+  });
+  await expect(stats).not.toHaveAttribute('data-counted', 'true');
+  await stats.evaluate(el => el.scrollIntoView({block: 'center', behavior: 'instant'}));
+  await expect(stats).toHaveAttribute('data-counted', 'true');
+  const delays = await stats.locator('.stat').evaluateAll(items => items.map(item => {
+    const animation = item.querySelector('.digit-roll')?.getAnimations()[0];
+    return animation?.effect?.getTiming().delay;
+  }));
+  expect(delays).toEqual([0, 80, 160]);
+});
+
 test('the homepage shows the four written-remote work practices before the toolkit', async ({page}) => {
   await page.goto('/');
-  const practices = page.locator('#experience + section');
+  const practices = page.locator('.work-practices');
   await expect(practices.getByRole('heading', {name: 'Remote, and in writing.'})).toBeVisible();
   await expect(practices.locator('li p')).toHaveText([
     'I send written updates at the end of each working day.',
@@ -301,7 +393,10 @@ test('the homepage shows the four written-remote work practices before the toolk
     'I ship work in small, reviewable pieces.',
     'I reply within one working day.',
   ]);
-  await expect(page.locator('#experience + section + #stack')).toHaveCount(1);
+  const sections = await page.locator('main > section').evaluateAll(elements =>
+    elements.map(el => el.id || el.classList[0]));
+  const experience = sections.indexOf('experience');
+  expect(sections.slice(experience, experience + 3)).toEqual(['experience', 'work-practices', 'stack']);
 });
 
 test('footer labels wrap as whole controls on a phone', async ({page}) => {
@@ -315,22 +410,24 @@ test('footer labels wrap as whole controls on a phone', async ({page}) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test('the email address stays on one line at 320px with Copy email below it', async ({page}) => {
-  await page.setViewportSize({width: 320, height: 800});
-  await page.goto('/#contact');
-  const address = page.locator('.contact-email-row .contact-value');
-  await expect(page.getByRole('button', {name: 'Copy email', exact: true})).toBeVisible();
-  const layout = await address.evaluate(el => {
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    const button = el.closest('li')!.querySelector('button')!;
-    return {
-      lines: range.getClientRects().length,
-      fits: range.getBoundingClientRect().right <= el.getBoundingClientRect().right,
-      below: button.getBoundingClientRect().top >= el.getBoundingClientRect().bottom,
-    };
-  });
-  expect(layout).toEqual({lines: 1, fits: true, below: true});
+test('the email address stays on one line on phones and tablets', async ({page}) => {
+  for (const width of [320, 768]) {
+    await page.setViewportSize({width, height: 800});
+    await page.goto('/#contact');
+    const address = page.locator('.contact-email-row .contact-value');
+    await expect(page.getByRole('button', {name: 'Copy email', exact: true})).toBeVisible();
+    const layout = await address.evaluate(el => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const button = el.closest('li')!.querySelector('button')!;
+      return {
+        lines: range.getClientRects().length,
+        fits: range.getBoundingClientRect().right <= el.getBoundingClientRect().right,
+        below: button.getBoundingClientRect().top >= el.getBoundingClientRect().bottom,
+      };
+    });
+    expect(layout).toEqual({lines: 1, fits: true, below: width === 320});
+  }
 });
 
 test('spoken languages appear on home and About and in Person metadata', async ({page}) => {
@@ -353,7 +450,9 @@ test('Copy email writes the address to the clipboard and shows Copied', async ({
   const mailto = await contact.locator('.contact-list a[href^="mailto:"]').getAttribute('href');
   expect(mailto).toBeTruthy();
   await button.click();
-  await expect(contact.getByRole('button', {name: 'Copied', exact: true})).toBeVisible();
+  const copied = contact.getByRole('button', {name: 'Copied', exact: true});
+  await expect(copied).toHaveAttribute('data-copy-state', 'copied');
+  await expect(copied.locator('.copy-confirmation')).toHaveCSS('opacity', '1');
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(mailto!.slice('mailto:'.length));
   await expect(button).toBeVisible();
 });
@@ -405,15 +504,15 @@ test('smooth scroll runs for a mouse and stays off for touch and reduced motion'
   const tp = await touch.newPage();
   await tp.goto('/');
   await expect(tp.locator('html')).not.toHaveClass(/lenis/);
-  const ring = tp.locator('[data-ring="0"]');
-  const initial = await ring.getAttribute('d');
+  const model = tp.locator('[data-sculpture]');
+  const initial = await model.evaluate(el => getComputedStyle(el).transform);
   await tp.evaluate(() => scrollTo({top: 240, behavior: 'instant'}));
-  await expect.poll(() => ring.getAttribute('d')).not.toBe(initial);
+  await expect.poll(() => model.evaluate(el => getComputedStyle(el).transform)).not.toBe(initial);
   await tp.emulateMedia({reducedMotion: 'reduce'});
-  await expect.poll(() => ring.getAttribute('d')).toBe(initial);
+  await expect(model).toHaveCSS('transform', 'none');
   await tp.evaluate(() => scrollTo({top: 300, behavior: 'instant'}));
   await tp.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
-  await expect(ring).toHaveAttribute('d', initial!);
+  await expect(model).toHaveCSS('transform', 'none');
   await touch.close();
 });
 
@@ -512,22 +611,37 @@ test('mobile menu traps focus, closes with Escape, navigates, and resets on resi
   await expect(page.locator('body')).not.toHaveClass(/menu-open/);
 });
 
-test('sculpture morphs, shows guides, reacts to pointer, and stops at rest', async ({page}) => {
+test('the sculpture switches to Knot, shows guides and returns to rest after pointer movement', async ({page}) => {
   await page.goto('/');
-  const ring=page.locator('[data-ring="0"]');
-  const initial=await ring.getAttribute('d');
-  await page.getByRole('button',{name:'02 Orbit',exact:true}).click();
-  await expect(page.getByRole('button',{name:'02 Orbit',exact:true})).toHaveAttribute('aria-pressed','true');
-  await expect.poll(()=>ring.getAttribute('d')).not.toBe(initial);
-  await page.getByRole('button',{name:'Show construction guides'}).click();
+  const model = page.locator('[data-sculpture]');
+  const initial = await model.evaluate(el => getComputedStyle(el).transform);
+  const knot = page.getByRole('button', {name: '03 Knot', exact: true});
+  await knot.click();
+  await expect(knot).toHaveAttribute('aria-pressed', 'true');
+  await expect(model).toHaveAttribute('data-active-shape', 'knot');
+  await expect(model.locator('[data-shape-layer="knot"]')).toHaveCSS('opacity', '1');
+  await page.getByRole('button', {name: 'Show construction guides'}).click();
   await expect(page.locator('[data-shape-study]')).toHaveClass(/is-inspecting/);
-  const stage=await page.locator('[data-shape-stage]').boundingBox();
-  await page.mouse.move(stage!.x+stage!.width*.7,stage!.y+stage!.height*.35);
-  await page.mouse.move(1,1);
-  await page.waitForTimeout(1200);
-  const settled=await ring.getAttribute('d');
-  await page.waitForTimeout(200);
-  expect(await ring.getAttribute('d')).toBe(settled);
+  const stage = (await page.locator('[data-shape-stage]').boundingBox())!;
+  await page.mouse.move(stage.x + stage.width * .7, stage.y + stage.height * .35);
+  await expect.poll(() => model.evaluate(el => getComputedStyle(el).transform)).not.toBe(initial);
+  await page.mouse.move(1, 1);
+  await expect.poll(() => model.evaluate(el => getComputedStyle(el).transform)).toBe(initial);
+});
+
+test('the sculpture blends from Ribbon through Orbit to Knot on scroll', async ({page}) => {
+  await page.goto('/');
+  const stage = page.locator('[data-shape-stage]');
+  const model = page.locator('[data-sculpture]');
+  await expect(model).toHaveAttribute('data-active-shape', 'ribbon');
+  const {top, height} = await stage.evaluate(el => {
+    const rect = el.getBoundingClientRect();
+    return {top: rect.top + scrollY, height: rect.height};
+  });
+  await page.evaluate(y => scrollTo({top: y, behavior: 'instant'}), top + height * .32);
+  await expect(model).toHaveAttribute('data-active-shape', 'orbit');
+  await page.evaluate(y => scrollTo({top: y, behavior: 'instant'}), top + height * .7);
+  await expect(model).toHaveAttribute('data-active-shape', 'knot');
 });
 
 test('reduced motion keeps every section visible and disables pointer motion', async ({page}) => {
@@ -539,12 +653,10 @@ test('reduced motion keeps every section visible and disables pointer motion', a
   await expect(page.locator('.swarm-controls')).toBeHidden();
   const hidden = await page.locator('h2, h3, .feature-does, .tool-card').evaluateAll(els => els.filter(el => { const s = getComputedStyle(el); return s.opacity === '0' || s.clipPath.includes('100%'); }).length);
   expect(hidden).toBe(0);
-  const ring=page.locator('[data-ring="0"]');
-  const initial=await ring.getAttribute('d');
+  const model = page.locator('[data-sculpture]');
   const stage=await page.locator('[data-shape-stage]').boundingBox();
   await page.mouse.move(stage!.x+stage!.width*.8,stage!.y+stage!.height*.3);
-  await page.waitForTimeout(150);
-  expect(await ring.getAttribute('d')).toBe(initial);
+  await expect(model).toHaveCSS('transform', 'none');
   expect(await page.evaluate(()=>document.getAnimations().filter(animation=>animation.playState==='running').length)).toBe(0);
 });
 

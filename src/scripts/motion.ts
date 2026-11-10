@@ -28,7 +28,6 @@ export function initMotion() {
   velocity();
   story();
   cursor();
-  heroType();
   footerArrival();
   devGrid();
   console.info('%cmadebygio.%c press . for the grid', 'font-weight:700', 'color:#888');
@@ -54,7 +53,13 @@ function entrances() {
     frame = 0;
     for (const el of pending) if (el.getBoundingClientRect().bottom < 0) show(el);
   };
-  const onScroll = () => { if (!frame && pending.size) frame = requestAnimationFrame(sweep); };
+  let previousY = scrollY;
+  const onScroll = () => {
+    const y = scrollY;
+    if (!frame && pending.size && Math.abs(y - previousY) > innerHeight * .65) frame = requestAnimationFrame(sweep);
+    previousY = y;
+  };
+  sweep();
   addEventListener('scroll', onScroll, { passive: true });
   const onChange = () => { if (reduced.matches) { io.disconnect(); targets.forEach(el => el.classList.add('in')); } };
   reduced.addEventListener('change', onChange);
@@ -179,23 +184,6 @@ function story() {
 // Each route gets fresh build jobs; the canvas persists across page swaps.
 function cursor() {
   cleanups.push(initCursorSwarm());
-}
-
-// ── Hero headline: weight follows the pointer across the line ──
-function heroType() {
-  const hero = document.querySelector<HTMLElement>('[data-hero]');
-  const line = hero?.querySelector<HTMLElement>('[data-weight]');
-  if (!hero || !line || !fine.matches) return;
-  let frame = 0, t = .5;
-  const move = (e: PointerEvent) => {
-    if (reduced.matches) return;
-    const r = line.getBoundingClientRect();
-    t = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
-    if (!frame) frame = requestAnimationFrame(() => { frame = 0; line.style.setProperty('--wght', String(Math.round(430 + t * 170))); });
-  };
-  const leave = () => { cancelAnimationFrame(frame); frame = 0; line.style.removeProperty('--wght'); };
-  hero.addEventListener('pointermove', move); hero.addEventListener('pointerleave', leave);
-  cleanups.push(() => { hero.removeEventListener('pointermove', move); hero.removeEventListener('pointerleave', leave); leave(); });
 }
 
 // ── Footer: the wordmark's dot lights up once you've actually reached the end ──
