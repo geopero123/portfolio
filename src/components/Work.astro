@@ -7,6 +7,7 @@ import spoilerModerate from '../assets/projects/tempest-spoiler-moderate.png';
 import spoilerFull from '../assets/projects/tempest-spoiler-full.png';
 import BrowserFrame from './BrowserFrame.astro';
 import Icon from './Icon.astro';
+import QuireDemo from './QuireDemo.astro';
 import SectionIndex from './SectionIndex.astro';
 
 /**
@@ -96,6 +97,7 @@ const features: { p: Project; n: string; kind: string }[] = [
             </figure>
           ) : (
             <div class="pdf-demo">
+              <QuireDemo />
               <a class="pdf-paper" href={p.sample!.href} target="_blank" rel="noopener">
                 <Image src={p.sample!.image} alt={p.sample!.alt} widths={[360, 560, 800]} sizes="(max-width: 760px) 70vw, 24vw" format="webp" quality={85} loading="lazy" decoding="async" />
                 <span class="pdf-badge mono">Open sample PDF · {p.sample!.summary} <Icon /></span>

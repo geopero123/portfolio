@@ -1,4 +1,6 @@
+import { readFile } from 'node:fs/promises';
 import { test, expect, type Page } from '@playwright/test';
+import { PDFDocument } from 'pdf-lib';
 import AxeBuilder from '@axe-core/playwright';
 
 function watch(page: Page) {
@@ -70,6 +72,32 @@ test('QUIRE is featured with a real exported PDF and links into the PDF engine s
   expect(bytes.length).toBeLessThan(15000);
   await expect(quire.getByRole('link', {name: /Sample PDF/})).toHaveAttribute('href', '/samples/quire-field-notes.pdf');
   await expect(quire.getByRole('link', {name: /Link annotations/})).toHaveAttribute('href', /Portfolio-setup\/blob\/claude\/five-utility-react-apps-ajzt9l\/05-markdown-to-pdf\/src\/lib\/pdf\.js#L346$/);
+});
+
+test('QUIRE loads its editor engine on demand and downloads a PDF from edited Markdown', async ({page}) => {
+  const engineRequests: string[] = [];
+  page.on('request', request => {
+    if (/\/_astro\/quire-pdf[^/]*\.js$/.test(new URL(request.url()).pathname)) engineRequests.push(request.url());
+  });
+  await page.goto('/');
+  const quire = page.locator('#quire');
+  const editor = quire.getByRole('textbox', {name: 'Markdown'});
+  await expect(editor).toHaveValue(/# Field notes/);
+  await editor.fill(`# Review notes
+
+${'This is a paragraph from the edited Markdown.\n\n'.repeat(65)}`);
+  expect(engineRequests).toHaveLength(0);
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    quire.getByRole('button', {name: 'Download PDF'}).click(),
+  ]);
+  expect(engineRequests).toHaveLength(1);
+  expect(download.suggestedFilename()).toBe('quire-demo.pdf');
+  const bytes = await readFile((await download.path())!);
+  expect(bytes.subarray(0, 5).toString()).toBe('%PDF-');
+  const pages = (await PDFDocument.load(bytes)).getPageCount();
+  expect(pages).toBeGreaterThan(1);
+  await expect(quire.getByRole('status')).toHaveText(`${pages} pages - ${(bytes.length / 1024).toFixed(1)} KB.`);
 });
 
 test('secondary projects show the names and domains of the live apps', async ({page}) => {
@@ -435,6 +463,9 @@ test('the pages remain useful with JavaScript disabled', async ({browser}) => {
   await expect(page.locator('#tempest h3')).toBeVisible();
   await expect(page.locator('.feature-does').first()).toBeVisible();
   await expect(page.locator('.spoiler-table')).toBeVisible();
+  const quire = page.locator('#quire');
+  await expect(quire.getByRole('textbox', {name: 'Markdown'})).toHaveCount(0);
+  await expect(quire.getByRole('link', {name: /Open sample PDF/})).toHaveAttribute('href', '/samples/quire-field-notes.pdf');
   await page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'Contact',exact:true}).click();
   await expect(page).toHaveURL(/#contact$/);
   await expect(page.locator('#contact h2')).toBeVisible();

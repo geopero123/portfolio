@@ -1,0 +1,105 @@
+---
+import Icon from './Icon.astro';
+
+const sample = `# Field notes
+
+This is **selectable text** with a [working link](https://quire.madebygio.dev).
+
+- Edit this Markdown
+- Download your PDF`;
+---
+<form class="quire-editor" data-quire-editor aria-labelledby="quire-demo-title">
+  <div>
+    <p class="eyebrow">Try it</p>
+    <h4 id="quire-demo-title">Edit Markdown, export a PDF.</h4>
+  </div>
+  <label class="mono" for="quire-markdown">Markdown</label>
+  <textarea id="quire-markdown" name="markdown" rows="6" spellcheck="false" required>{sample}</textarea>
+  <button class="button button-primary" type="submit">Download PDF <Icon name="down" class="button-arrow" /></button>
+  <output class="mono" for="quire-markdown" role="status" data-quire-result></output>
+</form>
+
+<style>
+  .quire-editor {
+    display: none;
+    grid-column: 1 / -1;
+    gap: 10px;
+    padding: clamp(16px, 2.5vw, 24px);
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    background: #191917;
+  }
+  :global(.js) .quire-editor { display: grid; }
+  .quire-editor .eyebrow { color: var(--feature-accent); }
+  .quire-editor h4 { margin-top: 4px; color: var(--color-bright); font-size: 18px; }
+  .quire-editor label { margin-top: 4px; color: var(--color-bright); }
+  .quire-editor textarea {
+    display: block;
+    min-width: 0;
+    width: 100%;
+    min-height: 126px;
+    padding: 12px;
+    resize: vertical;
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+    color: var(--color-bright);
+    background: #11110f;
+    font: 12px/1.55 var(--font-mono);
+  }
+  .quire-editor button { justify-self: start; }
+  .quire-editor button:disabled { opacity: .7; }
+  .quire-editor output { min-height: 2lh; color: var(--color-body); }
+</style>
+
+<script>
+  function initQuireDemo() {
+    const form = document.querySelector<HTMLFormElement>('[data-quire-editor]');
+    if (!form || form.dataset.ready) return;
+    const input = form.querySelector('textarea');
+    const button = form.querySelector('button');
+    const result = form.querySelector('output');
+    if (!input || !button || !result) return;
+    form.dataset.ready = '1';
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (button.disabled) return;
+      const markdown = input.value;
+      delete form.dataset.exported;
+      if (!markdown.trim()) {
+        result.textContent = 'Enter some Markdown first.';
+        return;
+      }
+
+      button.disabled = true;
+      result.textContent = 'Preparing PDF...';
+      try {
+        const { markdownToPdf } = await import('../lib/quire-pdf.js');
+        const { blob, pages, warnings, dropped } = await markdownToPdf(markdown, { title: 'QUIRE demo' });
+        if (!form.isConnected) return;
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'quire-demo.pdf';
+        link.hidden = true;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+
+        const size = (blob.size / 1024).toFixed(1);
+        const note = warnings.length || dropped.length ? ' Some content was adjusted.' : '';
+        result.textContent = `${pages} ${pages === 1 ? 'page' : 'pages'} - ${size} KB.${note}`;
+        form.dataset.exported = 'true';
+      } catch {
+        result.textContent = 'Could not export the PDF. Try again or open the sample below.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
+  initQuireDemo();
+  document.addEventListener('astro:page-load', initQuireDemo);
+</script>
