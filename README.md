@@ -1,5 +1,7 @@
 # madebygio.dev
 
+[![Portfolio CI](https://github.com/geopero123/portfolio/actions/workflows/ci.yml/badge.svg?branch=local%2Fcurrent-site)](https://github.com/geopero123/portfolio/actions/workflows/ci.yml)
+
 Gio's developer portfolio. A static Astro site with Tailwind CSS, self-hosted typography, and a small TypeScript interaction layer. No animation libraries.
 
 ## Develop and verify
