@@ -57,7 +57,7 @@
 .story-tags li { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; padding: 7px 10px; border: 1px solid #ffffff14; border-radius: 3px; color: #c4c4b9; opacity: 0; transform: translateX(-8px); transition: opacity .5s var(--ease-out), transform .6s var(--ease-out), border-color .3s; transition-delay: calc(var(--i, 0) * 60ms); }
 .story-chapter.is-active .story-tags li { opacity: 1; transform: none; border-color: color-mix(in oklab, var(--flag-accent) 35%, #ffffff14); }
 
-/* ── Selected work: two featured projects ───────────────────────────────── */
+/* ── Selected work: three featured projects ───────────────────────────────── */
 .work-section { padding-bottom: 24px; }
 .feature { position: relative; padding-block: 72px; border-top: 1px solid var(--color-line); scroll-margin-top: 70px; }
 .feature::before { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse 55% 45% at 78% 30%, color-mix(in oklab, var(--feature-accent) 9%, transparent), transparent 70%); pointer-events: none; }
@@ -112,6 +112,13 @@
 .pdf-badge svg { width: 11px; height: 11px; }
 .pdf-paper:hover .pdf-badge { background: var(--color-accent); color: var(--color-ink); }
 .pdf-caption { grid-column: 1 / -1; font-size: 10px; color: var(--color-mute); }
+
+.siteforge-flow { margin-top: 18px; padding: 16px; border: 1px solid var(--color-line); border-radius: 6px; }
+.siteforge-flow figcaption { color: var(--feature-accent); }
+.siteforge-flow svg { display: block; width: min(100%, 420px); margin: 12px auto 0; color: var(--feature-accent); }
+.flow-edges { fill: none; stroke: currentColor; stroke-width: 1.2; }
+.flow-nodes rect { fill: var(--color-surface); stroke: color-mix(in oklab, currentColor 45%, transparent); }
+.flow-nodes text { fill: var(--color-bright); font: 16px var(--font-mono); text-anchor: middle; dominant-baseline: middle; }
 
 /* Decision + evidence: the part a technical reviewer reads. */
 .feature-proof { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--color-line); }

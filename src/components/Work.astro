@@ -11,13 +11,14 @@ import QuireDemo from './QuireDemo.astro';
 import SectionIndex from './SectionIndex.astro';
 
 /**
- * Selected work. Two featured projects, each in the same order a reviewer asks:
+ * Selected work. Three featured projects, each in the same order a reviewer asks:
  * what does it let people do → my role → one engineering decision → evidence to inspect.
- * The other six projects follow as a compact grid with their real names and domains.
+ * The other five projects follow as a compact grid with their real names and domains.
  */
 const tempest = getProject('tempest-archive')!;
 const quire = getProject('quire')!;
-const secondary = ['siteforge', 'tempest-rebirth', 'transmute', 'signal', 'folio', 'kilo'].map(slug => getProject(slug)!);
+const siteforge = getProject('siteforge')!;
+const secondary = ['tempest-rebirth', 'transmute', 'signal', 'folio', 'kilo'].map(slug => getProject(slug)!);
 const host = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 const external = (href: string) => /^https?:/.test(href);
 
@@ -34,13 +35,14 @@ const noteFor = (l: (typeof levels)[number]) => `${l.label}: ${total(l.counts)} 
 const features: { p: Project; n: string; kind: string }[] = [
   { p: tempest, n: '01', kind: 'React app · content platform' },
   { p: quire, n: '02', kind: 'React app · browser tool' },
+  { p: siteforge, n: '03', kind: 'Next.js app · website and code QA' },
 ];
 ---
 <section id="projects" class="work-section section-pad" aria-labelledby="work-title">
   <div class="shell">
     <div class="section-topline"><p class="eyebrow"><SectionIndex n="01" /> Selected work</p><span class="mono subtle" data-m="slide" data-from="right">{projects.length} live projects</span></div>
     <div class="section-heading">
-      <h2 id="work-title" data-m="mask" data-velocity><span class="line-mask"><span style="--i:0">Two projects,</span></span><span class="line-mask"><span class="serif" style="--i:1">in depth.</span></span></h2>
+      <h2 id="work-title" data-m="mask" data-velocity><span class="line-mask"><span style="--i:0">Three projects,</span></span> <span class="line-mask"><span class="serif" style="--i:1">in depth.</span></span></h2>
       <p data-m="clip" style="--delay:200ms">What each one lets people do, what I did, one decision behind it, and evidence you can check yourself.</p>
     </div>
   </div>
@@ -95,7 +97,7 @@ const features: { p: Project; n: string; kind: string }[] = [
               <p class="spoiler-note mono" aria-live="polite" data-spoiler-note>{noteFor(levels[0])}</p>
               <p class="spoiler-source mono">Counted on the live index pages, {VERIFIED_ON}.</p>
             </figure>
-          ) : (
+          ) : p.slug === 'quire' ? (
             <div class="pdf-demo">
               <QuireDemo />
               <a class="pdf-paper" href={p.sample!.href} target="_blank" rel="noopener">
@@ -106,6 +108,33 @@ const features: { p: Project; n: string; kind: string }[] = [
                 <BrowserFrame image={p.image} alt={p.alt} url={p.live} sizes="(max-width: 760px) 92vw, 36vw" />
               </div>
               <p class="pdf-caption mono">The paper is page 1 of the sample, exported from {host(p.live)}. Open it and select the text, or click the link under “Further reading”.</p>
+            </div>
+          ) : (
+            <div class="siteforge-preview">
+              <BrowserFrame image={p.image} alt={p.alt} url={p.live} tone={p.tone} sizes="(max-width: 1100px) 90vw, 52vw" />
+              <figure class="siteforge-flow">
+                <figcaption class="eyebrow">From request to report</figcaption>
+                <svg viewBox="0 0 420 176" role="img" aria-labelledby="siteforge-flow-title siteforge-flow-desc">
+                  <title id="siteforge-flow-title">SiteForge audit pipeline</title>
+                  <desc id="siteforge-flow-desc">The Next.js app queues the audit. A worker runs Chromium and scans the repository, then returns the report.</desc>
+                  <defs>
+                    <marker id="audit-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                      <path d="M1 1L7 4L1 7" fill="none" stroke="currentColor" stroke-width="1.2" />
+                    </marker>
+                  </defs>
+                  <g class="flow-edges" marker-end="url(#audit-arrow)">
+                    <path d="M128 22H146" /><path d="M271 22H289" />
+                    <path d="M353 41V61H210V76" /><path d="M210 115V136" />
+                  </g>
+                  <g class="flow-nodes">
+                    <rect x="4" y="4" width="124" height="37" rx="5" /><text x="66" y="22">Next.js app</text>
+                    <rect x="147" y="4" width="124" height="37" rx="5" /><text x="209" y="22">Queue</text>
+                    <rect x="290" y="4" width="124" height="37" rx="5" /><text x="352" y="22">Worker</text>
+                    <rect x="65" y="77" width="290" height="38" rx="5" /><text x="210" y="96">Chromium + repository scan</text>
+                    <rect x="143" y="137" width="134" height="37" rx="5" /><text x="210" y="155">Report</text>
+                  </g>
+                </svg>
+              </figure>
             </div>
           )}
         </div>
@@ -136,7 +165,7 @@ const features: { p: Project; n: string; kind: string }[] = [
   <div class="shell more-work" aria-labelledby="more-title">
     <div class="more-head">
       <h3 id="more-title">More projects</h3>
-      <p>A QA tool, a 3D browser game and four tools that work on your device. All six are live.</p>
+      <p>A 3D browser game and four tools that work on your device. All five are live.</p>
     </div>
     <ul class="tool-grid">
       {secondary.map(p => (

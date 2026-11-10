@@ -293,6 +293,17 @@ export const projects: Project[] = [
     accent: '#7ee2a8',
     tone: 'dark',
     schemaCategory: 'DeveloperApplication',
+    feature: {
+      does: 'Audit a live website, a GitHub repository, or both. Each finding includes evidence, its location and a suggested fix.',
+      decision: {
+        title: 'AI findings must quote real code or they are discarded.',
+        body: 'SiteForge checks the quote against the file the finding names. It keeps a suggested patch only if every line the patch removes exists in that file.',
+      },
+      evidence: [
+        { label: 'Live site', text: 'Open the audit workspace.', href: 'https://siteforge.madebygio.dev' },
+        { label: 'Source repository', text: 'Read the audit and reporting code.', href: 'https://github.com/geopero123/siteforge' },
+      ],
+    },
     stackNote: 'Next.js and React with TypeScript and Tailwind CSS. Supabase provides sign-in, the database and the audit queue; a separate worker drives Chromium through Playwright and runs axe-core on each page.',
     facts: [
       { label: 'Real browser audits', text: 'Pages are loaded in Chromium at three viewports (1440×900, 768×1024 and 390×844) and checked with axe, along with console errors, failed requests, overflow and clipping.' },

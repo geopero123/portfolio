@@ -17,8 +17,8 @@ test('home loads without browser errors, missing assets, or broken anchors', asy
   await expect(page.locator('h1')).toHaveText(/Giorgi\s*·\s*React Developer/);
   await page.locator('#contact').scrollIntoViewIfNeeded();
   await expect(page.locator('#tempest')).toContainText('Tempest');
-  await expect(page.locator('article.feature')).toHaveCount(2);
-  await expect(page.locator('.tool-card')).toHaveCount(6);
+  await expect(page.locator('article.feature')).toHaveCount(3);
+  await expect(page.locator('.tool-card')).toHaveCount(5);
   expect(await page.evaluate(() => [...document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')].filter(a => !document.querySelector(a.hash)).map(a => a.hash))).toEqual([]);
   expect(errors).toEqual([]);
   expect(failed).toEqual([]);
@@ -100,11 +100,21 @@ ${'This is a paragraph from the edited Markdown.\n\n'.repeat(65)}`);
   await expect(quire.getByRole('status')).toHaveText(`${pages} pages - ${(bytes.length / 1024).toFixed(1)} KB.`);
 });
 
+test('SiteForge is featured with its audit pipeline, decision and evidence', async ({page}) => {
+  await page.goto('/');
+  await expect(page.locator('#work-title')).toHaveText('Three projects, in depth.');
+  const feature = page.locator('article.feature-siteforge');
+  await expect(feature.getByRole('heading', {name: 'SiteForge', exact: true})).toBeVisible();
+  await expect(feature.getByRole('img', {name: 'SiteForge audit pipeline'})).toBeVisible();
+  await expect(feature.locator('.decision')).toContainText('AI findings must quote real code or they are discarded.');
+  await expect(feature.locator('.evidence').getByRole('link', {name: /Live site/})).toHaveAttribute('href', 'https://siteforge.madebygio.dev');
+  await expect(feature.locator('.evidence').getByRole('link', {name: /Source repository/})).toHaveAttribute('href', 'https://github.com/geopero123/siteforge');
+});
+
 test('secondary projects show the names and domains of the live apps', async ({page}) => {
   await page.goto('/');
   const cards = page.locator('.tool-card');
   const expected = [
-    ['SiteForge', 'siteforge.madebygio.dev', 'siteforge'],
     ['Tempest Rebirth', 'play.tempestarchive.com', 'play-tensura'],
     ['Transmute', 'convert.madebygio.dev', 'Portfolio-setup'],
     ['SIGNAL', 'qr.madebygio.dev', 'Portfolio-setup'],
