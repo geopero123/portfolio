@@ -35,6 +35,7 @@ export interface Project {
   year: string;
   stack: string[];
   live: string;
+  liveAccessNote?: string;
   /** Omitted when no public repository exists. */
   source?: string;
   image: ImageMetadata;
@@ -287,6 +288,7 @@ export const projects: Project[] = [
     year: '2026',
     stack: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Supabase', 'Playwright', 'axe-core'],
     live: 'https://siteforge.madebygio.dev',
+    liveAccessNote: 'Running an audit requires sign-in.',
     source: 'https://github.com/geopero123/siteforge',
     image: siteforge,
     alt: 'SiteForge landing page on a dark background: the headline "Find what breaks before your users do", a field for a site or GitHub repository with a Run audit button, and a sample report scoring accessibility, security, responsiveness and dependencies',
@@ -300,7 +302,7 @@ export const projects: Project[] = [
         body: 'SiteForge checks the quote against the file the finding names. It keeps a suggested patch only if every line the patch removes exists in that file.',
       },
       evidence: [
-        { label: 'Live site', text: 'Open the audit workspace.', href: 'https://siteforge.madebygio.dev' },
+        { label: 'Product overview', text: 'See the public landing page.', href: 'https://siteforge.madebygio.dev' },
         { label: 'Source repository', text: 'Read the audit and reporting code.', href: 'https://github.com/geopero123/siteforge' },
       ],
     },

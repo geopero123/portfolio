@@ -126,15 +126,24 @@ test('QUIRE reveals a sheet and result after export', async ({page}) => {
   await expect(editor.getByRole('status')).toContainText('1 page');
 });
 
-test('SiteForge is featured with its audit pipeline, decision and evidence', async ({page}) => {
+test('SiteForge offers a case study and source to signed-out reviewers', async ({page}) => {
   await page.goto('/');
   await expect(page.locator('#work-title')).toHaveText('Three projects, in depth.');
   const feature = page.locator('article.feature-siteforge');
   await expect(feature.getByRole('heading', {name: 'SiteForge', exact: true})).toBeVisible();
   await expect(feature.getByRole('img', {name: 'SiteForge audit pipeline'})).toBeVisible();
   await expect(feature.locator('.decision')).toContainText('AI findings must quote real code or they are discarded.');
-  await expect(feature.locator('.evidence').getByRole('link', {name: /Live site/})).toHaveAttribute('href', 'https://siteforge.madebygio.dev');
+  await expect(feature.getByText('Running an audit requires sign-in.')).toBeVisible();
+  await expect(feature.locator('.evidence').getByRole('link', {name: /Product overview/})).toHaveAttribute('href', 'https://siteforge.madebygio.dev');
   await expect(feature.locator('.evidence').getByRole('link', {name: /Source repository/})).toHaveAttribute('href', 'https://github.com/geopero123/siteforge');
+  const primary = feature.locator('.button-primary');
+  await expect(primary).toHaveText('Read the case study');
+  await primary.click();
+  await expect(page).toHaveURL(/\/projects\/siteforge\/?$/);
+  await expect(page.getByText('Running an audit requires sign-in.')).toBeVisible();
+  await expect(page.locator('.project-actions .button-primary')).toHaveAttribute('href', 'https://github.com/geopero123/siteforge');
+  await expect(page.getByRole('link', {name: 'Product overview'})).toHaveAttribute('href', 'https://siteforge.madebygio.dev');
+  await expect(page.locator('.project-cta .button-primary')).toHaveAttribute('href', 'https://github.com/geopero123/siteforge');
 });
 
 test('secondary projects show the names and domains of the live apps', async ({page}) => {
@@ -724,12 +733,12 @@ test('about page: tabs, workflow, and source list work', async ({page}) => {
   expect(failed).toEqual([]);
 });
 
-test('every project page renders with live link, real stack and metadata', async ({page}) => {
+test('every project page renders with a project link, real stack and metadata', async ({page}) => {
   const {errors, failed} = watch(page);
   for (const slug of ['tempest-archive', 'quire', 'kilo', 'folio', 'transmute', 'signal', 'siteforge', 'tempest-rebirth']) {
     await page.goto(`/projects/${slug}`);
     await expect(page.locator('h1')).toBeVisible();
-    await expect(page.getByRole('link', {name: /Visit the live site/})).toHaveAttribute('href', /^https:\/\//);
+    await expect(page.getByRole('link', {name: slug === 'siteforge' ? 'Product overview' : 'Visit the live site'})).toHaveAttribute('href', /^https:\/\//);
     await expect(page.getByRole('list', {name: 'Built with'}).locator('li').first()).toBeVisible();
     expect(await page.locator('meta[property="og:image"]').getAttribute('content')).toContain(`og-${slug}.png`);
     // The pinned story exists on every project page and its first chapter starts active.

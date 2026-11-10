@@ -60,11 +60,13 @@ const features: { p: Project; n: string; kind: string }[] = [
             <dl class="feature-meta">
               <div><dt class="mono">My role</dt><dd>{p.role}</dd></div>
               <div><dt class="mono">Stack</dt><dd>{p.stack.join(', ')}</dd></div>
-              <div><dt class="mono">Live at</dt><dd><a href={p.live} target="_blank" rel="noopener noreferrer">{host(p.live)}</a></dd></div>
+              {p.liveAccessNote
+                ? <div><dt class="mono">Access</dt><dd>{p.liveAccessNote}</dd></div>
+                : <div><dt class="mono">Live at</dt><dd><a href={p.live} target="_blank" rel="noopener noreferrer">{host(p.live)}</a></dd></div>}
             </dl>
             <div class="feature-actions">
-              <a class="button button-primary" href={p.live} target="_blank" rel="noopener noreferrer" data-magnetic>{p.flagship ? 'Visit Tempest Archive' : `Open ${p.name}`} <Icon class="button-arrow" /></a>
-              <a class="text-link" href={`/projects/${p.slug}`}>Read the case study <Icon /></a>
+              {!p.liveAccessNote && <a class="button button-primary" href={p.live} target="_blank" rel="noopener noreferrer" data-magnetic>{p.flagship ? 'Visit Tempest Archive' : `Open ${p.name}`} <Icon class="button-arrow" /></a>}
+              <a class={p.liveAccessNote ? 'button button-primary' : 'text-link'} href={`/projects/${p.slug}`} data-magnetic={p.liveAccessNote ? true : undefined}>Read the case study <Icon class={p.liveAccessNote ? 'button-arrow' : undefined} /></a>
             </div>
           </header>
 

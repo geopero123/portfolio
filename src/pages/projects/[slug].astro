@@ -12,6 +12,9 @@ export function getStaticPaths() {
 }
 interface Props { project: Project; index: number; next: Project }
 const { project: p, index, next } = Astro.props;
+const reviewSource = p.liveAccessNote ? p.source : undefined;
+const reviewLabel = reviewSource ? 'View source' : p.liveAccessNote ? 'Product overview' : undefined;
+const openLabel = p.flagship ? 'Visit Tempest Archive' : `Open ${p.name}`;
 const number = String(index + 1).padStart(2, '0');
 const [first, ...rest] = p.name.split(' ');
 const title = p.flagship ? `Tempest Archive - a spoiler-aware Tensura companion` : `${p.name} - ${p.tagline}`;
@@ -47,11 +50,14 @@ const storyChapters = (p.story ?? []).map((s, i) => ({ ...s, screen: storyScreen
         <div><dt class="mono">Type</dt><dd>{p.type}</dd></div>
         <div><dt class="mono">Role</dt><dd>{p.role}</dd></div>
         <div><dt class="mono">{p.flagship ? 'Status' : 'Year'}</dt><dd>{p.year}</dd></div>
-        <div><dt class="mono">Live at</dt><dd><a href={p.live} target="_blank" rel="noopener noreferrer">{p.live.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a></dd></div>
+        {p.liveAccessNote
+          ? <div><dt class="mono">Access</dt><dd>{p.liveAccessNote}</dd></div>
+          : <div><dt class="mono">Live at</dt><dd><a href={p.live} target="_blank" rel="noopener noreferrer">{p.live.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a></dd></div>}
       </dl>
       <div class="project-actions" data-m="stagger" style="--delay:420ms">
-        <a class="button button-primary" href={p.live} target="_blank" rel="noopener noreferrer" data-magnetic>Visit the live site <Icon class="button-arrow" /></a>
-        {p.source && <a class="text-link" href={p.source} target="_blank" rel="noopener noreferrer"><Icon name="github" /> View source</a>}
+        <a class="button button-primary" href={reviewSource ?? p.live} target="_blank" rel="noopener noreferrer" data-magnetic>{reviewLabel ?? 'Visit the live site'} <Icon class="button-arrow" /></a>
+        {reviewSource && <a class="text-link" href={p.live} target="_blank" rel="noopener noreferrer">Product overview <Icon /></a>}
+        {!reviewSource && p.source && <a class="text-link" href={p.source} target="_blank" rel="noopener noreferrer"><Icon name="github" /> View source</a>}
         {p.slug === 'quire' && <a class="text-link" href="/samples/quire-field-notes.pdf" target="_blank" rel="noopener">Sample PDF (13.4 KB) <Icon /></a>}
       </div>
     </header>
@@ -152,10 +158,10 @@ const storyChapters = (p.story ?? []).map((s, i) => ({ ...s, screen: storyScreen
       )}
 
       <div class="project-cta">
-        <h2 data-m="mask"><span class="line-mask"><span>See it <span class="serif">live.</span></span></span></h2>
+        <h2 data-m="mask"><span class="line-mask"><span>{reviewSource ? 'Explore the' : p.liveAccessNote ? 'See the' : 'See it'} <span class="serif">{reviewSource ? 'code.' : p.liveAccessNote ? 'overview.' : 'live.'}</span></span></span></h2>
         <div data-m="stagger">
-          <a class="button button-primary" href={p.live} target="_blank" rel="noopener noreferrer" data-magnetic>{p.flagship ? 'Visit Tempest Archive' : `Open ${p.name}`} <Icon class="button-arrow" /></a>
-          {p.source && <a class="text-link" href={p.source} target="_blank" rel="noopener noreferrer"><Icon name="github" /> View source</a>}
+          <a class="button button-primary" href={reviewSource ?? p.live} target="_blank" rel="noopener noreferrer" data-magnetic>{reviewLabel ?? openLabel} <Icon class="button-arrow" /></a>
+          {!reviewSource && p.source && <a class="text-link" href={p.source} target="_blank" rel="noopener noreferrer"><Icon name="github" /> View source</a>}
         </div>
       </div>
       <nav class="project-next" aria-label="Next project">
