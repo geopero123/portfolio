@@ -71,6 +71,15 @@
   ::view-transition-group(*) { animation-duration: 340ms; animation-timing-function: var(--ease-out); }
 }
 
+/* The persisted header gets its own transition layer, painted above the shared project titles
+   and screenshots. Without a name it is flattened into the root snapshot, and a gliding title
+   passes over the wordmark and nav. */
+.site-header { view-transition-name: site-header; }
+/* The ink fill stops the outgoing page showing through a header that is transparent at the top. */
+::view-transition-group(site-header) { z-index: 100; animation: none; background: var(--color-ink); }
+::view-transition-old(site-header) { display: none; }
+::view-transition-new(site-header) { animation: none; }
+
 /* Odometer structure: one visible digit, always - with or without motion. */
 .digit { display: inline-block; height: 1em; overflow: hidden; vertical-align: top; }
 .digit-roll { display: block; transform: translateY(calc(var(--d) * -1em)); }

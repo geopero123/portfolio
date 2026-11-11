@@ -86,17 +86,21 @@ export function initCursorSwarm(): () => void {
       const r = el.getBoundingClientRect();
       // Only what is on screen now; content below the fold is never hidden by a replay.
       return r.width > .5 && r.height > .5 && r.bottom > 0 && r.top < height;
-    }).map(el => {
+    }).map((el): Job => {
+      // Reads only. Writing styles here would force a fresh style and layout pass for every
+      // element (an ~86 ms freeze on a slow CPU), so the writes happen in one batch below.
       const rect = el.getBoundingClientRect();
       const visual = !!el.querySelector('img, canvas, svg.sculpture') || el.matches('.shape-stage');
       const kind: Job['kind'] = visual ? 'place' : el.matches('.section-topline, .tech-strip, .study-controls, .hero-actions, .feature-actions, [aria-hidden="true"]') ? 'draw' : 'type';
-      el.dataset.swarmPiece = kind;
-      el.style.setProperty('--swarm-reveal', '100%');
       const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || rect.height;
       const lines = kind === 'type' && el.matches('p, h1, h2, h3, .line-mask') ? Math.max(1, Math.round(rect.height / lineHeight)) : 1;
       return { el, rect, lines, kind, state: 'waiting', progress: 0, start: 0,
         duration: visual ? 1100 : clamp((el.textContent?.trim().length || 20) * 9 + 300, 430, 1400) };
     });
+    for (const job of jobs) {
+      job.el.dataset.swarmPiece = job.kind;
+      job.el.style.setProperty('--swarm-reveal', '100%');
+    }
     agents.forEach((a, i) => {
       a.job = null; a.x = width * .5 + Math.cos(a.phase) * 30; a.y = height * .48 + Math.sin(a.phase) * 30;
       a.vx = Math.cos(a.phase) * 80; a.vy = Math.sin(a.phase) * 80; a.angle = i;

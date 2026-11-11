@@ -83,7 +83,7 @@ const features: { p: Project; n: string; kind: string }[] = [
                   </div>
                 ))}
               </div>
-              <div class="spoiler-table-wrap">
+              <div class="spoiler-table-wrap" role="region" aria-label="Entries by spoiler level" tabindex="0">
                 <table class="spoiler-table">
                   <caption class="sr-only">Entries shown on each live index page, by spoiler level</caption>
                   <thead><tr><th scope="col">Level</th>{kinds.map(k => <th scope="col">{k}</th>)}<th scope="col">Total</th></tr></thead>

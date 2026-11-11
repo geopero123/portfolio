@@ -1,13 +1,19 @@
 /* The underlying page keeps its real dimensions throughout the build. */
 .swarm-active .desktop-nav:has([data-swarm-piece]) .nav-indicator { opacity: 0 !important; }
 .swarm-active .hero:has([data-swarm-piece]) .hero-baseline::after { opacity: 0; }
-.swarm-active .hero *, .swarm-active .hero-baseline::after,
+/* Only the pieces being built (and what is inside them) are neutralised, keyed on the
+   `data-swarm-piece` attribute, which exists only during a build. Hanging `.hero *` and
+   `[data-m] > *` off the `.swarm-active` root class made adding that class restyle the whole
+   document: a 50-100 ms freeze on a 4x slower CPU. `:root` keeps the old specificity. */
+:root .hero [data-swarm-piece], :root .hero [data-swarm-piece] *, .swarm-active .hero-baseline::after,
 .swarm-active .site-header .wordmark, .swarm-active .site-header .github-link,
 .swarm-active .site-header .menu-toggle, .swarm-active .desktop-nav > a { animation: none !important; }
-.swarm-active [data-m], .swarm-active [data-m] .line-mask > span, .swarm-active [data-m] > * { opacity: 1; clip-path: none; transform: none; transition-delay: 0ms; }
+:root [data-swarm-piece][data-m], :root [data-swarm-piece] [data-m],
+:root [data-swarm-piece][data-m] .line-mask > span, :root [data-swarm-piece] [data-m] .line-mask > span,
+:root [data-swarm-piece][data-m] > *, :root [data-swarm-piece] [data-m] > * { opacity: 1; clip-path: none; transform: none; transition-delay: 0ms; }
 html.swarm-active [data-swarm-piece] { clip-path: var(--swarm-clip, inset(0 var(--swarm-reveal, 100%) 0 0)) !important; opacity: 1 !important; transition: none !important; }
 .swarm-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 90; }
-.swarm-controls { position: fixed; right: 24px; bottom: 22px; z-index: 91; display: flex; align-items: center; border: 1px solid #ffffff24; border-radius: 999px; background: #1a1a16ed; color: #e8e5dc; box-shadow: 0 4px 24px #0002; font: 10px var(--font-mono); backdrop-filter: blur(12px); overflow: hidden; }
+.swarm-controls { position: fixed; right: 24px; bottom: 22px; z-index: 91; display: flex; align-items: center; border: 1px solid #ffffff24; border-radius: 999px; background: #1a1a16ed; color: #e8e5dc; box-shadow: 0 4px 24px #0002; font: 11px var(--font-mono); backdrop-filter: blur(12px); overflow: hidden; }
 .swarm-controls[hidden] { display: none; }
 /* The floating pill only exists while a build runs, to offer Skip. At rest it would cover page
    text, so "Replay build" lives in the hero and the footer instead. */
