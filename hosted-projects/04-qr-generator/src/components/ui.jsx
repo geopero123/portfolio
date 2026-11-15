@@ -162,9 +162,9 @@ export function Notice({ level = 'info', children }) {
 
 export function Section({ title, children, aside }) {
   return (
-    <section className="panel p-4 sm:p-5">
-      <div className="mb-3.5 flex items-baseline justify-between gap-3">
-        <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-forest-50">{title}</h2>
+    <section className="panel panel-in p-4 sm:p-5">
+      <div className="mb-4 flex items-baseline justify-between gap-3 border-b-2 border-forest-800 pb-2">
+        <h2 className="condensed text-[26px] font-extrabold uppercase leading-none tracking-[-0.01em] text-forest-50">{title}</h2>
         {aside}
       </div>
       <div className="space-y-4">{children}</div>

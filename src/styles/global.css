@@ -120,8 +120,10 @@ main:focus { outline: none; }
 .hero-description a:hover { text-decoration-color: var(--color-accent); }
 .hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 29px; margin-top: 33px; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 27px; min-height: 52px; padding: 13px 22px; border: 1px solid transparent; font-size: 13px; font-weight: 500; border-radius: 4px; transition: transform .45s var(--ease); }
-.button-primary { background: var(--color-accent); color: #181510; box-shadow: 0 0 0 0 #f28b6300; }
-.button-primary:hover { background: #ffab88; box-shadow: 0 5px 28px #f28b6315; }
+.button-primary { position: relative; isolation: isolate; overflow: hidden; background: var(--color-accent); color: #181510; box-shadow: 0 0 0 0 #f28b6300; }
+.button-primary::before { content: ''; position: absolute; inset: 0; z-index: -1; background: #ffc2a6; transform: scaleX(0); transform-origin: right; transition: transform .55s var(--ease-out); }
+.button-primary:hover { box-shadow: 0 5px 28px #f28b6326; }
+.button-primary:hover::before { transform: scaleX(1); transform-origin: left; }
 .button-arrow { width: 16px; height: 16px; transition: transform .35s var(--ease); }
 .button:hover .button-arrow { transform: translate(2px,-2px); }
 .button:active { scale: .97; }

@@ -90,6 +90,9 @@ export default function App() {
     [barcode, style.background, style.foreground, style.transparent],
   )
 
+  // A new key replays the scanner sweep whenever the code itself changes.
+  const scanKey = useMemo(() => Math.random().toString(36).slice(2), [geo, barcode.value, barcodeOptions])
+
   /* ----------------------------------------------------------- the logo -- */
 
   const pickLogo = useCallback(async (file) => {
@@ -166,16 +169,17 @@ export default function App() {
 
   return (
     <div className="min-h-dvh">
-      <header className="border-b border-forest-800 bg-forest-900">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
-          <div className="flex items-center gap-3">
-            <span className="text-[19px] font-semibold tracking-[-0.03em] text-forest-50">SIGNAL</span>
-            <span className="hidden h-4 w-px bg-forest-700 sm:block" />
-            <span className="eyebrow hidden sm:block">QR &amp; barcode generator</span>
+      <header className="relative overflow-hidden border-b-2 border-forest-800 bg-forest-950 text-white">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-x-6 gap-y-4 px-4 pb-5 pt-7 sm:px-6">
+          <div>
+            <p className="condensed font-mono text-[11px] uppercase tracking-[0.22em] text-white/75">QR &amp; barcode generator</p>
+            <h1 className="wordmark mt-2 text-[84px] text-white sm:text-[132px]">
+              SIGNAL<span className="text-apricot-400">.</span>
+            </h1>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div role="radiogroup" aria-label="Code type" className="flex rounded-full border border-forest-700 bg-forest-850 p-0.5">
+          <div className="flex items-center gap-4 pb-1">
+            <div role="radiogroup" aria-label="Code type" className="flex rounded-full border-2 border-forest-800 bg-white p-1 shadow-[4px_4px_0_var(--color-ink)]">
               {[
                 { id: 'qr', label: 'QR code', Icon: QrCode },
                 { id: 'barcode', label: 'Barcode', Icon: ScanBarcode },
@@ -186,19 +190,33 @@ export default function App() {
                   role="radio"
                   aria-checked={mode === id}
                   onClick={() => setMode(id)}
-                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-apricot-400 ${
-                    mode === id ? 'bg-apricot-400 font-medium text-forest-950' : 'text-forest-300 hover:text-forest-50'
+                  className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13.5px] font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                    mode === id ? 'bg-forest-950 text-white' : 'text-forest-300 hover:bg-apricot-400 hover:text-forest-800'
                   }`}
                 >
-                  <Icon className="size-3.5" strokeWidth={2.2} />
+                  <Icon className="size-3.5" strokeWidth={2.4} />
                   {label}
                 </button>
               ))}
             </div>
-            <span className="eyebrow hidden items-center gap-1.5 md:flex">
+            <span className="hidden items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.15em] text-white/80 md:flex">
               <Shield className="size-3.5 text-apricot-400" strokeWidth={2.2} />
               On-device
             </span>
+          </div>
+        </div>
+        <div className="overflow-hidden border-t-2 border-forest-800 bg-apricot-400 py-1.5 text-forest-800" aria-hidden="true">
+          <div className="marquee-track condensed font-mono text-[12px] font-semibold uppercase tracking-[0.18em]">
+            {[0, 1].map((k) => (
+              <span key={k} className="flex shrink-0 gap-8 pr-8">
+                {['Links', 'Wi-Fi', 'Contact cards', 'Email', 'SMS', 'EAN-13', 'UPC-A', 'Code 128', 'Code 39', 'ITF-14', 'PNG', 'SVG', 'Nothing uploaded'].map((w) => (
+                  <span key={w} className="flex items-center gap-8">
+                    {w}
+                    <span>■</span>
+                  </span>
+                ))}
+              </span>
+            ))}
           </div>
         </div>
       </header>
@@ -206,28 +224,35 @@ export default function App() {
       <main className="mx-auto grid max-w-6xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,430px)_minmax(0,1fr)] lg:gap-8 lg:py-10">
         {/* Preview leads: it is the artefact being made, not a side panel. */}
         <div className="lg:sticky lg:top-6 lg:self-start">
-          <div className="panel rings grid place-items-center p-5 sm:p-8">
+          <div className="sticker-sheet grid place-items-center p-6 sm:p-10">
             {mode === 'qr' ? (
               geo ? (
-                <div
-                  className="aspect-square w-full max-w-[330px] overflow-hidden rounded-xl"
-                  style={checkerStyle}
-                >
-                  <QrPreview geo={geo} logoHref={logo?.dataUrl} />
+                <div className="sticker w-full max-w-[330px] p-4">
+                  <div className="relative aspect-square w-full overflow-hidden rounded-[10px]" style={checkerStyle}>
+                    <QrPreview geo={geo} logoHref={logo?.dataUrl} />
+                    <span key={scanKey} className="laser run" aria-hidden="true" />
+                  </div>
+                  <p key={`chip-${scanKey}`} className="lock-chip mt-3 flex items-center justify-between font-mono text-[10.5px] uppercase tracking-[0.12em] text-forest-400">
+                    <span>{geo.size}×{geo.size} modules</span>
+                    <span className="rounded-full bg-forest-950 px-2 py-0.5 text-white">level {geo.ecc}</span>
+                  </p>
                 </div>
               ) : (
-                <div className="grid aspect-square w-full max-w-[330px] place-items-center rounded-xl border border-dashed border-forest-700 px-6 text-center">
+                <div className="sticker grid aspect-square w-full max-w-[330px] place-items-center px-6 text-center">
                   <p className="text-[13px] leading-relaxed text-forest-400">
                     {geoError ?? 'Fill in the fields to build a code.'}
                   </p>
                 </div>
               )
             ) : (
-              <div
-                className="grid min-h-[200px] w-full place-items-center overflow-x-auto rounded-xl p-3"
-                style={checkerStyle ?? { backgroundColor: style.background }}
-              >
-                <BarcodePreview value={barcode.value} options={barcodeOptions} onValidity={setBarcodeValid} />
+              <div className="sticker w-full p-3">
+                <div
+                  className="relative grid min-h-[200px] w-full place-items-center overflow-hidden overflow-x-auto rounded-[12px] p-3"
+                  style={checkerStyle ?? { backgroundColor: style.background }}
+                >
+                  <BarcodePreview value={barcode.value} options={barcodeOptions} onValidity={setBarcodeValid} />
+                  {barcode.value && barcodeValid && <span key={scanKey} className="laser run" aria-hidden="true" />}
+                </div>
               </div>
             )}
           </div>

@@ -149,7 +149,7 @@ export const projects: Project[] = [
     source: `${toolsBase}/05-markdown-to-pdf`,
     image: quire,
     alt: 'QUIRE in split view: a Markdown editor with a formatting toolbar on the left and the typeset "Field Notes on Kettle Design" document on the right, with Write, Split, Read and Export controls',
-    accent: '#a8c29a',
+    accent: '#e88a97',
     sample: {
       href: '/samples/quire-field-notes.pdf',
       image: quirePdfPage,
@@ -193,7 +193,7 @@ export const projects: Project[] = [
     source: toolsFile('03-image-compressor/index.html'),
     image: kilo,
     alt: 'Smaller image converter on a dark canvas: the headline "Make images lighter", a large dashed drop zone for JPG, PNG, WebP, AVIF, GIF, BMP and SVG, and a "100% private · processed on your device" badge',
-    accent: '#c9e28a',
+    accent: '#ff8a6e',
     facts: [
       { label: 'Several images at once', text: 'Drop, choose or paste images into one list; the same export settings apply to every image in it.' },
       { label: 'Size before download', text: 'Each image shows its original size, new size and reduction, and an option keeps the original file when re-encoding it at the same format and size would make it larger.' },
@@ -217,7 +217,7 @@ export const projects: Project[] = [
     source: `${toolsBase}/02-pdf-toolkit`,
     image: folio,
     alt: 'Folio PDF toolkit on a cream background: five numbered operations across the top (Merge, Split, Compress, Images to PDF, PDF to images), the Merge panel selected, and a hatched drop zone reading "Drop PDFs to merge"',
-    accent: '#d9b48a',
+    accent: '#7fbf9f',
     facts: [
       { label: 'Five operations', text: 'Merge, split, compress, images to PDF, and PDF to images.' },
       { label: 'Page-level control', text: 'Pages are rendered as thumbnails so you can see what you are reordering or extracting.' },
@@ -232,20 +232,21 @@ export const projects: Project[] = [
     name: 'Transmute',
     tagline: 'Files in. Other files out.',
     description:
-      'A local-first file converter. Images to PNG, JPG, WebP, GIF or PDF; DOCX to HTML, Markdown or text; CSV, TSV and JSON between each other. Every conversion runs in the tab, and the app works offline after first load.',
+      'A local-first file converter. PDF to Word and Word to PDF; PDF pages to PNG or JPG; Markdown, HTML and text to PDF or Word; images between PNG, JPG, WebP, GIF and PDF; CSV, TSV and JSON between each other. Every conversion runs in the tab.',
     type: 'Browser application',
     role: 'Design & development',
     year: '2026',
-    stack: ['React 19', 'Vite', 'Tailwind CSS', 'Canvas API', 'pdf-lib'],
+    stack: ['React 19', 'Vite', 'Tailwind CSS', 'pdf.js', 'docx', 'pdfmake', 'Canvas API'],
     live: 'https://convert.madebygio.dev',
     source: `${toolsBase}/01-file-converter`,
     image: convert,
     alt: 'Transmute file converter on a dark grid: "Drop files anywhere" with a Browse files button, format groups for Images, Word and Data, and a side panel with a quality slider and a Convert file button',
-    accent: '#d8ff3e',
+    accent: '#8ea2ff',
     facts: [
-      { label: 'Three families', text: 'Images (PNG, JPG, WebP, GIF, BMP, AVIF, SVG), Word documents (DOCX) and tabular data (CSV, TSV, JSON).' },
+      { label: 'Three families', text: 'Images (PNG, JPG, WebP, GIF, BMP, AVIF, SVG), documents (PDF, Word, Markdown, HTML, text) and tabular data (CSV, TSV, JSON).' },
+      { label: 'PDF to Word, rebuilt', text: 'A PDF stores positioned glyphs, not paragraphs. Transmute regroups them by baseline, size and spacing into headings, paragraphs and lists, drops repeating headers and page numbers, and writes a real editable .docx.' },
       { label: 'Honest edge cases', text: 'JPG has no alpha, so transparency is painted onto a colour you pick. PDF embeds opaque images as JPEG and transparent ones as PNG. Unsupported or broken files are reported per file, with the reason.' },
-      { label: 'Loads only what it needs', text: 'The PDF, DOCX and CSV libraries are dynamic imports, so the first paint carries only the image path.' },
+      { label: 'Loads only what it needs', text: 'pdf.js, docx, pdfmake, mammoth and the CSV parser are dynamic imports, so the first paint carries only the interface. Georgian text gets its own font in exported PDFs, loaded only when a document needs it.' },
       { label: 'No network after load', text: 'No analytics, no telemetry, no upload endpoint. Disconnect and convert anyway.' },
     ],
     story: [
@@ -266,7 +267,7 @@ export const projects: Project[] = [
     source: `${toolsBase}/04-qr-generator`,
     image: qr,
     alt: 'SIGNAL QR and barcode generator in dark green: an empty preview panel with PNG and SVG export, and content-type tabs (Link, Text, Wi-Fi, Contact, Email, SMS) above module colour, shape, corner-marker, quiet-zone and error-correction controls',
-    accent: '#f0a868',
+    accent: '#ffd60a',
     facts: [
       { label: 'Six QR payloads', text: 'Link, text, Wi-Fi, vCard contact, email and SMS, with the exact encoded string, byte count and error-correction level shown so nothing is a guess.' },
       { label: 'Escaping tested', text: 'Wi-Fi passwords and contact names with reserved characters are escaped correctly, and tests decode the finished image and compare it byte-for-byte.' },

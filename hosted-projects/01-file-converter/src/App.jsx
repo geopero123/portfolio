@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { FilePlus2, Shield, Sparkles, TriangleAlert, X, Upload } from 'lucide-react'
+import { FilePlus2, TriangleAlert, X } from 'lucide-react'
 import FileRow from './components/FileRow.jsx'
 import Inspector from './components/Inspector.jsx'
+import Element from './components/Element.jsx'
 import { convertFile, ConversionError } from './lib/convert.js'
 import { saveBlob, saveAllAsZip } from './lib/download.js'
+import { ELEMENTS, FAMILIES, READS } from './lib/elements.js'
 import { ACCEPT_ATTR, MAX_BYTES, TARGETS, commonTargets, detectSource, formatBytes } from './lib/formats.js'
 
 const PREVIEWABLE = new Set(['image', 'svg'])
@@ -11,63 +13,84 @@ let uid = 0
 
 function Wordmark() {
   return (
-    <div className="flex items-center gap-2.5">
-      <svg viewBox="0 0 32 32" className="size-7" aria-hidden="true">
-        <rect width="32" height="32" rx="8" className="fill-shell-800" />
-        <path
-          d="M9 12h9M9 12l3-3M9 12l3 3M23 20h-9m9 0l-3-3m3 3l-3 3"
-          className="stroke-signal-500"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
+    <a href="/" className="flex items-center gap-2.5" aria-label="Transmute home">
+      <svg viewBox="0 0 32 32" className="size-8" aria-hidden="true">
+        <rect x="1" y="1" width="30" height="30" rx="3" fill="var(--color-card)" stroke="var(--color-ink)" strokeWidth="2" />
+        <rect x="1" y="1" width="30" height="5" fill="var(--c-image)" />
+        <text x="16" y="24" textAnchor="middle" fontFamily="Bricolage Grotesque Variable, sans-serif" fontWeight="800" fontSize="14" fill="var(--color-ink)">Tm</text>
       </svg>
-      <div className="flex items-baseline gap-2.5">
-        <span className="text-[15px] font-bold tracking-[-0.02em] text-shell-100">Transmute</span>
-        <span className="hidden font-mono text-[10.5px] uppercase tracking-[0.16em] text-shell-400 sm:inline">
-          file converter
-        </span>
-      </div>
-    </div>
+      <span className="text-[20px] font-extrabold tracking-[-0.045em]">Transmute</span>
+    </a>
   )
 }
 
-const SUPPORTED = [
-  ['Images', 'PNG · JPG · WEBP · GIF · BMP · AVIF · SVG'],
-  ['Word', 'DOCX → HTML · Markdown · Text'],
-  ['Data', 'CSV · TSV · JSON, any direction'],
-]
-
 function EmptyState({ onBrowse }) {
+  const [hover, setHover] = useState(null)
+  const families = Object.keys(FAMILIES)
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="grid size-14 place-items-center rounded-xl border border-signal-500/25 bg-signal-500/10">
-        <Upload className="size-6 text-signal-500" strokeWidth={1.8} />
-      </div>
-      <h2 className="mt-5 text-[22px] font-semibold tracking-[-0.02em] text-shell-100 sm:text-[26px]">
-        Drop files anywhere
-      </h2>
-      <p className="mt-2 max-w-sm text-[13.5px] leading-relaxed text-shell-400">
-        Or paste an image from the clipboard. Files never leave the tab — the conversion happens on your own machine.
+    <div className="mx-auto flex max-w-[860px] flex-col px-5 pb-16 pt-10 sm:px-8 sm:pt-14">
+      <p className="rise font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-2" style={{ '--i': 0 }}>
+        13 formats · 0 uploads
       </p>
-      <button
-        type="button"
-        onClick={onBrowse}
-        className="mt-6 flex items-center gap-2 rounded-lg border border-shell-700 bg-shell-850 px-4 py-2.5 text-[13px] font-medium text-shell-100 transition hover:border-shell-600 hover:bg-shell-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal-500"
-      >
-        <FilePlus2 className="size-4" strokeWidth={2} />
-        Browse files
-      </button>
+      <h1 className="rise mt-3 text-[44px] font-extrabold leading-[.92] tracking-[-0.05em] sm:text-[72px]" style={{ '--i': 1 }}>
+        Drop a file.
+        <br />
+        <span className="text-[var(--c-image)]">Pick what it becomes.</span>
+      </h1>
+      <p className="rise mt-5 max-w-[46ch] text-[16px] leading-relaxed text-ink-2" style={{ '--i': 2 }}>
+        PDF to Word, Word to PDF, images between formats, data between tables. Every conversion runs inside this tab — your files never touch a server.
+      </p>
+      <div className="rise mt-7 flex flex-wrap items-center gap-3" style={{ '--i': 3 }}>
+        <button type="button" onClick={onBrowse} className="go !w-auto gap-6 !text-[16px]" style={{ '--go-fill': 'var(--c-image)' }}>
+          <span className="flex items-center gap-2">
+            <FilePlus2 className="size-4.5" strokeWidth={2.2} />
+            Choose files
+          </span>
+        </button>
+        <span className="font-mono text-[12px] text-ink-3">or drop them anywhere · or paste an image</span>
+      </div>
 
-      <dl className="mt-12 grid w-full max-w-lg gap-px overflow-hidden rounded-lg border border-shell-800 bg-shell-800 text-left sm:grid-cols-3">
-        {SUPPORTED.map(([term, desc]) => (
-          <div key={term} className="bg-shell-900 p-3.5">
-            <dt className="font-mono text-[10px] uppercase tracking-[0.16em] text-signal-600">{term}</dt>
-            <dd className="mt-1.5 font-mono text-[11px] leading-relaxed text-shell-400">{desc}</dd>
-          </div>
-        ))}
-      </dl>
+      <div className="mt-14">
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3 border-b-[1.5px] border-ink pb-2">
+          <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em]">The periodic table of formats</h2>
+          <ul className="flex gap-4 font-mono text-[11px] text-ink-2">
+            {families.map((f) => (
+              <li key={f} className="flex items-center gap-1.5">
+                <span className="inline-block size-2.5 rounded-[1px]" style={{ background: FAMILIES[f].color }} />
+                {FAMILIES[f].label}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <ul className="grid grid-cols-4 gap-2 sm:grid-cols-7 lg:grid-cols-[repeat(13,minmax(0,1fr))]">
+          {Object.entries(ELEMENTS).map(([key, el], i) => (
+            <li key={key}>
+              <Element
+                el={el}
+                as="button"
+                type="button"
+                className="rise w-full"
+                style={{ '--i': i + 4 }}
+                data-active={hover === key}
+                aria-label={`${el.name}: ${READS[key]}`}
+                onMouseEnter={() => setHover(key)}
+                onFocus={() => setHover(key)}
+                onClick={() => setHover(key)}
+              />
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 min-h-[3em] text-[14px] leading-snug text-ink-2" aria-live="polite">
+          {hover ? (
+            <>
+              <strong className="font-bold text-ink">{ELEMENTS[hover].name}</strong>{' '}
+              {ELEMENTS[hover].sourceOnly ? READS[hover] : <>is made from {READS[hover]}.</>}
+            </>
+          ) : (
+            'Point at an element to see what it is made from.'
+          )}
+        </p>
+      </div>
     </div>
   )
 }
@@ -76,12 +99,14 @@ export default function App() {
   const [items, setItems] = useState([])
   const [rejects, setRejects] = useState([])
   const [busy, setBusy] = useState(false)
+  const [progress, setProgress] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [options, setOptions] = useState({
     target: 'webp',
     quality: 0.85,
     matte: '#ffffff',
     pageSize: 'fit',
+    pdfScale: 2,
   })
   const inputRef = useRef(null)
   const dragDepth = useRef(0)
@@ -89,6 +114,7 @@ export default function App() {
   itemsRef.current = items
 
   const targets = useMemo(() => commonTargets(items), [items])
+  const sources = useMemo(() => [...new Set(items.map((i) => i.source.id))], [items])
 
   // Keep the chosen target reachable: swapping a PNG for a CSV shouldn't leave
   // "WEBP" selected and the convert button silently broken.
@@ -204,17 +230,18 @@ export default function App() {
 
   /* ---- conversion --------------------------------------------------- */
 
-  const patch = (id, changes) =>
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...changes } : i)))
+  const patch = (id, changes) => setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...changes } : i)))
 
   const runConversion = useCallback(async () => {
     if (busy) return
     setBusy(true)
+    setProgress(0)
     setRejects([])
     // Snapshot ids up front so files added mid-run aren't half-processed.
     const queue = items.map((i) => i.id)
     setItems((prev) => prev.map((i) => ({ ...i, status: 'working', result: null, error: null })))
 
+    let finished = 0
     for (const id of queue) {
       const item = items.find((i) => i.id === id)
       if (!item) continue
@@ -224,16 +251,16 @@ export default function App() {
         const result = await convertFile(item, options.target, options)
         patch(id, { status: 'done', result, error: null })
       } catch (err) {
-        const message =
-          err instanceof ConversionError
-            ? err.message
-            : 'Something went wrong converting this file. It may be corrupt.'
+        const message = err instanceof ConversionError ? err.message : 'Something went wrong converting this file. It may be corrupt.'
         if (!(err instanceof ConversionError)) console.error(err)
         patch(id, { status: 'error', result: null, error: message })
       }
+      finished += 1
+      setProgress(finished / queue.length)
     }
 
     setBusy(false)
+    setProgress(0)
   }, [busy, items, options])
 
   const done = useMemo(() => items.filter((i) => i.status === 'done'), [items])
@@ -256,33 +283,30 @@ export default function App() {
   }, [done, options.target])
 
   return (
-    <div className="flex h-dvh flex-col bg-shell-950">
-      <header className="z-20 flex h-14 shrink-0 items-center justify-between border-b border-shell-800 bg-shell-900 px-4 sm:px-6">
+    <div className="paper-grain flex min-h-dvh flex-col bg-paper lg:h-dvh">
+      <header className="z-20 flex h-16 shrink-0 items-center justify-between border-b-[1.5px] border-ink bg-paper px-5 sm:px-8">
         <Wordmark />
-        <div className="flex items-center gap-2 rounded-full border border-shell-700 py-1 pl-2.5 pr-3">
-          <Shield className="size-3.5 text-signal-500" strokeWidth={2.2} />
-          <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-shell-300">
-            <span className="hidden sm:inline">100% </span>on-device
+        <p className="flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-ink-2">
+          <span className="relative inline-flex size-2">
+            <span className="drop-ring absolute inset-0 rounded-full bg-[var(--c-data)]" />
+            <span className="relative size-2 rounded-full bg-[var(--c-data)]" />
           </span>
-        </div>
+          <span className="hidden sm:inline">Runs in this tab · nothing uploaded</span>
+          <span className="sm:hidden">On-device</span>
+        </p>
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <main className="bg-grid scrollbar-thin min-h-0 flex-1 overflow-y-auto">
+        <main className="scrollbar-thin min-h-0 flex-1 lg:overflow-y-auto">
           {rejects.length > 0 && (
-            <div className="animate-pop-in flex items-start gap-3 border-b border-alert-500/25 bg-alert-900/40 px-4 py-3 sm:px-6">
-              <TriangleAlert className="mt-0.5 size-4 shrink-0 text-alert-400" strokeWidth={2} />
-              <ul className="flex-1 space-y-1 text-[12.5px] leading-snug text-alert-400">
+            <div className="pop-in mx-5 mt-5 flex items-start gap-3 rounded-[4px] border-[1.5px] border-alert bg-card px-4 py-3 sm:mx-8" role="alert">
+              <TriangleAlert className="mt-0.5 size-4 shrink-0 text-alert" strokeWidth={2.2} />
+              <ul className="flex-1 space-y-1 text-[13px] leading-snug text-alert">
                 {rejects.map((r, n) => (
                   <li key={n}>{r}</li>
                 ))}
               </ul>
-              <button
-                type="button"
-                onClick={() => setRejects([])}
-                aria-label="Dismiss"
-                className="grid size-6 shrink-0 place-items-center rounded text-alert-400 transition hover:bg-alert-500/15"
-              >
+              <button type="button" onClick={() => setRejects([])} aria-label="Dismiss" className="grid size-6 shrink-0 place-items-center rounded text-alert transition hover:bg-paper-2">
                 <X className="size-3.5" strokeWidth={2.4} />
               </button>
             </div>
@@ -291,40 +315,35 @@ export default function App() {
           {items.length === 0 ? (
             <EmptyState onBrowse={() => inputRef.current?.click()} />
           ) : (
-            <>
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-shell-800 bg-shell-950/85 px-4 py-2.5 backdrop-blur-md sm:px-6">
-                <h2 className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-shell-400">
-                  Queue <span className="tnum text-shell-100">{String(items.length).padStart(2, '0')}</span>
+            <div className="px-5 py-6 sm:px-8">
+              <div className="mb-4 flex items-end justify-between gap-4">
+                <h2 className="text-[30px] font-extrabold leading-none tracking-[-0.045em]">
+                  Queue <span className="font-mono text-[14px] font-medium tracking-normal text-ink-3 tnum">{String(items.length).padStart(2, '0')}</span>
                 </h2>
-                <button
-                  type="button"
-                  onClick={() => inputRef.current?.click()}
-                  className="flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[10.5px] uppercase tracking-[0.14em] text-shell-300 transition hover:bg-shell-800 hover:text-signal-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal-500"
-                >
+                <button type="button" onClick={() => inputRef.current?.click()} className="chip flex items-center gap-1.5">
                   <FilePlus2 className="size-3.5" strokeWidth={2} />
-                  Add
+                  Add files
                 </button>
               </div>
-              <ul>
-                {items.map((item) => (
-                  <FileRow key={item.id} item={item} onRemove={removeItem} onDownload={(i) => saveBlob(i.result.blob, i.result.name)} />
+              <ul className="space-y-2.5">
+                {items.map((item, i) => (
+                  <FileRow key={item.id} index={i} item={item} target={options.target} onRemove={removeItem} onDownload={(it) => saveBlob(it.result.blob, it.result.name)} />
                 ))}
               </ul>
-              <p className="flex items-center justify-center gap-2 px-6 py-8 font-mono text-[11px] text-shell-600">
-                <Sparkles className="size-3.5" strokeWidth={2} />
-                Drop or paste more files to add them
-              </p>
-            </>
+              <p className="mt-6 text-center font-mono text-[11.5px] text-ink-3">Drop or paste more files to add them</p>
+            </div>
           )}
         </main>
 
-        <aside className="z-10 max-h-[62vh] shrink-0 border-t border-shell-800 bg-shell-900 lg:max-h-none lg:w-[344px] lg:border-l lg:border-t-0">
+        <aside className="z-10 shrink-0 border-t-[1.5px] border-ink bg-paper lg:w-[380px] lg:border-l-[1.5px] lg:border-t-0">
           <Inspector
             targets={targets}
+            sources={sources}
             options={options}
             setOptions={setOptions}
             stats={stats}
             busy={busy}
+            progress={progress}
             hasFiles={items.length > 0}
             doneCount={done.length}
             onConvert={runConversion}
@@ -340,6 +359,8 @@ export default function App() {
         multiple
         accept={ACCEPT_ATTR}
         className="sr-only"
+        tabIndex={-1}
+        aria-label="Choose files to convert"
         onChange={(e) => {
           addFiles(e.target.files)
           e.target.value = ''
@@ -347,11 +368,14 @@ export default function App() {
       />
 
       {dragging && (
-        <div className="pointer-events-none fixed inset-0 z-50 grid place-items-center bg-shell-950/75 backdrop-blur-[2px]">
-          <div className="absolute inset-3 rounded-2xl border-2 border-dashed border-signal-500/70" />
-          <div className="flex flex-col items-center gap-3">
-            <Upload className="size-8 text-signal-500" strokeWidth={1.8} />
-            <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-signal-400">Release to add</p>
+        <div className="pointer-events-none fixed inset-0 z-50 grid place-items-center bg-paper/85 backdrop-blur-[3px]">
+          <div className="absolute inset-4 rounded-[6px] border-[2.5px] border-dashed border-ink" />
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative grid size-24 place-items-center">
+              <span className="drop-ring absolute inset-0 rounded-full border-[2.5px] border-[var(--c-image)]" />
+              <span className="text-[44px] font-extrabold tracking-[-0.05em]">↓</span>
+            </div>
+            <p className="text-[34px] font-extrabold tracking-[-0.045em]">Release to add</p>
           </div>
         </div>
       )}

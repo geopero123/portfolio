@@ -1,13 +1,21 @@
 import { quantize, applyPalette, GIFEncoder } from 'gifenc'
 import { MAX_PIXELS, TARGETS, swapExtension } from './formats.js'
+import { ConversionError } from './errors.js'
+import {
+  blocksToDocx,
+  blocksToHtml,
+  blocksToMarkdown,
+  blocksToPdf,
+  blocksToText,
+  docxToBlocks,
+  htmlToBlocks,
+  markdownToBlocks,
+  pdfToBlocks,
+  pdfToImages,
+  textToBlocks,
+} from './docs.js'
 
-/** An error whose message is safe (and useful) to show the user verbatim. */
-export class ConversionError extends Error {
-  constructor(message) {
-    super(message)
-    this.name = 'ConversionError'
-  }
-}
+export { ConversionError }
 
 /* ------------------------------------------------------------------ *
  * Image decoding
@@ -229,9 +237,10 @@ ${body}
 </body>
 </html>`
 
-async function convertDocx(file, target) {
-  // The prebuilt browser bundle avoids pulling Node's zlib/buffer polyfills
-  // into the graph. It is UMD, so unwrap whatever the interop layer hands back.
+const stem = (name) => name.replace(/\.[^.]+$/, '')
+
+/** Word to HTML/Markdown/Text keeps mammoth's own output, which is the most faithful. */
+async function convertDocxDirect(file, target) {
   const mod = await import('mammoth/mammoth.browser.js')
   const mammoth = mod.default ?? mod
   const arrayBuffer = await file.arrayBuffer()
@@ -242,7 +251,6 @@ async function convertDocx(file, target) {
       throw new ConversionError(`Could not read this .docx — ${label}. Old .doc files are not supported.`)
     }
   }
-
   if (target === 'txt') {
     const { value } = await run(mammoth.extractRawText, 'the text could not be extracted')
     return { blob: new Blob([value], { type: 'text/plain' }), meta: { chars: value.length } }
@@ -252,9 +260,59 @@ async function convertDocx(file, target) {
     return { blob: new Blob([value], { type: 'text/markdown' }), meta: { chars: value.length } }
   }
   const { value } = await run(mammoth.convertToHtml, 'the document could not be parsed')
-  const title = file.name.replace(/\.docx$/i, '')
-  const html = HTML_SHELL(title, value)
-  return { blob: new Blob([html], { type: 'text/html' }), meta: { chars: value.length } }
+  return { blob: new Blob([HTML_SHELL(stem(file.name), value)], { type: 'text/html' }), meta: { chars: value.length } }
+}
+
+async function readBlocks(item) {
+  const { file, source } = item
+  switch (source.id) {
+    case 'pdf':
+      return pdfToBlocks(file)
+    case 'docx':
+      return docxToBlocks(file)
+    case 'md':
+      return markdownToBlocks(await file.text())
+    case 'html':
+      return htmlToBlocks(await file.text())
+    case 'txt':
+      return textToBlocks(await file.text())
+    default:
+      throw new ConversionError('Unsupported document type.')
+  }
+}
+
+async function convertDocument(item, target, options) {
+  const { file, source } = item
+  if (source.id === 'docx' && ['html', 'md', 'txt'].includes(target)) return convertDocxDirect(file, target)
+
+  if (source.id === 'pdf' && (target === 'png' || target === 'jpg')) {
+    const mime = TARGETS[target].mime
+    const { blobs, pages } = await pdfToImages(file, { mime, quality: options.quality, scale: options.pdfScale ?? 2 })
+    if (pages === 1) return { blob: blobs[0], meta: { pages } }
+    const { zipSync } = await import('fflate')
+    const entries = {}
+    const pad = String(pages).length
+    for (let i = 0; i < blobs.length; i++) {
+      entries[`${stem(file.name)}-p${String(i + 1).padStart(Math.max(2, pad), '0')}.${TARGETS[target].ext}`] = new Uint8Array(await blobs[i].arrayBuffer())
+    }
+    const zipped = zipSync(entries, { level: 0 })
+    return { blob: new Blob([zipped], { type: 'application/zip' }), name: `${stem(file.name)}-pages.zip`, meta: { pages } }
+  }
+
+  const blocks = await readBlocks(item)
+  if (!blocks.length) throw new ConversionError('No readable content found in this file.')
+  const title = stem(file.name)
+  const meta = { blocks: blocks.length }
+  if (source.id === 'pdf') meta.warning = 'Text and structure carried over; images and exact layout are not'
+
+  let blob
+  if (target === 'pdf') blob = await blocksToPdf(blocks, { pageSize: options.pageSize === 'letter' ? 'letter' : 'a4', title })
+  else if (target === 'docx') blob = await blocksToDocx(blocks, { title })
+  else if (target === 'html') blob = new Blob([HTML_SHELL(title, blocksToHtml(blocks))], { type: 'text/html' })
+  else if (target === 'md') blob = new Blob([blocksToMarkdown(blocks)], { type: 'text/markdown' })
+  else if (target === 'txt') blob = new Blob([blocksToText(blocks)], { type: 'text/plain' })
+  else throw new ConversionError(`${source.label} files cannot be converted to ${TARGETS[target].label}.`)
+  return { blob, meta }
 }
 
 async function parseDelimited(file, delimiter) {
@@ -329,8 +387,12 @@ export async function convertFile(item, target, options) {
     case 'svg':
       result = await convertImage(file, target, options)
       break
+    case 'pdf':
     case 'docx':
-      result = await convertDocx(file, target)
+    case 'md':
+    case 'html':
+    case 'txt':
+      result = await convertDocument(item, target, options)
       break
     case 'csv':
       result = await convertTabular(file, target, ',')
@@ -347,7 +409,7 @@ export async function convertFile(item, target, options) {
 
   return {
     ...result,
-    name: swapExtension(file.name, TARGETS[target].ext),
+    name: result.name ?? swapExtension(file.name, TARGETS[target].ext),
     size: result.blob.size,
   }
 }

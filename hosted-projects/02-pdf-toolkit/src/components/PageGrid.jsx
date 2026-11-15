@@ -57,11 +57,12 @@ export default function PageGrid({ doc, selected, onToggle }) {
               onClick={() => onToggle(n)}
               aria-pressed={on}
               aria-label={`Page ${n}`}
-              className="group relative block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-vermillion-600"
+              className="page-card page-in group relative block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-vermillion-600"
+              style={{ '--i': n - 1 }}
             >
               <span
                 className={`sheet relative block aspect-[1/1.35] overflow-hidden rounded-sm transition ${
-                  on ? '!border-vermillion-600 ring-2 ring-vermillion-600/30' : 'group-hover:!border-ink-400'
+                  on ? 'dog-ear !border-vermillion-600 ring-2 ring-vermillion-600/25' : 'group-hover:!border-ink-400'
                 }`}
               >
                 {thumbs[n] ? (
@@ -71,11 +72,7 @@ export default function PageGrid({ doc, selected, onToggle }) {
                     <Loader2 className="size-4 animate-spin text-ink-300" strokeWidth={2} />
                   </span>
                 )}
-                {on && (
-                  <span className="absolute right-1.5 top-1.5 grid size-5 place-items-center rounded-full bg-vermillion-600 text-paper-50">
-                    <Check className="size-3" strokeWidth={3} />
-                  </span>
-                )}
+                {on && <Check className="sr-only" aria-hidden="true" />}
               </span>
               <span
                 className={`mt-1.5 block text-center font-mono text-[11px] tnum ${

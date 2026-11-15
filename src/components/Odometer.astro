@@ -1,7 +1,8 @@
 ---
 /**
  * Digits rendered as an odometer. Rendered at build time so nothing is rewritten in the
- * browser (no layout shift); the roll itself is CSS on `.in`.
+ * browser (no layout shift); the roll itself is CSS on `.in`. The 0-9 track is CSS generated
+ * content, so copied text, reader mode and search snippets see the number and not the strip.
  */
 interface Props { text: string; class?: string; entrance?: boolean }
 const { text, class: className, entrance = true } = Astro.props;
@@ -9,6 +10,6 @@ const { text, class: className, entrance = true } = Astro.props;
 <span class={className} data-odometer data-m={entrance ? "count" : undefined}>
   <span class="sr-only">{text}</span>
   {[...text].map(ch => /\d/.test(ch)
-    ? <span class="digit" aria-hidden="true"><span class="digit-roll" style={`--d:${ch}`}>{Array.from({length: 10}, (_, i) => <span>{i}</span>)}</span></span>
+    ? <span class="digit" aria-hidden="true"><span class="digit-roll" style={`--d:${ch}`}></span></span>
     : <span aria-hidden="true">{ch}</span>)}
 </span>

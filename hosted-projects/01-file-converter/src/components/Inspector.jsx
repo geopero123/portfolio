@@ -1,43 +1,30 @@
-import { Zap, Loader2, Package, Eraser } from 'lucide-react'
+import { ArrowRight, Loader2, Package, Eraser } from 'lucide-react'
+import Element, { SplitFlap } from './Element.jsx'
+import { ELEMENTS, FAMILIES } from '../lib/elements.js'
 import { TARGETS, formatBytes } from '../lib/formats.js'
+
+const ALL_TARGETS = Object.keys(TARGETS)
 
 function Label({ children, hint }) {
   return (
-    <div className="mb-2.5 flex items-baseline justify-between gap-3">
-      <h3 className="font-mono text-[10.5px] font-medium uppercase tracking-[0.14em] text-shell-400">{children}</h3>
-      {hint && <span className="font-mono text-[10.5px] tnum text-shell-300">{hint}</span>}
+    <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-ink pb-1.5">
+      <h3 className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.16em]">{children}</h3>
+      {hint && <span className="font-mono text-[11px] tnum text-ink-2">{hint}</span>}
     </div>
   )
 }
 
 const MATTES = [
   { value: '#ffffff', label: 'White' },
-  { value: '#0d0e10', label: 'Black' },
-  { value: '#f2ece3', label: 'Paper' },
+  { value: '#17150f', label: 'Ink' },
+  { value: '#f3efe5', label: 'Paper' },
 ]
 
-const PAGE_SIZES = [
-  { value: 'fit', label: 'Match' },
-  { value: 'a4', label: 'A4' },
-  { value: 'letter', label: 'Letter' },
-]
-
-function Segmented({ value, onChange, options, name }) {
+function Chips({ value, onChange, options, name }) {
   return (
-    <div role="radiogroup" aria-label={name} className="flex rounded-lg border border-shell-700 bg-shell-850 p-0.5">
+    <div role="radiogroup" aria-label={name} className="flex flex-wrap gap-1.5">
       {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          role="radio"
-          aria-checked={value === o.value}
-          onClick={() => onChange(o.value)}
-          className={`flex-1 rounded-[5px] px-2 py-1.5 font-mono text-[11px] font-medium tracking-wide transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-signal-500 ${
-            value === o.value
-              ? 'bg-shell-700 text-shell-100'
-              : 'text-shell-400 hover:text-shell-100'
-          }`}
-        >
+        <button key={o.value} type="button" role="radio" aria-checked={value === o.value} onClick={() => onChange(o.value)} className="chip">
           {o.label}
         </button>
       ))}
@@ -45,72 +32,63 @@ function Segmented({ value, onChange, options, name }) {
   )
 }
 
-export default function Inspector({
-  targets,
-  options,
-  setOptions,
-  stats,
-  busy,
-  hasFiles,
-  doneCount,
-  onConvert,
-  onDownloadAll,
-  onClear,
-}) {
+export default function Inspector({ targets, sources, options, setOptions, stats, busy, progress, hasFiles, doneCount, onConvert, onDownloadAll, onClear }) {
   const spec = TARGETS[options.target]
-  const showQuality = spec && (spec.lossy || spec.id === 'pdf')
-  const showMatte = spec?.flattens
+  const el = ELEMENTS[options.target]
+  const imageSources = sources.length > 0 && sources.every((s) => s === 'image' || s === 'svg')
+  const hasPdfSource = sources.includes('pdf')
+  const showQuality = spec && (spec.lossy || (spec.id === 'pdf' && imageSources))
+  const showMatte = spec?.flattens && !hasPdfSource
   const showPage = spec?.id === 'pdf'
+  const showScale = hasPdfSource && (spec?.id === 'png' || spec?.id === 'jpg')
   const set = (patch) => setOptions((o) => ({ ...o, ...patch }))
+  const sourceSym = sources.length === 1 ? ELEMENTS[sources[0] === 'image' ? 'png' : sources[0]]?.sym : sources.length ? '··' : '··'
+  const fill = el ? FAMILIES[el.family].color : 'var(--c-doc)'
+
+  const note = spec?.id === 'pdf' && imageSources ? 'One page per image' : spec?.note
 
   return (
     <div className="flex h-full flex-col">
-      <div className="scrollbar-thin flex-1 overflow-y-auto p-5 sm:p-6">
+      <div className="scrollbar-thin flex-1 overflow-y-auto px-5 pb-6 pt-5 sm:px-6">
+        <div className="mb-6 flex items-center gap-3 font-display text-[34px] leading-none" aria-live="polite">
+          <SplitFlap text={hasFiles ? (sourceSym ?? '··') : '··'} />
+          <ArrowRight className="size-6 shrink-0" strokeWidth={2.4} aria-hidden="true" />
+          <SplitFlap text={hasFiles && el ? el.sym : '··'} />
+          <span className="sr-only">{hasFiles && el ? `Converting to ${el.name}` : 'Add files to choose a format'}</span>
+        </div>
+
         <section>
-          <Label>Convert to</Label>
-          {targets.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-shell-700 px-3 py-6 text-center text-[12.5px] leading-relaxed text-shell-400">
-              {hasFiles
-                ? 'These files have no format in common. Remove one to continue.'
-                : 'Add a file to see what it can become.'}
-            </p>
-          ) : (
-            <div className="grid grid-cols-2 gap-1.5">
-              {targets.map((id) => {
-                const t = TARGETS[id]
-                const active = options.target === id
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => set({ target: id })}
-                    aria-pressed={active}
-                    className={`min-h-[66px] rounded-lg border px-3 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal-500 ${
-                      active
-                        ? 'border-signal-500 bg-signal-500/10'
-                        : 'border-shell-700 bg-shell-850 hover:border-shell-600 hover:bg-shell-800'
-                    }`}
-                  >
-                    <span
-                      className={`block font-mono text-[12.5px] font-bold tracking-wide ${
-                        active ? 'text-signal-400' : 'text-shell-100'
-                      }`}
-                    >
-                      {t.label}
-                    </span>
-                    <span className="mt-0.5 block text-[11px] leading-tight text-shell-400">{t.note}</span>
-                  </button>
-                )
-              })}
-            </div>
+          <Label hint={hasFiles && note ? note : null}>Becomes</Label>
+          <div className="grid grid-cols-4 gap-2">
+            {ALL_TARGETS.map((id, i) => {
+              const available = targets.includes(id)
+              const tile = { key: id, ...ELEMENTS[id] }
+              return (
+                <Element
+                  key={id}
+                  as="button"
+                  type="button"
+                  el={tile}
+                  className="rise"
+                  style={{ '--i': i }}
+                  disabled={!available}
+                  aria-pressed={available && options.target === id}
+                  aria-label={`${TARGETS[id].label}${available ? '' : ' (not available for these files)'}`}
+                  title={available ? TARGETS[id].note : 'Not reachable from these files'}
+                  onClick={() => set({ target: id })}
+                />
+              )
+            })}
+          </div>
+          {hasFiles && targets.length === 0 && (
+            <p className="pop-in mt-3 text-[13px] leading-snug text-alert">These files have no format in common. Remove one to continue.</p>
           )}
+          {!hasFiles && <p className="mt-3 text-[13px] leading-snug text-ink-2">Add a file and the formats it can become light up.</p>}
         </section>
 
         {showQuality && (
-          <section className="mt-7">
-            <Label hint={`${Math.round(options.quality * 100)}`}>
-              {spec.id === 'pdf' ? 'Embedded image quality' : 'Quality'}
-            </Label>
+          <section className="pop-in mt-7">
+            <Label hint={`${Math.round(options.quality * 100)}`}>{spec.id === 'pdf' ? 'Embedded image quality' : 'Quality'}</Label>
             <input
               type="range"
               min="0.3"
@@ -119,22 +97,37 @@ export default function Inspector({
               value={options.quality}
               onChange={(e) => set({ quality: Number(e.target.value) })}
               aria-label="Output quality"
-              className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-shell-700 accent-signal-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-signal-500"
+              className="scale"
             />
-            <div className="mt-1.5 flex justify-between font-mono text-[10.5px] text-shell-600">
+            <div className="mt-1 flex justify-between font-mono text-[10.5px] text-ink-3">
               <span>smaller</span>
               <span>sharper</span>
             </div>
           </section>
         )}
 
+        {showScale && (
+          <section className="pop-in mt-7">
+            <Label>Page resolution</Label>
+            <Chips
+              name="Page resolution"
+              value={options.pdfScale}
+              onChange={(v) => set({ pdfScale: v })}
+              options={[
+                { value: 1, label: '72 dpi' },
+                { value: 2, label: '144 dpi' },
+                { value: 3, label: '216 dpi' },
+              ]}
+            />
+            <p className="mt-2 text-[12px] leading-snug text-ink-3">Each page becomes one image. Several pages download as a zip.</p>
+          </section>
+        )}
+
         {showMatte && (
-          <section className="mt-7">
-            <Label>Background</Label>
-            <p className="mb-2.5 text-[11.5px] leading-relaxed text-shell-400">
-              JPG has no transparency. Pick what shows through.
-            </p>
-            <div className="flex items-center gap-1.5">
+          <section className="pop-in mt-7">
+            <Label hint={options.matte.toUpperCase()}>Background</Label>
+            <p className="mb-2.5 text-[12.5px] leading-snug text-ink-2">JPG has no transparency. Pick what shows through.</p>
+            <div className="flex items-center gap-2">
               {MATTES.map((m) => (
                 <button
                   key={m.value}
@@ -143,57 +136,45 @@ export default function Inspector({
                   aria-label={m.label}
                   aria-pressed={options.matte === m.value}
                   title={m.label}
-                  className={`size-8 rounded-md border-2 transition ${
-                    options.matte === m.value ? 'border-signal-500' : 'border-shell-700 hover:border-shell-600'
-                  }`}
+                  className={`size-9 rounded-[3px] border-[1.5px] border-ink transition ${options.matte === m.value ? 'shadow-[3px_3px_0_var(--color-ink)] -translate-x-0.5 -translate-y-0.5' : ''}`}
                   style={{ backgroundColor: m.value }}
                 />
               ))}
-              <label className="relative size-8 cursor-pointer overflow-hidden rounded-md border-2 border-shell-700 transition hover:border-shell-600">
+              <label className="relative size-9 cursor-pointer overflow-hidden rounded-[3px] border-[1.5px] border-dashed border-ink">
                 <span className="sr-only">Custom background colour</span>
-                <input
-                  type="color"
-                  value={options.matte}
-                  onChange={(e) => set({ matte: e.target.value })}
-                  className="absolute -inset-2 size-12 cursor-pointer border-0 bg-transparent p-0"
-                />
+                <input type="color" value={options.matte} onChange={(e) => set({ matte: e.target.value })} className="absolute -inset-2 size-14 cursor-pointer border-0 bg-transparent p-0" />
               </label>
-              <span className="ml-1 font-mono text-[11px] uppercase text-shell-400">{options.matte}</span>
             </div>
           </section>
         )}
 
         {showPage && (
-          <section className="mt-7">
+          <section className="pop-in mt-7">
             <Label>Page size</Label>
-            <Segmented
+            <Chips
               name="Page size"
-              value={options.pageSize}
+              value={imageSources ? options.pageSize : options.pageSize === 'fit' ? 'a4' : options.pageSize}
               onChange={(v) => set({ pageSize: v })}
-              options={PAGE_SIZES}
+              options={[...(imageSources ? [{ value: 'fit', label: 'Match image' }] : []), { value: 'a4', label: 'A4' }, { value: 'letter', label: 'Letter' }]}
             />
           </section>
         )}
 
         {stats.done > 0 && (
-          <section className="mt-7 rounded-lg border border-shell-700 bg-shell-850 p-4">
+          <section className="pop-in mt-7">
             <Label>Result</Label>
-            <dl className="space-y-2 font-mono text-[12px]">
-              <div className="flex justify-between">
-                <dt className="text-shell-400">In</dt>
-                <dd className="tnum text-shell-100">{formatBytes(stats.bytesIn)}</dd>
+            <dl className="grid grid-cols-3 gap-2 font-mono text-[12px]">
+              <div>
+                <dt className="text-ink-3">In</dt>
+                <dd className="mt-0.5 text-[15px] font-semibold tnum">{formatBytes(stats.bytesIn)}</dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-shell-400">Out</dt>
-                <dd className="tnum text-shell-100">{formatBytes(stats.bytesOut)}</dd>
+              <div>
+                <dt className="text-ink-3">Out</dt>
+                <dd className="mt-0.5 text-[15px] font-semibold tnum">{formatBytes(stats.bytesOut)}</dd>
               </div>
-              <div className="flex justify-between border-t border-shell-700 pt-2">
-                <dt className="text-shell-400">Difference</dt>
-                <dd
-                  className={`tnum font-medium ${
-                    stats.bytesOut <= stats.bytesIn ? 'text-signal-400' : 'text-alert-400'
-                  }`}
-                >
+              <div>
+                <dt className="text-ink-3">Change</dt>
+                <dd className={`mt-0.5 text-[15px] font-semibold tnum ${stats.bytesOut <= stats.bytesIn ? 'text-[var(--c-data)]' : 'text-alert'}`}>
                   {stats.bytesOut <= stats.bytesIn ? '−' : '+'}
                   {Math.abs(Math.round((1 - stats.bytesOut / stats.bytesIn) * 100))}%
                 </dd>
@@ -203,42 +184,31 @@ export default function Inspector({
         )}
       </div>
 
-      <div className="sticky bottom-0 space-y-2 border-t border-shell-800 bg-shell-900/95 p-4 backdrop-blur-md sm:p-5">
+      <div className="space-y-2 border-t-[1.5px] border-ink bg-paper p-4 sm:p-5">
         <button
           type="button"
           onClick={onConvert}
           disabled={!hasFiles || !targets.length || busy}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-signal-500 px-4 py-3 text-[14px] font-semibold text-shell-950 transition hover:bg-signal-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal-500 active:translate-y-px disabled:cursor-not-allowed disabled:bg-shell-800 disabled:text-shell-600"
+          className="go"
+          style={{ '--go-fill': fill, '--progress': busy ? progress : 0 }}
         >
-          {busy ? (
-            <>
-              <Loader2 className="size-4 animate-spin" strokeWidth={2.4} />
-              Converting…
-            </>
-          ) : (
-            <>
-              <Zap className="size-4" strokeWidth={2.4} />
-              Convert {stats.total > 1 ? `${stats.total} files` : 'file'}
-            </>
-          )}
+          <span className="flex items-center gap-2.5">
+            {busy && <Loader2 className="size-4 animate-spin" strokeWidth={2.4} />}
+            {busy ? `Transmuting ${Math.round(progress * stats.total)}/${stats.total}` : `Transmute ${stats.total > 1 ? `${stats.total} files` : 'file'}`}
+          </span>
+          <ArrowRight className="go-arrow size-5" strokeWidth={2.4} aria-hidden="true" />
         </button>
-
         <div className="flex gap-2">
           <button
             type="button"
             onClick={onDownloadAll}
             disabled={doneCount < 1}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-shell-700 px-3 py-2 font-mono text-[11px] font-medium uppercase tracking-wider text-shell-300 transition hover:border-shell-600 hover:bg-shell-800 hover:text-shell-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-shell-600 disabled:cursor-not-allowed disabled:opacity-35"
+            className="chip flex flex-1 items-center justify-center gap-1.5 !rounded-[3px] !py-2.5 disabled:cursor-not-allowed disabled:opacity-35"
           >
             <Package className="size-3.5" strokeWidth={2} />
-            {doneCount > 1 ? 'Save zip' : 'Save'}
+            {doneCount > 1 ? 'Save all as zip' : 'Save'}
           </button>
-          <button
-            type="button"
-            onClick={onClear}
-            disabled={!hasFiles}
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-shell-700 px-3 py-2 font-mono text-[11px] font-medium uppercase tracking-wider text-shell-400 transition hover:border-alert-500/50 hover:text-alert-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-shell-600 disabled:cursor-not-allowed disabled:opacity-35"
-          >
+          <button type="button" onClick={onClear} disabled={!hasFiles} className="chip flex items-center justify-center gap-1.5 !rounded-[3px] !py-2.5 disabled:cursor-not-allowed disabled:opacity-35">
             <Eraser className="size-3.5" strokeWidth={2} />
             Clear
           </button>

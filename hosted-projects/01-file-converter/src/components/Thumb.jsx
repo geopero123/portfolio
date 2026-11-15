@@ -1,33 +1,16 @@
-import { FileText, Table2, Braces, FileImage } from 'lucide-react'
+import Element from './Element.jsx'
+import { elementForFile } from '../lib/elements.js'
 
-const DOC_ICONS = {
-  docx: FileText,
-  csv: Table2,
-  tsv: Table2,
-  json: Braces,
-}
-
+/** Images show their own pixels inside the element tile; everything else shows its symbol. */
 export default function Thumb({ item }) {
+  const el = elementForFile(item.file, item.source)
   if (item.url) {
     return (
-      <div
-        className="size-11 shrink-0 overflow-hidden rounded-md border border-shell-700 bg-shell-800"
-        style={{
-          // Checkerboard so transparent PNGs don't read as solid dark squares.
-          backgroundImage:
-            'linear-gradient(45deg,#24262b 25%,transparent 25%),linear-gradient(-45deg,#24262b 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#24262b 75%),linear-gradient(-45deg,transparent 75%,#24262b 75%)',
-          backgroundSize: '10px 10px',
-          backgroundPosition: '0 0,0 5px,5px -5px,-5px 0',
-        }}
-      >
+      <div className="el el-sm size-[52px] shrink-0 overflow-hidden !p-0" data-family={el.family}>
         <img src={item.url} alt="" className="size-full object-cover" loading="lazy" />
+        <span className="absolute bottom-0.5 left-1 rounded-sm bg-ink px-1 font-mono text-[8.5px] font-medium uppercase text-paper">{el.sym}</span>
       </div>
     )
   }
-  const Icon = DOC_ICONS[item.source?.id] ?? FileImage
-  return (
-    <div className="grid size-11 shrink-0 place-items-center rounded-md border border-shell-700 bg-shell-800">
-      <Icon className="size-5 text-shell-400" strokeWidth={1.6} />
-    </div>
-  )
+  return <Element el={el} small className="size-[52px] shrink-0" />
 }

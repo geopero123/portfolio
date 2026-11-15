@@ -17,8 +17,7 @@ export default defineConfig({
   integrations: [mdx(), sitemap()],
 
   build: {
-    // Emit /work/foo/index.html so URLs have no trailing-slash ambiguity
-    // on Cloudflare Pages.
+    // Emit /projects/foo/index.html so URLs have no trailing-slash ambiguity.
     format: 'directory'
   }
 });

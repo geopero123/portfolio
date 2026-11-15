@@ -83,7 +83,7 @@
 /* Odometer structure: one visible digit, always - with or without motion. */
 .digit { display: inline-block; height: 1em; overflow: hidden; vertical-align: top; }
 .digit-roll { display: block; transform: translateY(calc(var(--d) * -1em)); }
-.digit-roll > span { display: block; height: 1em; line-height: 1; }
+.digit-roll::before { content: "0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9" / ""; display: block; white-space: pre; line-height: 1; }
 
 /* Depth layers (desktop pointer) */
 [data-depth] { --mx: 0; --my: 0; }

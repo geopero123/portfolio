@@ -291,11 +291,12 @@ export default function App() {
 
   return (
     <div className="flex h-dvh flex-col">
-      <header className="no-print z-20 flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-rule bg-sheet px-3 py-2 sm:px-4">
-        <div className="flex items-center gap-3">
-          <span className="text-[16px] font-semibold tracking-[-0.02em]">QUIRE</span>
-          <span className="hidden h-4 w-px bg-rule sm:block" />
-          <span className="chrome hidden sm:block">markdown to PDF</span>
+      <header className="no-print z-20 flex shrink-0 flex-wrap items-center justify-between gap-2 bg-sheet px-3 pb-2 pt-2.5 sm:px-5">
+        <div className="flex items-baseline gap-3">
+          <span className="font-serif text-[26px] font-semibold italic leading-none tracking-[-0.03em]">
+            Quire<span className="text-accent">.</span>
+          </span>
+          <span className="chrome hidden sm:block">Markdown, set in type</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -332,7 +333,7 @@ export default function App() {
               type="button"
               onClick={() => setExportOpen((o) => !o)}
               aria-expanded={exportOpen}
-              className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-[13px] font-semibold text-sheet transition hover:bg-accent-2"
+              className="ink-btn flex items-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-[13px] font-semibold text-sheet transition"
             >
               <Share className="size-3.5" strokeWidth={2.2} />
               Export
@@ -354,6 +355,7 @@ export default function App() {
           </div>
         </div>
       </header>
+      <div className="masthead-rule no-print mx-3 shrink-0 sm:mx-5" aria-hidden="true" />
 
       {notice && (
         <div
@@ -407,7 +409,7 @@ export default function App() {
               }}
               spellCheck
               aria-label="Markdown source"
-              className="scroll-quiet min-h-0 flex-1 resize-none bg-ground px-4 py-5 font-mono text-[13.5px] leading-[1.75] text-ink outline-none sm:px-6"
+              className="legal-pad scroll-quiet min-h-0 flex-1 resize-none py-5 pl-[58px] pr-4 font-mono text-[13.5px] leading-[1.75] text-ink outline-none sm:pr-6"
             />
           </section>
         )}
@@ -416,13 +418,18 @@ export default function App() {
           <section
             ref={previewRef}
             onScroll={linkScroll(previewRef, editorRef, 'preview')}
-            className={`scroll-quiet min-h-0 flex-1 overflow-y-auto bg-ground ${showEditor ? 'md:w-1/2' : ''}`}
+            className={`desk scroll-quiet min-h-0 flex-1 overflow-y-auto px-3 py-6 sm:px-8 sm:py-10 ${showEditor ? 'md:w-1/2' : ''}`}
           >
-            <article
-              id="preview"
-              className="doc mx-auto max-w-[38rem] px-5 py-8 sm:px-8 sm:py-12"
-              dangerouslySetInnerHTML={{ __html: html }}
-            />
+            <div className="page-stack relative isolate mx-auto max-w-[40rem]">
+              <article
+                id="preview"
+                className="doc page min-h-[60vh] px-6 pb-16 pt-10 sm:px-14 sm:pb-20 sm:pt-16"
+                dangerouslySetInnerHTML={{ __html: html }}
+              />
+              <span className="page-number" aria-hidden="true">
+                {stats.words.toLocaleString()} words · {stats.minutes} min
+              </span>
+            </div>
           </section>
         )}
       </main>

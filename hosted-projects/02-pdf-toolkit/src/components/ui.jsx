@@ -67,7 +67,7 @@ export function RunButton({ children, onClick, disabled, busy }) {
       type="button"
       onClick={onClick}
       disabled={disabled || busy}
-      className="flex w-full items-center justify-center gap-2 rounded-md bg-vermillion-600 px-4 py-2.5 text-[14px] font-semibold text-paper-50 shadow-[0_1px_0_var(--color-vermillion-700)] transition hover:bg-vermillion-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vermillion-600 active:translate-y-px disabled:cursor-not-allowed disabled:bg-paper-300 disabled:text-ink-300 disabled:shadow-none"
+      className="press flex w-full items-center justify-center gap-2 rounded-md bg-vermillion-600 px-4 py-3 text-[14.5px] font-semibold text-paper-50 hover:bg-vermillion-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vermillion-600 disabled:cursor-not-allowed disabled:bg-paper-300 disabled:text-ink-300 disabled:!shadow-none disabled:!translate-y-0"
     >
       {busy ? <Loader2 className="size-4 animate-spin" strokeWidth={2.4} /> : null}
       {children}
@@ -148,8 +148,13 @@ export function Result({ result, before, onSave, saveLabel = 'Download', compare
 export function Sidenote({ index, title, children, blurb }) {
   return (
     <div className="lg:sticky lg:top-6">
-      <p className="label">Operation {index}</p>
-      <h2 className="font-wonk mt-1.5 text-[30px] leading-[1.05] text-ink-900">{title}</h2>
+      <div className="flex items-end gap-3">
+        <span className="font-wonk text-[64px] leading-[.8] text-transparent [-webkit-text-stroke:1px_var(--color-vermillion-600)]" aria-hidden="true">
+          {index}
+        </span>
+        <p className="label pb-1">Operation</p>
+      </div>
+      <h2 className="font-wonk mt-3 text-[40px] italic leading-[1] text-ink-900">{title}</h2>
       <p className="mt-2.5 max-w-[34ch] text-[13.5px] leading-relaxed text-ink-600">{blurb}</p>
       <hr className="my-5 border-0 border-t border-rule" />
       <div className="space-y-5">{children}</div>

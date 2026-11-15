@@ -14,7 +14,8 @@ export const TARGETS = {
   jpg: { id: 'jpg', label: 'JPG', ext: 'jpg', mime: 'image/jpeg', group: 'Image', lossy: true, flattens: true, note: 'Smallest for photos' },
   webp: { id: 'webp', label: 'WEBP', ext: 'webp', mime: 'image/webp', group: 'Image', lossy: true, note: 'Modern, ~30% under JPG' },
   gif: { id: 'gif', label: 'GIF', ext: 'gif', mime: 'image/gif', group: 'Image', note: '256 colours, single frame' },
-  pdf: { id: 'pdf', label: 'PDF', ext: 'pdf', mime: 'application/pdf', group: 'Document', note: 'One page per image' },
+  pdf: { id: 'pdf', label: 'PDF', ext: 'pdf', mime: 'application/pdf', group: 'Document', note: 'Paged, prints anywhere' },
+  docx: { id: 'docx', label: 'Word', ext: 'docx', mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', group: 'Document', note: 'Editable in Word & Docs' },
   html: { id: 'html', label: 'HTML', ext: 'html', mime: 'text/html', group: 'Document', note: 'Styled, self-contained' },
   md: { id: 'md', label: 'Markdown', ext: 'md', mime: 'text/markdown', group: 'Document', note: 'Headings, lists, links' },
   txt: { id: 'txt', label: 'Text', ext: 'txt', mime: 'text/plain', group: 'Document', note: 'Raw text, no formatting' },
@@ -42,7 +43,11 @@ const IMAGE_TARGETS = ['png', 'jpg', 'webp', 'gif', 'pdf']
 export const SOURCES = {
   image: { id: 'image', label: 'Image', targets: IMAGE_TARGETS },
   svg: { id: 'svg', label: 'SVG', targets: IMAGE_TARGETS },
-  docx: { id: 'docx', label: 'Word', targets: ['html', 'md', 'txt'] },
+  pdf: { id: 'pdf', label: 'PDF', targets: ['docx', 'md', 'html', 'txt', 'png', 'jpg'] },
+  docx: { id: 'docx', label: 'Word', targets: ['pdf', 'html', 'md', 'txt'] },
+  md: { id: 'md', label: 'Markdown', targets: ['pdf', 'docx', 'html', 'txt'] },
+  html: { id: 'html', label: 'HTML', targets: ['pdf', 'docx', 'md', 'txt'] },
+  txt: { id: 'txt', label: 'Text', targets: ['pdf', 'docx', 'html', 'md'] },
   csv: { id: 'csv', label: 'CSV', targets: ['json', 'tsv'] },
   tsv: { id: 'tsv', label: 'TSV', targets: ['json', 'csv'] },
   json: { id: 'json', label: 'JSON', targets: ['csv', 'tsv'] },
@@ -66,12 +71,16 @@ export function detectSource(file) {
   if (RASTER_MIMES.has(mime)) return SOURCES.image
   if (!mime && ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'avif'].includes(ext)) return SOURCES.image
 
+  if (ext === 'pdf' || mime === 'application/pdf') return SOURCES.pdf
+  if (['md', 'markdown', 'mdown'].includes(ext) || mime === 'text/markdown') return SOURCES.md
+  if (['html', 'htm', 'xhtml'].includes(ext) || mime === 'text/html') return SOURCES.html
   if (ext === 'docx' || mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
     return SOURCES.docx
   }
   if (ext === 'csv' || mime === 'text/csv') return SOURCES.csv
   if (ext === 'tsv' || ext === 'tab' || mime === 'text/tab-separated-values') return SOURCES.tsv
   if (ext === 'json' || mime === 'application/json') return SOURCES.json
+  if (ext === 'txt' || ext === 'text' || (mime === 'text/plain' && !ext)) return SOURCES.txt
 
   return null
 }
@@ -86,7 +95,13 @@ export function commonTargets(items) {
 export const ACCEPT_ATTR = [
   'image/*',
   '.svg',
+  '.pdf',
   '.docx',
+  '.md',
+  '.markdown',
+  '.html',
+  '.htm',
+  '.txt',
   '.csv',
   '.tsv',
   '.json',

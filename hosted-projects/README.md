@@ -8,9 +8,10 @@ Every tool runs entirely in the browser. No backend, no upload, no API keys.
 
 | # | Tool | What it does | Status |
 | --- | --- | --- | --- |
-| 1 | [`01-file-converter`](./01-file-converter) | Images ↔ PNG/JPG/WEBP/GIF/PDF, DOCX → HTML/MD/TXT, CSV ↔ JSON | ✅ Built |
+| 1 | [`01-file-converter`](./01-file-converter) | PDF ↔ Word, PDF → PNG/JPG pages, MD/HTML/TXT → PDF/Word, images ↔ PNG/JPG/WEBP/GIF/PDF, CSV ↔ JSON | ✅ Built |
 | 2 | [`02-pdf-toolkit`](./02-pdf-toolkit) | Merge, split, compress PDFs; images ↔ PDF pages | ✅ Built |
-| 3 | [`03-image-compressor`](./03-image-compressor) | Bulk compress and resize with live preview | ✅ Built |
+| 3 | [`03-smaller`](./03-smaller) | Convert, resize and compress images (single HTML page, deployed at kilo.madebygio.dev) | ✅ Built |
+| – | [`03-image-compressor`](./03-image-compressor) | The earlier React "KILO" version; not what is deployed | Archived |
 | 4 | [`04-qr-generator`](./04-qr-generator) | QR codes (URL, wifi, vCard) and barcodes | ✅ Built |
 | 5 | [`05-markdown-to-pdf`](./05-markdown-to-pdf) | Live markdown editor with styled PDF export | ✅ Built |
 

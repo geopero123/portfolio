@@ -23,7 +23,7 @@ Portfolio CI runs the same checks and bundled Chromium suite on each push.
 
 ## Pages
 
-- `/` - hero, three featured case studies (Tempest Archive, QUIRE, and SiteForge), five more projects, experience and education, written work practices, toolkit, about teaser, contact, and the quality strip.
+- `/` - hero, three featured case studies (Tempest Archive, QUIRE, and SiteForge), five more projects, a scroll-driven marquee of project names, experience and education, written work practices, toolkit, about teaser, contact, and the quality strip.
 - `/about` - background, experience and education, interactive project categories, workflow, and selected source.
 - `/projects/<slug>/` - eight detail pages generated from `src/data/projects.ts`. The slugs are `tempest-archive`, `quire`, `siteforge`, `tempest-rebirth`, `transmute`, `signal`, `folio`, and `kilo`.
 - Unknown routes serve the custom 404 page with links to the homepage and selected work.
@@ -94,4 +94,4 @@ Update public identity in `src/site.config.ts`. Contact details render only when
 
 ## Deployment
 
-`vercel.json` retains the Astro preset, build command, and `dist` output. The canonical domain is `https://madebygio.dev`. Vercel redirects the www host to the canonical domain and applies security headers across all paths. Production is static. Web Analytics loads on Vercel builds and uses `/_vercel/insights/script.js`. No user-supplied environment variables are needed.
+`vercel.json` retains the Astro preset, build command, and `dist` output. The canonical domain is `https://madebygio.dev`. Vercel redirects the www host to the canonical domain and applies security headers across all paths. Production is static. Web Analytics and Speed Insights load on Vercel builds from same-origin `/_vercel/` paths. `vercel.json` also sends HSTS and a Content-Security-Policy that allows only same-origin scripts, styles, fonts, media and connections (`'unsafe-inline'` remains for the small inline theme script and Vercel's inline loaders). No user-supplied environment variables are needed.
