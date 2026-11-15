@@ -1,0 +1,38 @@
+---
+import { projects } from '../data/projects';
+/**
+ * A decorative band of project names between Work and Experience. Scroll drives it where
+ * the browser supports scroll timelines; elsewhere it drifts slowly. Hidden from assistive
+ * tech (every name is already a heading above), and still under reduced motion.
+ */
+const names = projects.map(p => p.name);
+const row = [...names, ...names];
+---
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-row marquee-row--a">{row.map(n => <span class="marquee-item">{n}<i>✦</i></span>)}</div>
+  <div class="marquee-row marquee-row--b">{[...row].reverse().map(n => <span class="marquee-item serif">{n}<i>·</i></span>)}</div>
+</div>
+
+<style>
+  .marquee { overflow: hidden; padding-block: clamp(28px, 6vw, 72px); border-block: 1px solid var(--color-line); user-select: none; pointer-events: none; }
+  .marquee-row { display: flex; width: max-content; white-space: nowrap; font-size: clamp(44px, 9vw, 132px); line-height: 1.04; letter-spacing: -.045em; }
+  .marquee-row--a { color: transparent; -webkit-text-stroke: 1px color-mix(in oklab, var(--color-bright) 34%, transparent); font-weight: 600; }
+  .marquee-row--b { color: var(--color-accent); font-style: italic; letter-spacing: -.02em; translate: -18% 0; }
+  .marquee-item { display: inline-flex; align-items: center; gap: .32em; padding-right: .32em; }
+  .marquee-item i { font-style: normal; font-size: .36em; color: var(--color-accent); -webkit-text-stroke: 0; }
+  .marquee-row--b .marquee-item i { color: var(--color-mute); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .marquee { view-timeline-name: --marquee; }
+      .marquee-row { animation: marquee-a linear both; animation-timeline: --marquee; animation-range: entry 0% exit 100%; }
+      .marquee-row--b { animation-name: marquee-b; }
+    }
+    @supports not (animation-timeline: view()) {
+      .marquee-row--a { animation: marquee-a 60s linear infinite alternate; }
+      .marquee-row--b { animation: marquee-b 60s linear infinite alternate; }
+    }
+  }
+  @keyframes marquee-a { from { transform: translateX(0); } to { transform: translateX(-30%); } }
+  @keyframes marquee-b { from { transform: translateX(-30%); } to { transform: translateX(0); } }
+</style>

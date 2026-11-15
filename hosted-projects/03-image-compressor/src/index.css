@@ -1,0 +1,149 @@
+@import "@fontsource/archivo-black";
+@import "@fontsource-variable/archivo";
+@import "@fontsource/dm-mono/400.css";
+@import "@fontsource/dm-mono/500.css";
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Archivo Black", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, Menlo, monospace;
+
+  /* Hard black on warm off-white. No mid greys doing decorative work — the
+     structure comes from rules and blocks, not from tint. */
+  --color-ink: #0b0b0a;
+  --color-ink-soft: #3a3a37;
+  --color-mute: #6f6f68;
+  --color-paper: #f2f0e9;
+  --color-paper-bright: #fbfaf6;
+  --color-paper-sunk: #e6e3d9;
+
+  /* Acid yellow carries emphasis; pink is reserved for the number that matters
+     (how much smaller) and for anything destructive. */
+  --color-acid: #eaff00;
+  --color-acid-deep: #c9db00;
+  --color-hot: #ff2d6f;
+  --color-hot-deep: #d10f4d;
+
+  --radius-blunt: 2px;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    background: var(--color-paper);
+  }
+  body {
+    margin: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: var(--color-acid);
+    color: var(--color-ink);
+  }
+  /* Focus is a hard black ring, in keeping with everything else. */
+  :focus-visible {
+    outline: 3px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .display {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: -0.035em;
+    line-height: 0.92;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+  /* The core structural motif: 2px black edge, solid offset shadow, no blur. */
+  .block-edge {
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-blunt);
+  }
+  .block-shadow {
+    box-shadow: 4px 4px 0 0 var(--color-ink);
+  }
+  .block-shadow-sm {
+    box-shadow: 2px 2px 0 0 var(--color-ink);
+  }
+  .stamp {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+  }
+  /* Transparency checkerboard, in paper tones rather than the usual grey. */
+  .checker {
+    background-image:
+      linear-gradient(45deg, var(--color-paper-sunk) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--color-paper-sunk) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--color-paper-sunk) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--color-paper-sunk) 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    background-color: var(--color-paper-bright);
+  }
+  .scroll-hard {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink) transparent;
+  }
+  .scroll-hard::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .scroll-hard::-webkit-scrollbar-thumb {
+    background: var(--color-ink);
+  }
+}
+
+/* Range inputs: a square black thumb on a hard track. */
+input[type="range"] {
+  appearance: none;
+  height: 6px;
+  background: var(--color-paper-sunk);
+  border: 2px solid var(--color-ink);
+  border-radius: 0;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 20px;
+  background: var(--color-ink);
+  border: 0;
+  border-radius: 0;
+  cursor: grab;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 18px;
+  background: var(--color-ink);
+  border: 0;
+  border-radius: 0;
+  cursor: grab;
+}
+
+@keyframes snap {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-snap { animation: snap 0.16s steps(3, end) both; }
+
+@keyframes tick {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+.animate-tick { animation: tick 0.7s steps(2, end) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-snap, .animate-tick { animation: none; }
+  * { transition-duration: 0.01ms !important; }
+}

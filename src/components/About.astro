@@ -1,0 +1,23 @@
+---
+import Icon from './Icon.astro';
+import SectionIndex from './SectionIndex.astro';
+---
+<section id="about" class="about-section section-pad" aria-labelledby="about-title">
+  <div class="shell about-layout">
+    <div class="about-identity">
+      <p class="eyebrow" data-m="slide"><SectionIndex n="04" /> A little about me</p>
+      <div class="monogram" aria-hidden="true" data-m="scale"><span>g<span class="monogram-dot">.</span></span><span class="monogram-orbit"></span><span class="mono monogram-caption">Tbilisi · GMT+4</span></div>
+    </div>
+    <div class="about-copy">
+      <h2 id="about-title" data-m="mask"><span class="line-mask"><span style="--i:0">Useful first,</span></span><span class="line-mask"><span class="serif" style="--i:1">then finished.</span></span></h2>
+      <p class="about-lead" data-m="clip" style="--delay:200ms">I'm Gio - Giorgi, if we're being formal. A React and full-stack developer who likes taking a useful idea and making every part of it feel considered.</p>
+      <p data-m="clip" style="--delay:300ms">The layout. The response to a click. What happens on a slow connection. Tempest Archive taught me how to keep a large, linked body of content honest; the tools taught me how to make one small thing feel finished.</p>
+      <a href="/about" class="text-link" data-m="slide" style="--delay:400ms">More about how I work <Icon /></a>
+    </div>
+  </div>
+  <div class="shell principles" data-m="stagger">
+    <div><span class="mono">01</span><h3>Accessible by default</h3><p>Every page here passes axe at WCAG 2.1 AA, on every push.</p></div>
+    <div><span class="mono">02</span><h3>Motion with a job</h3><p>Each animation explains a change, and all of it turns off for reduced motion.</p></div>
+    <div><span class="mono">03</span><h3>Heavy code waits</h3><p>Libraries like pdf-lib load only when you use them, not on first paint.</p></div>
+  </div>
+</section>

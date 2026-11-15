@@ -1,0 +1,28 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import Work from '../components/Work.astro';
+import Experience from '../components/Experience.astro';
+import HowIWork from '../components/HowIWork.astro';
+import Skills from '../components/Skills.astro';
+import About from '../components/About.astro';
+import Marquee from '../components/Marquee.astro';
+import Contact from '../components/Contact.astro';
+import QualityStrip from '../components/QualityStrip.astro';
+---
+<Layout page="home">
+  <Hero />
+  <Work />
+  <Marquee />
+  <Experience n="02" />
+  <HowIWork />
+  <Skills />
+  <About />
+  <Contact />
+  <QualityStrip />
+</Layout>
+<script>
+  import { initSculpture } from '../scripts/homepage';
+  initSculpture();
+  document.addEventListener('astro:page-load', initSculpture);
+</script>

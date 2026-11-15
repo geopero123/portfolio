@@ -1,0 +1,39 @@
+/* The underlying page keeps its real dimensions throughout the build. */
+.swarm-active .desktop-nav:has([data-swarm-piece]) .nav-indicator { opacity: 0 !important; }
+.swarm-active .hero:has([data-swarm-piece]) .hero-baseline::after { opacity: 0; }
+/* Only the pieces being built (and what is inside them) are neutralised, keyed on the
+   `data-swarm-piece` attribute, which exists only during a build. Hanging `.hero *` and
+   `[data-m] > *` off the `.swarm-active` root class made adding that class restyle the whole
+   document: a 50-100 ms freeze on a 4x slower CPU. `:root` keeps the old specificity. */
+:root .hero [data-swarm-piece], :root .hero [data-swarm-piece] *, .swarm-active .hero-baseline::after,
+.swarm-active .site-header .wordmark, .swarm-active .site-header .github-link,
+.swarm-active .site-header .menu-toggle, .swarm-active .desktop-nav > a { animation: none !important; }
+:root [data-swarm-piece][data-m], :root [data-swarm-piece] [data-m],
+:root [data-swarm-piece][data-m] .line-mask > span, :root [data-swarm-piece] [data-m] .line-mask > span,
+:root [data-swarm-piece][data-m] > *, :root [data-swarm-piece] [data-m] > * { opacity: 1; clip-path: none; transform: none; transition-delay: 0ms; }
+html.swarm-active [data-swarm-piece] { clip-path: var(--swarm-clip, inset(0 var(--swarm-reveal, 100%) 0 0)) !important; opacity: 1 !important; transition: none !important; }
+.swarm-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 90; }
+.swarm-controls { position: fixed; right: 24px; bottom: 22px; z-index: 91; display: flex; align-items: center; border: 1px solid #ffffff24; border-radius: 999px; background: #1a1a16ed; color: #e8e5dc; box-shadow: 0 4px 24px #0002; font: 11px var(--font-mono); backdrop-filter: blur(12px); overflow: hidden; }
+.swarm-controls[hidden] { display: none; }
+/* The floating pill only exists while a build runs, to offer Skip. At rest it would cover page
+   text, so "Replay build" lives in the hero and the footer instead. */
+.cursor-swarm:not([data-swarm-building="true"]) .swarm-controls { display: none; }
+.swarm-controls .swarm-replay { display: none; }
+.swarm-controls button { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 42px; background: transparent; padding: 10px 13px; }
+.swarm-controls button:hover { background: #ffffff0a; }
+.swarm-controls button:focus-visible { outline-offset: -4px; }
+.swarm-controls svg { width: 13px; height: 13px; opacity: .75; }
+.swarm-controls .swarm-toggle { width: auto; padding-inline: 16px; }
+.footer-replay { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0; background: transparent; color: inherit; font-size: 11px; }
+.footer-replay:hover { color: var(--color-bright); }
+.footer-replay[hidden] { display: none; }
+.swarm-toggle-dots { display: flex; gap: 3px; }
+.swarm-toggle-dots i { width: 5px; height: 5px; background: #f28b63; border-radius: 50%; }
+.swarm-toggle-dots i:nth-child(2) { background: #b79bff; }
+.swarm-toggle-dots i:nth-child(3) { background: #83dbc0; }
+.swarm-controls .swarm-toggle[hidden] { display: none; }
+[data-swarm-replay][aria-disabled="true"] { opacity: .55; cursor: default; }
+/* Reduced motion: there is no build to replay, so neither control is offered. */
+@media (prefers-reduced-motion: reduce) { .cursor-swarm, .study-replay, .footer-replay { display: none !important; } }
+@media (max-width: 600px) { .swarm-controls { right: 16px; bottom: 16px; } }
+body.menu-open .swarm-controls { display: none; }

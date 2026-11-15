@@ -1,0 +1,11 @@
+---
+/** Technology as a typographic strip, not a wall of logos. */
+interface Props { items: readonly string[]; label?: string; class?: string; delay?: number }
+const { items, label = 'Built with', class: className, delay = 0 } = Astro.props;
+---
+<div class:list={['tech-strip', className]}>
+  <span class="tech-rule" data-m="draw" style={`--delay:${delay}ms`} aria-hidden="true"></span>
+  <ul class="tech-list" aria-label={label} data-m="stagger" style={`--delay:${delay}ms`}>
+    {items.map((item, i) => <li><span class="mono tech-i">{String(i + 1).padStart(2, '0')}</span>{item}</li>)}
+  </ul>
+</div>

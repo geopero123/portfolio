@@ -1,0 +1,207 @@
+/* Self-hosted: Fraunces for display, IBM Plex for everything that has to be read
+   quickly or lined up in a column. */
+@import "@fontsource-variable/fraunces";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+
+  /* Warm paper stock rather than pure white — this is a print bureau, not a
+     dashboard. */
+  --color-paper-50: #fffdfa;
+  --color-paper-100: #faf7f1;
+  --color-paper-200: #f4efe6;
+  --color-paper-300: #e8e0d3;
+  --color-rule: #ddd4c5;
+  --color-rule-strong: #c9bda9;
+
+  --color-ink-900: #131c28;
+  --color-ink-800: #1f2c3d;
+  --color-ink-600: #47566b;
+  --color-ink-400: #77859a;
+  --color-ink-300: #9aa6b7;
+
+  /* Vermillion: proof-mark red, used only where something is active or wrong. */
+  --color-vermillion-700: #a5341a;
+  --color-vermillion-600: #c2401f;
+  --color-vermillion-500: #d4552f;
+  --color-vermillion-100: #f7e2da;
+  --color-vermillion-50: #fcf0eb;
+
+  /* The cutting mat the folder lies on, and the folder itself. */
+  --color-mat: #24503f;
+  --color-mat-deep: #1b3f31;
+  --color-mat-line: #3d6b58;
+  --color-manila: #e7dcc3;
+  --color-manila-deep: #d8caa9;
+
+  --color-moss-700: #2c5f45;
+  --color-moss-600: #3a7756;
+  --color-moss-100: #dcebe0;
+}
+
+@layer base {
+  html {
+    /* A deliberate single-mode design: warm paper, printed ink. Telling the
+       browser keeps native controls and scrollbars in the same key. */
+    color-scheme: light;
+    background-color: var(--color-mat);
+  }
+  body {
+    margin: 0;
+    background-color: var(--color-mat);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: var(--color-vermillion-100);
+    color: var(--color-vermillion-700);
+  }
+}
+
+@layer utilities {
+  /* Display face with its wonky alternates switched on. Only for the wordmark
+     and headings — never for anything you have to scan. */
+  .font-wonk {
+    font-family: var(--font-display);
+    font-variation-settings: "SOFT" 12, "WONK" 1, "opsz" 108;
+    letter-spacing: -0.015em;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+  .label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: var(--color-ink-400);
+  }
+  /* Paper sheets get a real edge and a low, wide shadow — like stock on a desk. */
+  .sheet {
+    background: var(--color-paper-50);
+    border: 1px solid var(--color-rule);
+    box-shadow: 0 1px 2px rgb(19 28 40 / 0.05), 0 6px 16px -10px rgb(19 28 40 / 0.22);
+  }
+  .hatched {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 7px,
+      rgb(19 28 40 / 0.035) 7px 8px
+    );
+  }
+  .scrollbar-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-rule-strong) transparent;
+  }
+  .scrollbar-slim::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .scrollbar-slim::-webkit-scrollbar-thumb {
+    background: var(--color-rule-strong);
+    border-radius: 99px;
+    border: 3px solid var(--color-paper-100);
+  }
+}
+
+/* ── The mat: a self-healing cutting mat with a 1 cm grid and rulers ──────── */
+.mat {
+  background-color: var(--color-mat);
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / .1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / .1) 1px, transparent 1px),
+    linear-gradient(to right, rgb(255 255 255 / .04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / .04) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  background-position: -1px -1px;
+}
+.ruler-x {
+  height: 14px;
+  background-image:
+    linear-gradient(to right, rgb(244 239 230 / .55) 1px, transparent 1px),
+    linear-gradient(to right, rgb(244 239 230 / .3) 1px, transparent 1px);
+  background-size: 120px 14px, 12px 6px;
+  background-repeat: repeat-x;
+  background-position: -1px 0, -1px 0;
+}
+.mat-diagonal { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(32deg, transparent 49.9%, rgb(255 255 255 / .05) 50%, transparent 50.1%); }
+
+/* ── The folder: tabs on top, a sheet underneath ──────────────────────────── */
+.folder-tab {
+  position: relative;
+  border-radius: 10px 10px 0 0;
+  background: var(--color-manila-deep);
+  color: var(--color-ink-600);
+  transition: background-color .2s, color .2s, transform .35s cubic-bezier(.16,1,.3,1);
+  transform: translateY(4px);
+}
+.folder-tab:hover { transform: translateY(0); background: var(--color-manila); color: var(--color-ink-900); }
+.folder-tab[aria-current="page"] { background: var(--color-paper-100); color: var(--color-ink-900); transform: translateY(1px); z-index: 2; }
+.folder-tab[aria-current="page"]::after {
+  /* bridges the tab into the sheet below so they read as one piece */
+  content: ''; position: absolute; left: 0; right: 0; bottom: -6px; height: 8px; background: var(--color-paper-100);
+}
+.folder-sheet {
+  position: relative;
+  z-index: 1;
+  background: var(--color-paper-100);
+  border-radius: 4px 14px 14px 14px;
+  box-shadow: 0 1px 0 rgb(255 255 255 / .5) inset, 0 30px 60px -30px rgb(0 0 0 / .55), 0 12px 24px -12px rgb(0 0 0 / .35);
+}
+.crop { position: absolute; width: 14px; height: 14px; border-color: var(--color-rule-strong); pointer-events: none; }
+.crop-tl { top: 10px; left: 10px; border-top: 1px solid; border-left: 1px solid; }
+.crop-tr { top: 10px; right: 10px; border-top: 1px solid; border-right: 1px solid; }
+.crop-bl { bottom: 10px; left: 10px; border-bottom: 1px solid; border-left: 1px solid; }
+.crop-br { bottom: 10px; right: 10px; border-bottom: 1px solid; border-right: 1px solid; }
+
+/* Selected pages get a dog-ear fold rather than a checkbox. */
+.dog-ear::after {
+  content: ''; position: absolute; top: 0; right: 0; width: 22px; height: 22px;
+  background: linear-gradient(225deg, var(--color-paper-100) 50%, var(--color-vermillion-600) 50%);
+  box-shadow: -2px 2px 3px rgb(19 28 40 / .2);
+  animation: fold .35s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes fold { from { width: 0; height: 0; } }
+.page-card { transition: transform .35s cubic-bezier(.16,1,.3,1); }
+.page-card:hover { transform: translateY(-3px) rotate(-.6deg); }
+.page-card[aria-pressed="true"] { transform: translateY(-2px); }
+.page-in { animation: page-in .45s cubic-bezier(.16,1,.3,1) both; animation-delay: calc(min(var(--i, 0), 24) * 22ms); }
+@keyframes page-in { from { opacity: 0; transform: translateY(10px) rotate(1.5deg); } }
+.sheet-in { animation: sheet-in .45s cubic-bezier(.16,1,.3,1) both; }
+@keyframes sheet-in { from { opacity: 0; transform: translateY(8px); } }
+
+.press {
+  box-shadow: 0 3px 0 var(--color-vermillion-700);
+  transform: translateY(-1px);
+  transition: transform .12s, box-shadow .12s, background-color .15s;
+}
+.press:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 0 0 var(--color-vermillion-700); }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-rise { animation: rise 0.24s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes bar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.animate-bar { animation: bar 1.1s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise, .animate-bar, .page-in, .sheet-in, .dog-ear::after { animation: none; }
+  .page-card:hover, .folder-tab { transform: none; }
+  * { transition-duration: 0.01ms !important; }
+}

@@ -1,0 +1,7 @@
+---
+import Odometer from './Odometer.astro';
+
+interface Props { n: string; class?: string }
+const { n, class: className } = Astro.props;
+---
+<Odometer class={className ? `section-index ${className}` : 'section-index'} text={`${n} /`} />

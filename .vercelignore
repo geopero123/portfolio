@@ -1,0 +1,9 @@
+/.astro/
+/.claude/
+/.env
+/.env.*
+/dist/
+/frames/
+/hosted-projects/
+/playwright-report/
+/test-results/

@@ -1,0 +1,816 @@
+import { readFile } from 'node:fs/promises';
+import { test, expect, type Page } from '@playwright/test';
+import { PDFDocument } from 'pdf-lib';
+import AxeBuilder from '@axe-core/playwright';
+import { readFileSync } from 'node:fs';
+
+function watch(page: Page) {
+  const errors: string[] = [], failed: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+  page.on('response', response => { if (response.status() >= 400) failed.push(response.url()); });
+  return { errors, failed };
+}
+
+test('home loads without browser errors, missing assets, or broken anchors', async ({page}) => {
+  const {errors, failed} = watch(page);
+  await page.goto('/');
+  await expect(page.locator('h1')).toHaveText(/Giorgi\s*·\s*React Developer/);
+  await page.locator('#contact').scrollIntoViewIfNeeded();
+  await expect(page.locator('#tempest')).toContainText('Tempest');
+  await expect(page.locator('article.feature')).toHaveCount(3);
+  await expect(page.locator('.tool-card')).toHaveCount(5);
+  expect(await page.evaluate(() => [...document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')].filter(a => !document.querySelector(a.hash)).map(a => a.hash))).toEqual([]);
+  expect(errors).toEqual([]);
+  expect(failed).toEqual([]);
+});
+
+test('Tempest Archive is featured: role, decision, evidence, live link, case study route', async ({page}) => {
+  await page.goto('/');
+  const flagship = page.locator('#tempest');
+  await expect(flagship.getByRole('heading', {level: 3, name: 'Tempest Archive'})).toBeVisible();
+  await expect(flagship.locator('.feature-meta')).toContainText('Design, frontend, data model');
+  await expect(flagship.locator('.feature-meta')).toContainText('React, Vite, Tailwind CSS, Motion, Supabase, Cloudflare');
+  await expect(flagship.locator('.decision h4')).toContainText('linked records');
+  await expect(flagship.locator('.evidence')).toContainText('304 URLs');
+  await expect(flagship.getByRole('link', {name: /Project scale/})).toHaveAttribute('href', 'https://tempestarchive.com/sitemap.xml');
+  await expect(flagship.getByRole('link', {name: /Visit Tempest Archive/})).toHaveAttribute('href', 'https://tempestarchive.com/');
+  await flagship.getByRole('link', {name: /Read the case study/}).click();
+  await expect(page).toHaveURL(/\/projects\/tempest-archive\/?$/);
+  await expect(page.locator('h1')).toHaveText(/Tempest\s*Archive/);
+  await expect(page.getByRole('link', {name: /Visit the live site/})).toHaveAttribute('href', 'https://tempestarchive.com/');
+  // No public repository: no source link may be invented.
+  await expect(page.getByRole('link', {name: /View source/})).toHaveCount(0);
+});
+
+test('spoiler demo: picking a level swaps the real screen, the counts row and the note', async ({page}) => {
+  await page.goto('/');
+  const demo = page.locator('[data-spoiler-demo]');
+  await demo.scrollIntoViewIfNeeded();
+  await expect(demo.locator('[data-spoiler-shot="anime"]')).toHaveClass(/is-active/);
+  await expect(demo.locator('tr.is-active th')).toHaveText('Anime');
+  await demo.getByRole('button', {name: /Full/}).click();
+  await expect(demo.getByRole('button', {name: /Full/})).toHaveAttribute('aria-pressed', 'true');
+  await expect(demo.locator('[data-spoiler-shot="full"]')).toHaveClass(/is-active/);
+  await expect(demo.locator('[data-spoiler-shot="anime"]')).toHaveAttribute('aria-hidden', 'true');
+  await expect(demo.locator('tr.is-active')).toContainText('Full');
+  await expect(demo.locator('tr.is-active td .sr-only').first()).toHaveText('84');
+  await expect(demo.locator('[data-spoiler-note]')).toContainText('231 entries');
+  // Full matches the published sitemap scale.
+  await expect(demo.locator('tr[data-spoiler-row="full"] td .sr-only')).toHaveText(['84', '85', '36', '26', '231']);
+});
+
+test('new spoiler numbers roll while their accessible values stay final', async ({page}) => {
+  await page.goto('/');
+  const demo = page.locator('[data-spoiler-demo]');
+  await demo.getByRole('button', {name: /Full/}).click();
+  const cell = demo.locator('tr.is-active td').first();
+  await expect(cell.locator('.sr-only')).toHaveText('84');
+  expect(await cell.locator('.digit-roll').first().evaluate(el => el.getAnimations().length)).toBeGreaterThan(0);
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await demo.getByRole('button', {name: /Moderate/}).click();
+  const moderate = demo.locator('tr.is-active td').first();
+  await expect(moderate.locator('.sr-only')).toHaveText('53');
+  expect(await moderate.locator('.digit-roll').first().evaluate(el => el.getAnimations().length)).toBe(0);
+});
+
+test('QUIRE is featured with a real exported PDF and links into the PDF engine source', async ({page, request}) => {
+  await page.goto('/');
+  const quire = page.locator('#quire');
+  await expect(quire.getByRole('heading', {level: 3, name: 'QUIRE'})).toBeVisible();
+  await expect(quire.locator('.decision')).toContainText('pdf-lib');
+  const pdf = await request.get('/samples/quire-field-notes.pdf');
+  expect(pdf.ok()).toBe(true);
+  expect(pdf.headers()['content-type']).toContain('pdf');
+  const bytes = await pdf.body();
+  expect(bytes.subarray(0, 5).toString()).toBe('%PDF-');
+  expect(bytes.length).toBeLessThan(15000);
+  await expect(quire.getByRole('link', {name: /Sample PDF/})).toHaveAttribute('href', '/samples/quire-field-notes.pdf');
+  await expect(quire.getByRole('link', {name: /Link annotations/})).toHaveAttribute('href', /Portfolio-setup\/blob\/claude\/five-utility-react-apps-ajzt9l\/05-markdown-to-pdf\/src\/lib\/pdf\.js#L346$/);
+});
+
+test('QUIRE loads its editor engine on demand and downloads a PDF from edited Markdown', async ({page}) => {
+  const engineRequests: string[] = [];
+  page.on('request', request => {
+    if (/\/_astro\/quire-pdf[^/]*\.js$/.test(new URL(request.url()).pathname)) engineRequests.push(request.url());
+  });
+  await page.goto('/');
+  const quire = page.locator('#quire');
+  const editor = quire.getByRole('textbox', {name: 'Markdown'});
+  await expect(editor).toHaveValue(/# Field notes/);
+  await editor.fill(`# Review notes
+
+${'This is a paragraph from the edited Markdown.\n\n'.repeat(65)}`);
+  expect(engineRequests).toHaveLength(0);
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    quire.getByRole('button', {name: 'Download PDF'}).click(),
+  ]);
+  expect(engineRequests).toHaveLength(1);
+  expect(download.suggestedFilename()).toBe('quire-demo.pdf');
+  const bytes = await readFile((await download.path())!);
+  expect(bytes.subarray(0, 5).toString()).toBe('%PDF-');
+  const pages = (await PDFDocument.load(bytes)).getPageCount();
+  expect(pages).toBeGreaterThan(1);
+  await expect(quire.getByRole('status')).toHaveText(`${pages} pages - ${(bytes.length / 1024).toFixed(1)} KB.`);
+});
+
+test('QUIRE reveals a sheet and result after export', async ({page}) => {
+  await page.goto('/');
+  const editor = page.locator('[data-quire-editor]');
+  const sheet = editor.locator('.quire-sheet');
+  await expect(sheet).toHaveCSS('opacity', '0');
+  await editor.getByRole('button', {name: 'Download PDF'}).click();
+  await expect(editor).toHaveAttribute('data-exported', 'true');
+  await expect(sheet).toHaveCSS('opacity', '1');
+  await expect(editor.getByRole('status')).toContainText('1 page');
+});
+
+test('SiteForge offers a case study and source to signed-out reviewers', async ({page}) => {
+  await page.goto('/');
+  await expect(page.locator('#work-title')).toHaveText('Three projects, in depth.');
+  const feature = page.locator('article.feature-siteforge');
+  await expect(feature.getByRole('heading', {name: 'SiteForge', exact: true})).toBeVisible();
+  await expect(feature.getByRole('img', {name: 'SiteForge audit pipeline'})).toBeVisible();
+  await expect(feature.locator('.decision')).toContainText('AI findings must quote real code or they are discarded.');
+  await expect(feature.getByText('Running an audit requires sign-in.')).toBeVisible();
+  await expect(feature.locator('.evidence').getByRole('link', {name: /Product overview/})).toHaveAttribute('href', 'https://siteforge.madebygio.dev');
+  await expect(feature.locator('.evidence').getByRole('link', {name: /Source repository/})).toHaveAttribute('href', 'https://github.com/geopero123/siteforge');
+  const primary = feature.locator('.button-primary');
+  await expect(primary).toHaveText('Read the case study');
+  await primary.click();
+  await expect(page).toHaveURL(/\/projects\/siteforge\/?$/);
+  await expect(page.getByText('Running an audit requires sign-in.')).toBeVisible();
+  await expect(page.locator('.project-actions .button-primary')).toHaveAttribute('href', 'https://github.com/geopero123/siteforge');
+  await expect(page.getByRole('link', {name: 'Product overview'})).toHaveAttribute('href', 'https://siteforge.madebygio.dev');
+  await expect(page.locator('.project-cta .button-primary')).toHaveAttribute('href', 'https://github.com/geopero123/siteforge');
+});
+
+test('secondary projects show the names and domains of the live apps', async ({page}) => {
+  await page.goto('/');
+  const cards = page.locator('.tool-card');
+  const expected = [
+    ['Tempest Rebirth', 'play.tempestarchive.com', 'play-tensura'],
+    ['Transmute', 'convert.madebygio.dev', 'Portfolio-setup'],
+    ['SIGNAL', 'qr.madebygio.dev', 'Portfolio-setup'],
+    ['Folio', 'folio.madebygio.dev', 'Portfolio-setup'],
+    ['Smaller', 'kilo.madebygio.dev', 'Portfolio-setup'],
+  ];
+  for (const [i, [name, domain, repo]] of expected.entries()) {
+    await expect(cards.nth(i).locator('h4')).toHaveText(name);
+    await expect(cards.nth(i).getByRole('link', {name: `${name} live at ${domain}`})).toHaveAttribute('href', `https://${domain}`);
+    await expect(cards.nth(i).getByRole('link', {name: `${name} source code`})).toHaveAttribute('href', new RegExp(`^https://github[.]com/geopero123/${repo}(?:/|$)`));
+  }
+  await expect(page.getByText('KILO', {exact: true})).toHaveCount(0);
+  await cards.getByRole('link', {name: 'Smaller details'}).click();
+  await expect(page).toHaveURL(/\/projects\/kilo\/?$/);
+  await expect(page.locator('h1')).toHaveText('Smaller');
+});
+
+test('Tempest Rebirth video loads in view, pauses offscreen, and uses its poster for reduced motion', async ({page}) => {
+  const requests: string[] = [];
+  page.on('request', request => {
+    if (/\/media\/rebirth\.(webm|mp4)$/.test(request.url())) requests.push(request.url());
+  });
+  await page.goto('/');
+  const clip = page.locator('video[data-rebirth-clip]');
+  await expect(clip).toHaveCount(1);
+  await expect(clip.locator('source[src]')).toHaveCount(0);
+  expect(requests).toEqual([]);
+  await clip.evaluate(el => el.scrollIntoView({block: 'center', behavior: 'instant'}));
+  await expect.poll(() => clip.evaluate(el => (el as HTMLVideoElement).currentTime)).toBeGreaterThan(0);
+  expect(requests.some(url => url.endsWith('/media/rebirth.webm'))).toBe(true);
+  await page.evaluate(() => scrollTo({top: 0, behavior: 'instant'}));
+  await expect.poll(() => clip.evaluate(el => (el as HTMLVideoElement).paused)).toBe(true);
+
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  requests.length = 0;
+  await page.goto('/projects/tempest-rebirth/');
+  const detail = page.locator('.project-visual video');
+  await expect(detail).toBeHidden();
+  await expect(detail).toHaveAttribute('poster', /rebirth/);
+  await expect(page.locator('.project-visual .browser-screen img')).toBeVisible();
+  await page.locator('.project-visual').scrollIntoViewIfNeeded();
+  await expect(detail.locator('source[src]')).toHaveCount(0);
+  expect(requests).toEqual([]);
+});
+
+test('project cards follow a fine pointer and turn off the spotlight under reduced motion', async ({page}) => {
+  await page.goto('/');
+  const card = page.locator('.tool-card').first();
+  await card.scrollIntoViewIfNeeded();
+  const box = (await card.boundingBox())!;
+  await page.mouse.move(box.x + box.width * .72, box.y + box.height * .3);
+  await expect.poll(() => card.evaluate(el => Number(el.style.getPropertyValue('--mx')))).toBeGreaterThan(.1);
+  await expect.poll(() => card.evaluate(el => getComputedStyle(el, '::after').opacity)).toBe('1');
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  expect(await card.evaluate(el => getComputedStyle(el, '::after').content)).toBe('none');
+});
+
+test('each home screenshot has a matching transition name on its detail page', async ({page}) => {
+  await page.goto('/');
+  const homeImages = page.locator('.spoiler-frame, .pdf-app .browser-screen, .siteforge-preview .browser-screen, .tool-preview');
+  const names = await homeImages.evaluateAll(images => images.map(el => getComputedStyle(el).viewTransitionName));
+  const slugs = ['tempest-archive', 'quire', 'siteforge', 'tempest-rebirth', 'transmute', 'signal', 'folio', 'kilo'];
+  expect(names).toEqual(slugs.map(slug => `project-image-${slug}`));
+  for (const slug of slugs) {
+    await page.goto(`/projects/${slug}/`);
+    const image = page.locator('.project-visual .browser-screen');
+    expect(await image.evaluate(el => getComputedStyle(el).viewTransitionName)).toBe(`project-image-${slug}`);
+  }
+});
+
+test('fresh visit: header, headline and project link are visible and usable at once; the build is opt-in', async ({page}) => {
+  for (const viewport of [{width: 1440, height: 900}, {width: 390, height: 844}]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/', {waitUntil: 'commit'});
+    await page.waitForSelector('h1');
+    // Within the first frames: nothing is hidden or clipped by an intro.
+    const state = await page.evaluate(() => {
+      const visible = (el: Element | null) => { if (!el) return false; const s = getComputedStyle(el); const r = el.getBoundingClientRect(); return s.visibility === 'visible' && s.opacity === '1' && r.height > 0 && r.top < innerHeight; };
+      return {
+        header: visible(document.querySelector('.site-header .wordmark')),
+        h1: visible(document.querySelector('h1')),
+        cta: visible([...document.querySelectorAll('a')].find(a => a.textContent?.includes('See Tempest Archive')) ?? null),
+        contact: visible(document.querySelector('.hero-actions a[href="#contact"]')),
+        pieces: document.querySelectorAll('[data-swarm-piece]').length,
+        pending: document.documentElement.className.includes('swarm'),
+      };
+    });
+    expect(state).toEqual({header: true, h1: true, cta: true, contact: true, pieces: 0, pending: false});
+    await expect(page.locator('[data-swarm-canvas]')).toBeHidden();
+    await page.getByRole('link', {name: 'See Tempest Archive'}).click();
+    await expect(page).toHaveURL(/#tempest$/);
+  }
+  // Replay build is the only way in, it assembles the current screen, and Escape skips it.
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto('/');
+  await page.locator('.study-replay').click();
+  await expect.poll(() => page.locator('[data-swarm-piece]').count()).toBeGreaterThan(0);
+  await expect(page.getByRole('button', {name: 'Skip build animation'})).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-swarm-piece]')).toHaveCount(0);
+  await expect(page.locator('[data-swarm-canvas]')).toBeHidden();
+  await page.locator('#contact').scrollIntoViewIfNeeded();
+  await expect(page.locator('#contact h2')).toBeVisible();
+});
+
+test('keyboard: skip link, navigation and the primary action are reachable in order', async ({page}) => {
+  await page.goto('/');
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', {name: 'Skip to content'})).toBeFocused();
+  const order: string[] = [];
+  for (let i = 0; i < 10; i++) {
+    await page.keyboard.press('Tab');
+    order.push(await page.evaluate(() => document.activeElement!.getAttribute('aria-label') || (document.activeElement as HTMLElement).innerText.trim().replace(/\s+/g, ' ')));
+  }
+  expect(order.slice(0, 8)).toEqual(['Made by Gio, home', 'Home', 'Work', 'About', 'Contact', 'Résumé', 'Giorgi on GitHub', 'Open command palette']);
+  expect(order).toContain('See Tempest Archive');
+  await page.getByRole('link', {name: 'See Tempest Archive'}).focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/#tempest$/);
+});
+
+test('the command palette filters, traps focus and navigates by keyboard', async ({page}) => {
+  await page.goto('/');
+  const trigger = page.getByRole('button', {name: 'Open command palette'});
+  const dialog = page.getByRole('dialog', {name: 'Quick links'});
+  const query = dialog.getByRole('combobox', {name: 'Find a project or action'});
+  await trigger.focus();
+  await page.keyboard.press('Control+k');
+  await expect(query).toBeFocused();
+  await query.press('Shift+Tab');
+  await expect(dialog.getByRole('button', {name: /Close/})).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(query).toBeFocused();
+  await query.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+
+  await page.keyboard.press('Meta+k');
+  await query.fill('tempest');
+  await expect(dialog.getByRole('option')).toHaveCount(2);
+  await query.press('ArrowDown');
+  await expect(dialog.getByRole('option', {name: 'Tempest Rebirth'})).toHaveAttribute('aria-selected', 'true');
+  await query.press('Enter');
+  await expect(page).toHaveURL(/\/projects\/tempest-rebirth\/?$/);
+  await trigger.click();
+  await expect(query).toBeFocused();
+  await query.fill('resume');
+  await expect(dialog.getByRole('option', {name: 'Résumé (PDF)'})).toBeVisible();
+});
+
+test('the command palette copies email and respects reduced motion for Replay build', async ({page, context}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.goto('/about');
+  await page.keyboard.press('Control+k');
+  const dialog = page.getByRole('dialog', {name: 'Quick links'});
+  const query = dialog.getByRole('combobox');
+  await query.fill('copy');
+  await query.press('Enter');
+  await expect(dialog.getByRole('status')).toHaveText('Email address copied.');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('giorgi@madebygio.dev');
+  await query.fill('replay');
+  await expect(dialog.getByRole('option', {name: 'Replay build'})).toHaveAttribute('aria-disabled', 'true');
+  await query.press('Enter');
+  await expect(dialog).toBeVisible();
+  const results = await new AxeBuilder({page}).include('#command-palette').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+  expect(results.violations.map(violation => violation.id)).toEqual([]);
+});
+
+test('the palette fades in and slides its selection with motion allowed', async ({page}) => {
+  await page.goto('/');
+  await page.keyboard.press('Control+k');
+  const dialog = page.getByRole('dialog', {name: 'Quick links'});
+  await expect(dialog).toHaveCSS('animation-duration', '0.15s');
+  const highlight = dialog.locator('.palette-highlight');
+  await dialog.getByRole('combobox').press('ArrowDown');
+  await expect(highlight).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 40)');
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await expect(dialog).toHaveCSS('animation-name', 'none');
+  expect(await dialog.evaluate(el => el.getAnimations({subtree: true}).length)).toBe(0);
+});
+
+test('the command palette can replay the page build', async ({page}) => {
+  await page.goto('/');
+  await page.keyboard.press('Control+k');
+  const dialog = page.getByRole('dialog', {name: 'Quick links'});
+  await dialog.getByRole('combobox').fill('replay');
+  await dialog.getByRole('option', {name: 'Replay build'}).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByRole('button', {name: 'Skip build animation'})).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-swarm-canvas]')).toBeHidden();
+});
+
+test('contact shows only verified channels and links to the current site source', async ({page}) => {
+  await page.goto('/');
+  const contact = page.locator('#contact');
+  await expect(contact.getByRole('list', {name: 'Ways to reach Giorgi'}).locator('a').first()).toHaveAttribute('href', /^(mailto:|https:\/\/)/);
+  // Nothing renders for an empty value: no blank mailto, no empty résumé link.
+  expect(await page.locator('a[href="mailto:"], a[href=""]').count()).toBe(0);
+  await expect(contact.getByRole('list', {name: 'Ways to reach Giorgi'}).getByRole('link', {name: /GitHub/})).toHaveAttribute('href', 'https://github.com/geopero123');
+  await expect(page.locator('footer').getByRole('link', {name: /Site source/})).toHaveAttribute('href', 'https://github.com/geopero123/portfolio/tree/local/current-site');
+  await expect(page.locator('.study-note a').first()).toHaveAttribute('href', 'https://github.com/geopero123/portfolio/blob/local/current-site/src/lib/sculpture.ts');
+});
+
+test('Experience shows the booking platform dates on home and About', async ({page}) => {
+  for (const path of ['/', '/about']) {
+    await page.goto(path);
+    const experience = page.getByRole('region', {name: "Where I've worked."});
+    await expect(experience.getByText('Feb 2025 - Sep 2026', {exact: true})).toBeVisible();
+  }
+});
+
+test('the experience line fills with scroll and the dot pulses once with motion allowed', async ({page}) => {
+  await page.goto('/');
+  const row = page.locator('.xp-row').first();
+  const line = page.locator('.xp-line');
+  await row.scrollIntoViewIfNeeded();
+  await expect(row).toHaveClass(/\bin\b/);
+  expect(await line.evaluate(el => getComputedStyle(el, '::after').animationTimeline)).toBe('--xp-timeline');
+  expect(await row.evaluate(el => getComputedStyle(el, '::before').animationName)).toBe('timeline-dot');
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  expect(await line.evaluate(el => getComputedStyle(el, '::after').animationName)).toBe('none');
+  expect(await row.evaluate(el => getComputedStyle(el, '::before').animationName)).toBe('none');
+});
+
+test('experience stats wait until fully visible and roll 80ms apart', async ({page}) => {
+  await page.goto('/');
+  const stats = page.locator('[data-experience-stats]');
+  await stats.evaluate(el => {
+    scrollTo({top: el.getBoundingClientRect().top + scrollY - innerHeight + 18, behavior: 'instant'});
+  });
+  await expect(stats).not.toHaveAttribute('data-counted', 'true');
+  await stats.evaluate(el => el.scrollIntoView({block: 'center', behavior: 'instant'}));
+  await expect(stats).toHaveAttribute('data-counted', 'true');
+  const delays = await stats.locator('.stat').evaluateAll(items => items.map(item => {
+    const animation = item.querySelector('.digit-roll')?.getAnimations()[0];
+    return animation?.effect?.getTiming().delay;
+  }));
+  expect(delays).toEqual([0, 80, 160]);
+});
+
+test('the homepage shows the four written-remote work practices before the toolkit', async ({page}) => {
+  await page.goto('/');
+  const practices = page.locator('.work-practices');
+  await expect(practices.getByRole('heading', {name: 'Remote, and in writing.'})).toBeVisible();
+  await expect(practices.locator('li p')).toHaveText([
+    'I send written updates at the end of each working day.',
+    'I ask questions in chat or email.',
+    'I ship work in small, reviewable pieces.',
+    'I reply within one working day.',
+  ]);
+  const sections = await page.locator('main > section').evaluateAll(elements =>
+    elements.map(el => el.id || el.classList[0]));
+  const experience = sections.indexOf('experience');
+  expect(sections.slice(experience, experience + 3)).toEqual(['experience', 'work-practices', 'stack']);
+});
+
+test('footer labels wrap as whole controls on a phone', async ({page}) => {
+  await page.setViewportSize({width: 320, height: 800});
+  await page.goto('/');
+  const footer = page.locator('footer');
+  await expect(footer.getByRole('button', {name: 'Replay build'})).toBeVisible();
+  const labels = footer.locator('div').first().locator('a, button');
+  const wraps = await labels.evaluateAll(controls => controls.map(el => getComputedStyle(el).whiteSpace));
+  expect(wraps.every(value => value === 'nowrap')).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('the email address stays on one line on phones and tablets', async ({page}) => {
+  for (const width of [320, 768]) {
+    await page.setViewportSize({width, height: 800});
+    await page.goto('/#contact');
+    const address = page.locator('.contact-email-row .contact-value');
+    await expect(page.getByRole('button', {name: 'Copy email', exact: true})).toBeVisible();
+    const layout = await address.evaluate(el => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const button = el.closest('li')!.querySelector('button')!;
+      return {
+        lines: range.getClientRects().length,
+        fits: range.getBoundingClientRect().right <= el.getBoundingClientRect().right,
+        below: button.getBoundingClientRect().top >= el.getBoundingClientRect().bottom,
+      };
+    });
+    expect(layout).toEqual({lines: 1, fits: true, below: width === 320});
+  }
+});
+
+test('spoken languages appear on home and About and in Person metadata', async ({page}) => {
+  for (const path of ['/', '/about']) {
+    await page.goto(path);
+    await expect(page.locator('#experience')).toContainText('Georgian (native), English (B2-C1), German (basic)');
+    const person = await page.locator('script[type="application/ld+json"]').first().evaluate(el => {
+      const node = JSON.parse(el.textContent!)['@graph'][0];
+      return node.mainEntity ?? node;
+    });
+    expect(person).toMatchObject({name: 'Giorgi Giorgashvili', knowsLanguage: ['ka', 'en', 'de']});
+  }
+});
+
+test('Copy email writes the address to the clipboard and shows Copied', async ({page, context}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/#contact');
+  const contact = page.locator('#contact');
+  const button = contact.getByRole('button', {name: 'Copy email', exact: true});
+  const mailto = await contact.locator('.contact-list a[href^="mailto:"]').getAttribute('href');
+  expect(mailto).toBeTruthy();
+  await button.click();
+  const copied = contact.getByRole('button', {name: 'Copied', exact: true});
+  await expect(copied).toHaveAttribute('data-copy-state', 'copied');
+  await expect(copied.locator('.copy-confirmation')).toHaveCSS('opacity', '1');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(mailto!.slice('mailto:'.length));
+  await expect(button).toBeVisible();
+});
+
+test('an unknown route serves the custom 404 page with a way home', async ({page}) => {
+  const response = await page.goto('/nope');
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole('heading', {level: 1, name: 'Page not found'})).toBeVisible();
+  await expect(page.getByRole('link', {name: 'Back to home'})).toHaveAttribute('href', '/');
+  await expect(page.getByRole('link', {name: 'See the work'})).toHaveAttribute('href', '/#projects');
+});
+
+test('résumé is reachable from the first screen, the header and Contact, and is a one-page PDF', async ({page, request}) => {
+  await page.goto('/');
+  await expect(page.locator('.hero-actions').getByRole('link', {name: /Résumé/})).toHaveAttribute('href', '/giorgi-resume.pdf');
+  await expect(page.locator('[data-resume-link]')).toHaveAttribute('href', '/giorgi-resume.pdf');
+  await expect(page.locator('#contact').getByRole('link', {name: /Résumé/})).toHaveAttribute('href', '/giorgi-resume.pdf');
+  const pdf = await request.get('/giorgi-resume.pdf');
+  expect(pdf.ok()).toBe(true);
+  expect(pdf.headers()['content-type']).toContain('pdf');
+  const text = (await pdf.body()).toString('latin1');
+  expect(text.startsWith('%PDF-')).toBe(true);
+  expect(text.match(/\/Type\s*\/Page[^s]/g)?.length).toBe(1);
+  const dimensions = text.match(/\/MediaBox\s*\[0 0 ([\d.]+) ([\d.]+)\]/);
+  expect(dimensions).not.toBeNull();
+  expect(Math.round(Number(dimensions![1]))).toBe(595);
+  expect(Math.round(Number(dimensions![2]))).toBe(842);
+});
+
+// The custom cursor was removed when the cursor-swarm build replaced it (commit aa099d2);
+// smooth scrolling remains, and must stay off for touch and reduced motion.
+test('smooth scroll runs for a mouse and stays off for touch and reduced motion', async ({page, browser}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveClass(/lenis/);
+  // Wheel input eases rather than jumping: a few frames after one tick, scroll is in progress, not settled.
+  await page.mouse.move(700, 500);
+  await page.mouse.wheel(0, 800);
+  await page.waitForTimeout(80);
+  const early = await page.evaluate(() => scrollY);
+  await page.waitForTimeout(900);
+  const late = await page.evaluate(() => scrollY);
+  expect(early).toBeGreaterThan(0);
+  expect(late).toBeGreaterThan(early);
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.goto('/');
+  await expect(page.locator('html')).not.toHaveClass(/lenis/);
+  const touch = await browser.newContext({baseURL: 'http://127.0.0.1:4322', viewport: {width: 390, height: 844}, isMobile: true, hasTouch: true});
+  const tp = await touch.newPage();
+  await tp.goto('/');
+  await expect(tp.locator('html')).not.toHaveClass(/lenis/);
+  const model = tp.locator('[data-sculpture]');
+  const initial = await model.evaluate(el => getComputedStyle(el).transform);
+  await tp.evaluate(() => scrollTo({top: 240, behavior: 'instant'}));
+  await expect.poll(() => model.evaluate(el => getComputedStyle(el).transform)).not.toBe(initial);
+  await tp.emulateMedia({reducedMotion: 'reduce'});
+  await expect(model).toHaveCSS('transform', 'none');
+  await tp.evaluate(() => scrollTo({top: 300, behavior: 'instant'}));
+  await tp.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
+  await expect(model).toHaveCSS('transform', 'none');
+  await touch.close();
+});
+
+const checkLayout = (width: number) => async ({page}: {page: Page}) => {
+  await page.setViewportSize({width,height:900});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  for (const path of ['/', '/about', '/projects/tempest-archive']) {
+    await page.goto(path);
+    await page.evaluate(()=>document.fonts.ready);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth), `${path} overflows at ${width}`).toBe(true);
+    const clipped = await page.locator('h1,h2,h3').evaluateAll(elements=>elements.filter(el=>el.scrollWidth>el.clientWidth+1).map(el=>el.textContent));
+    expect(clipped, `${path} clipped at ${width}`).toEqual([]);
+  }
+  if (width === 390 || width === 1440) {
+    await page.goto('/');
+    // Walk the page so lazy images request, then wait for the network to settle before capturing.
+    await page.evaluate(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += innerHeight * .8) { scrollTo(0, y); await new Promise(r => setTimeout(r, 80)); } scrollTo(0, 0); });
+    await page.waitForLoadState('networkidle');
+    await page.getByRole('link',{name:'Made by Gio, home',exact:true}).click();
+    await page.screenshot({path:`test-results/home-${width}.png`, fullPage:true});
+    await page.goto('/about');
+    await page.screenshot({path:`test-results/about-${width}.png`, fullPage:true});
+    await page.goto('/projects/tempest-archive');
+    await page.evaluate(async () => { for (let y = 0; y < document.documentElement.scrollHeight; y += innerHeight * .8) { scrollTo(0, y); await new Promise(r => setTimeout(r, 80)); } scrollTo(0, 0); });
+    await page.waitForLoadState('networkidle');
+    expect(await page.locator('.screens img').evaluateAll(imgs => imgs.every(i => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0)), 'case-study screenshots load').toBe(true);
+    await page.screenshot({path:`test-results/tempest-${width}.png`, fullPage:true});
+  }
+};
+
+test('no overflow or clipped headings at 320px', checkLayout(320));
+test('no overflow or clipped headings at 390px', checkLayout(390));
+test('no overflow or clipped headings at 768px', checkLayout(768));
+test('no overflow or clipped headings at 1024px', checkLayout(1024));
+test('no overflow or clipped headings at 1440px', checkLayout(1440));
+test('no overflow or clipped headings at 1920px', checkLayout(1920));
+
+test('desktop navigation: section links activate, About is a real page, back button works', async ({page}) => {
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/');
+  for (const id of ['projects','contact','home']) {
+    await page.locator(`[data-nav="${id}"]`).click();
+    await expect(page).toHaveURL(id === 'home' ? /\/(#home)?$/ : new RegExp(`#${id}$`));
+    await expect(page.locator(`[data-nav="${id}"]`)).toHaveAttribute('aria-current','location');
+  }
+  await page.locator('[data-nav="about"]').click();
+  await expect(page).toHaveURL(/\/about\/?$/);
+  await expect(page.locator('[data-nav="about"]')).toHaveAttribute('aria-current','page');
+  await expect(page.locator('h1')).toHaveText(/I build things/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/(#home)?$/);
+  await expect(page.locator('h1')).toHaveText(/Giorgi\s*·\s*React Developer/);
+});
+
+test('the desktop nav dot sits under the active link', async ({page}) => {
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.goto('/');
+  const nav = page.getByRole('navigation', {name: 'Main navigation'});
+  const indicator = nav.locator('[data-nav-indicator]');
+  for (const name of ['Home', 'Work', 'About']) {
+    const link = nav.getByRole('link', {name, exact: true});
+    await link.click();
+    await expect(link).toHaveAttribute('aria-current', /^(location|page)$/);
+    await expect(indicator).toHaveCSS('opacity', '1');
+    await expect.poll(async () => {
+      const [dot, active] = await Promise.all([indicator.boundingBox(), link.boundingBox()]);
+      if (!dot || !active) return false;
+      const center = dot.x + dot.width / 2;
+      return center >= active.x && center <= active.x + active.width;
+    }).toBe(true);
+  }
+});
+
+test('mobile menu traps focus, closes with Escape, navigates, and resets on resize', async ({page}) => {
+  await page.setViewportSize({width:390,height:844});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/');
+  const toggle = page.getByRole('button',{name:'Open menu',exact:true});
+  await toggle.click();
+  await expect(page.locator('main')).toHaveAttribute('inert','');
+  await expect(page.locator('#mobile-menu')).toBeVisible();
+  await page.locator('#mobile-menu a').last().focus();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link',{name:'Made by Gio, home',exact:true})).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(toggle).toBeFocused();
+  await expect(page.locator('#mobile-menu')).toBeHidden();
+  await toggle.click();
+  await page.getByRole('link',{name:'04 Contact',exact:true}).click();
+  await expect(page).toHaveURL(/#contact$/);
+  await expect(page.locator('#contact')).toBeFocused();
+  await expect(page.locator('main')).not.toHaveAttribute('inert');
+  await toggle.click();
+  await page.setViewportSize({width:1280,height:900});
+  await expect(page.locator('#mobile-menu')).toBeHidden();
+  await expect(page.locator('body')).not.toHaveClass(/menu-open/);
+});
+
+test('the sculpture switches to Knot, shows guides and returns to rest after pointer movement', async ({page}) => {
+  await page.goto('/');
+  const model = page.locator('[data-sculpture]');
+  const initial = await model.evaluate(el => getComputedStyle(el).transform);
+  const knot = page.getByRole('button', {name: '03 Knot', exact: true});
+  await knot.click();
+  await expect(knot).toHaveAttribute('aria-pressed', 'true');
+  await expect(model).toHaveAttribute('data-active-shape', 'knot');
+  await expect(model.locator('[data-shape-layer="knot"]')).toHaveCSS('opacity', '1');
+  await page.getByRole('button', {name: 'Show construction guides'}).click();
+  await expect(page.locator('[data-shape-study]')).toHaveClass(/is-inspecting/);
+  const stage = (await page.locator('[data-shape-stage]').boundingBox())!;
+  await page.mouse.move(stage.x + stage.width * .7, stage.y + stage.height * .35);
+  await expect.poll(() => model.evaluate(el => getComputedStyle(el).transform)).not.toBe(initial);
+  await page.mouse.move(1, 1);
+  await expect.poll(() => model.evaluate(el => getComputedStyle(el).transform)).toBe(initial);
+});
+
+test('the sculpture blends from Ribbon through Orbit to Knot on scroll', async ({page}) => {
+  await page.goto('/');
+  const stage = page.locator('[data-shape-stage]');
+  const model = page.locator('[data-sculpture]');
+  await expect(model).toHaveAttribute('data-active-shape', 'ribbon');
+  const {top, height} = await stage.evaluate(el => {
+    const rect = el.getBoundingClientRect();
+    return {top: rect.top + scrollY, height: rect.height};
+  });
+  await page.evaluate(y => scrollTo({top: y, behavior: 'instant'}), top + height * .32);
+  await expect(model).toHaveAttribute('data-active-shape', 'orbit');
+  await page.evaluate(y => scrollTo({top: y, behavior: 'instant'}), top + height * .7);
+  await expect(model).toHaveAttribute('data-active-shape', 'knot');
+});
+
+test('reduced motion keeps every section visible and disables pointer motion', async ({page}) => {
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/');
+  await expect(page.locator('[data-m]:not(.in)')).toHaveCount(0);
+  expect(await page.locator('html').evaluate(el=>getComputedStyle(el).scrollBehavior)).toBe('auto');
+  await expect(page.locator('.study-replay')).toBeHidden();
+  await expect(page.locator('.swarm-controls')).toBeHidden();
+  const hidden = await page.locator('h2, h3, .feature-does, .tool-card').evaluateAll(els => els.filter(el => { const s = getComputedStyle(el); return s.opacity === '0' || s.clipPath.includes('100%'); }).length);
+  expect(hidden).toBe(0);
+  const model = page.locator('[data-sculpture]');
+  const stage=await page.locator('[data-shape-stage]').boundingBox();
+  await page.mouse.move(stage!.x+stage!.width*.8,stage!.y+stage!.height*.3);
+  await expect(model).toHaveCSS('transform', 'none');
+  expect(await page.evaluate(()=>document.getAnimations().filter(animation=>animation.playState==='running').length)).toBe(0);
+});
+
+test('touch: spoiler demo and tool links respond to taps; menu works; no sideways scroll', async ({browser}) => {
+  const context=await browser.newContext({baseURL:'http://127.0.0.1:4322', viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  const page=await context.newPage();
+  await page.goto('/');
+  await page.getByRole('button',{name:'02 Orbit',exact:true}).tap();
+  await expect(page.getByRole('button',{name:'02 Orbit',exact:true})).toHaveAttribute('aria-pressed','true');
+  const full = page.locator('[data-spoiler-demo]').getByRole('button', {name: /Full/});
+  await full.scrollIntoViewIfNeeded();
+  await full.tap();
+  await expect(page.locator('[data-spoiler-shot="full"]')).toHaveClass(/is-active/);
+  const folio = page.getByRole('link', {name: 'Folio details'});
+  await folio.scrollIntoViewIfNeeded();
+  await folio.tap();
+  await expect(page).toHaveURL(/\/projects\/folio\/?$/);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.goto('/');
+  await page.getByRole('button',{name:'Open menu',exact:true}).tap();
+  await page.getByRole('link',{name:'04 Contact',exact:true}).tap();
+  await expect(page).toHaveURL(/#contact$/);
+  await context.close();
+});
+
+test('the pages remain useful with JavaScript disabled', async ({browser}) => {
+  const context=await browser.newContext({baseURL:'http://127.0.0.1:4322',javaScriptEnabled:false,viewport:{width:390,height:844}});
+  const page=await context.newPage();
+  await page.goto('/');
+  await expect(page.locator('h1')).toBeVisible();
+  await expect(page.locator('.sculpture')).toBeVisible();
+  await expect(page.getByRole('link', {name: 'See Tempest Archive'})).toBeVisible();
+  await expect(page.locator('#tempest h3')).toBeVisible();
+  await expect(page.locator('.feature-does').first()).toBeVisible();
+  await expect(page.locator('.spoiler-table')).toBeVisible();
+  const quire = page.locator('#quire');
+  await expect(quire.getByRole('textbox', {name: 'Markdown'})).toHaveCount(0);
+  await expect(quire.getByRole('link', {name: /Open sample PDF/})).toHaveAttribute('href', '/samples/quire-field-notes.pdf');
+  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('link',{name:'Contact',exact:true}).click();
+  await expect(page).toHaveURL(/#contact$/);
+  await expect(page.locator('#contact h2')).toBeVisible();
+  await expect(page.locator('[data-copy-email]')).toBeHidden();
+  await page.goto('/about');
+  await expect(page.locator('h1')).toBeVisible();
+  await expect(page.locator('#panel-frontend')).toBeVisible();
+  await context.close();
+});
+
+test('about page: tabs, workflow, and source list work', async ({page}) => {
+  const {errors, failed} = watch(page);
+  await page.goto('/about');
+  await expect(page.locator('h1')).toHaveText(/I build things\s*for the web\./);
+  await page.getByRole('tab', {name: /Web tools/}).click();
+  await expect(page.locator('#panel-tools')).toBeVisible();
+  await expect(page.locator('#panel-frontend')).toBeHidden();
+  await expect(page.locator('#panel-tools')).toContainText('QUIRE');
+  // Pinned workflow: scrolling to the last explanation lights the last step.
+  await page.locator('#flow-ship').evaluate(el => el.scrollIntoView({block: 'center'}));
+  await expect(page.locator('#flow-ship')).toHaveClass(/is-active/);
+  await expect(page.locator('.flow-step[data-screen="4"]')).toHaveClass(/is-active/);
+  await expect(page.locator('#flow-ship')).toContainText('real domain');
+  await expect(page.locator('.story-flow [data-story-label]')).toHaveText('Ship');
+  await expect(page.getByRole('link', {name: /Portfolio-setup/})).toHaveAttribute('href', /github\.com\/geopero123\/Portfolio-setup/);
+  expect(errors).toEqual([]);
+  expect(failed).toEqual([]);
+});
+
+test('every project page renders with a project link, real stack and metadata', async ({page}) => {
+  const {errors, failed} = watch(page);
+  for (const slug of ['tempest-archive', 'quire', 'kilo', 'folio', 'transmute', 'signal', 'siteforge', 'tempest-rebirth']) {
+    await page.goto(`/projects/${slug}`);
+    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.getByRole('link', {name: slug === 'siteforge' ? 'Product overview' : 'Visit the live site'})).toHaveAttribute('href', /^https:\/\//);
+    await expect(page.getByRole('list', {name: 'Built with'}).locator('li').first()).toBeVisible();
+    expect(await page.locator('meta[property="og:image"]').getAttribute('content')).toContain(`og-${slug}.png`);
+    // The pinned story exists on every project page and its first chapter starts active.
+    await expect(page.locator('.story-project [data-chapter="0"]')).toHaveClass(/is-active/);
+    if (slug === 'tempest-archive') {
+      await page.locator('.story-project [data-chapter="2"]').evaluate(el => el.scrollIntoView({block: 'center'}));
+      await expect(page.locator('.story-project [data-screen="2"]')).toHaveClass(/is-active/);
+    }
+    expect(await page.locator('link[rel="canonical"]').getAttribute('href')).toBe(`https://madebygio.dev/projects/${slug}/`);
+    if (slug !== 'tempest-archive') await expect(page.getByRole('link', {name: /View source/}).first()).toHaveAttribute('href', /github\.com/);
+  }
+  expect(errors).toEqual([]);
+  expect(failed).toEqual([]);
+});
+
+test('the full name appears in the title, description, profile and copyright', async ({page}) => {
+  await page.goto('/');
+  await expect(page).toHaveTitle('Giorgi Giorgashvili - React Developer');
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Giorgi Giorgashvili/);
+  await expect(page.locator('footer')).toContainText('Giorgi Giorgashvili');
+  await page.goto('/about');
+  await expect(page.locator('.about-name strong')).toHaveText('Giorgi Giorgashvili');
+});
+
+test('the quality strip counts browser tests at build time and links to their source', async ({page}) => {
+  const spec = readFileSync(new URL(import.meta.url), 'utf8');
+  const count = (spec.match(/^\s*test\(/gm) ?? []).length;
+  await page.goto('/');
+  const strip = page.getByRole('complementary', {name: 'Portfolio quality checks'});
+  await expect(strip).toContainText(`${count} browser tests - 0 accessibility violations (axe, WCAG 2.1 AA) - tested at 6 screen widths`);
+  await expect(strip.getByRole('link', {name: 'Read the tests'})).toHaveAttribute('href', 'https://github.com/geopero123/portfolio/blob/local/current-site/tests/homepage.spec.ts');
+});
+
+test('local previews do not request the Vercel-only analytics script', async ({page}) => {
+  const analytics: string[] = [];
+  page.on('request', request => {
+    if (request.url().includes('/_vercel/insights/')) analytics.push(request.url());
+  });
+  await page.goto('/');
+  await expect(page.locator('vercel-analytics')).toHaveCount(0);
+  expect(analytics).toEqual([]);
+});
+
+test('structured data and discoverability files are valid', async ({page, request}) => {
+  await page.goto('/');
+  const graph = await page.locator('script[type="application/ld+json"]').first().evaluate(el => JSON.parse(el.textContent!));
+  expect(graph['@graph'].map((n: any) => n['@type'])).toEqual(expect.arrayContaining(['Person', 'WebSite']));
+  await page.goto('/projects/tempest-archive');
+  const work = await page.locator('script[type="application/ld+json"]').first().evaluate(el => JSON.parse(el.textContent!));
+  expect(work['@graph'][0]).toMatchObject({'@type': 'CreativeWork', url: 'https://tempestarchive.com/'});
+  expect((await request.get('/robots.txt')).ok()).toBe(true);
+  const sitemap = await (await request.get('/sitemap-0.xml')).text();
+  for (const path of ['/about/', '/projects/tempest-archive/', '/projects/quire/', '/projects/transmute/', '/projects/signal/']) expect(sitemap).toContain(`https://madebygio.dev${path}`);
+});
+
+test('no serious accessibility violations on desktop or mobile, all pages', async ({page}) => {
+  await page.emulateMedia({reducedMotion:'reduce'});
+  for (const path of ['/', '/about', '/projects/tempest-archive']) for (const width of [1440,390]) {
+    await page.setViewportSize({width,height:1000});
+    await page.goto(path);
+    const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa']).analyze();
+    expect(JSON.stringify(results.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,nodes:v.nodes.map(n=>n.target)})), null, 1), `${path} @ ${width}`).toBe('[]');
+  }
+});
+
+test('no cumulative layout shift while fonts and initial content load', async ({page}) => {
+  await page.addInitScript(()=>{
+    (window as any).__shifts=0;
+    new PerformanceObserver(list=>{ for(const entry of list.getEntries()) if(!(entry as any).hadRecentInput) (window as any).__shifts+=(entry as any).value; }).observe({type:'layout-shift', buffered:true});
+  });
+  await page.goto('/');
+  await page.evaluate(()=>document.fonts.ready);
+  await page.waitForTimeout(1600);
+  expect(await page.evaluate(()=>(window as any).__shifts)).toBeLessThan(.02);
+});
