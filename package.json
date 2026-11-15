@@ -12,7 +12,8 @@
     "astro": "astro",
     "check": "astro check",
     "test": "playwright test",
-    "social-card": "node scripts/social-card.mjs"
+    "social-card": "node scripts/social-card.mjs",
+    "publish:tools": "bash scripts/publish-tools.sh"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.1",
